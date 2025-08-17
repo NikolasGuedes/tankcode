@@ -31,7 +31,7 @@ services:
     image: mariadb
     container_name: mariadb
     ports:
-      - "3306:3306"
+      - "3307:3306"
     restart: unless-stopped
     volumes:
       - mariadb_data:/var/lib/mysql
