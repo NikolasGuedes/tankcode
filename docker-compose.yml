@@ -1,0 +1,54 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - networks
+
+  php:
+    container_name: php-fpm
+    build:
+      args:
+        USER: ${USER}
+        UID: ${USER_ID}
+        GROUP: ${USER}
+        GID: ${USER_ID}
+      context: .
+      dockerfile: ./docker/php-fpm/Dockerfile
+    volumes:
+      - .:/var/www/html
+    networks:
+      - networks
+
+  db:
+    image: mariadb
+    container_name: mariadb
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    environment:
+      MARIADB_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MARIADB_DATABASE: "${DB_DATABASE}"
+      MARIADB_USER: "${DB_USERNAME}"
+      MARIADB_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      - networks
+
+volumes:
+  mariadb_data:
+    name: volumes
+
+networks:
+  networks:
+    name: networks
+    driver: bridge
