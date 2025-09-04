@@ -73,12 +73,14 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <!-- Hero -->
     <section class="mx-auto grid max-w-6xl items-center gap-10 px-6 pb-20 pt-10 sm:pt-16 lg:grid-cols-2 lg:gap-14">
       <div class="space-y-6">
-        <h1 class="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-          Transforme desafios em
-          <span class="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-blue-400 bg-clip-text text-transparent">
-            oportunidades
-          </span>
-        </h1>
+        <h1 class="fluid-h1 text-center font-extrabold leading-tight tracking-tight">
+  <span class="typewriter-1line" style="--steps: 36;">
+    Transforme desafios em
+    <span class="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-blue-400 bg-clip-text text-transparent">
+      oportunidades
+    </span>
+  </span>
+</h1>
         <p class="max-w-prose text-base/7 text-[#e2e2df]">
           No TankCode, estudantes completam desafios de TI, acumulam pontuação e desbloqueiam benefícios como bolsas,
           vagas de voluntariado e muito mais. Ideal para universidades que querem engajamento real e visibilidade do
@@ -129,7 +131,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Card 1 com borda neon 1px -->
-        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-violet-500/40 via-fuchsia-500/40 to-blue-500/40">
+        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-violet-500/40 via-fuchsia-500/40 to-blue-500/40 interactive-scale">
           <article class="rounded-[11px] bg-gradient-to-br from-violet-950/40 to-blue-950/30 p-6 shadow-sm">
             <h3 class="text-base font-semibold text-violet-300">Desafios práticos</h3>
             <p class="mt-2 text-sm text-[#e0e0dd]">
@@ -139,7 +141,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </div>
 
         <!-- Card 2 -->
-        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-blue-500/40 via-fuchsia-500/40 to-violet-500/40">
+        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-blue-500/40 via-fuchsia-500/40 to-violet-500/40 interactive-scale">
           <article class="rounded-[11px] bg-gradient-to-br from-blue-950/30 to-pink-950/30 p-6 shadow-sm">
             <h3 class="text-base font-semibold text-blue-300">Métricas e ranking</h3>
             <p class="mt-2 text-sm text-[#e0e0dd]">
@@ -149,7 +151,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </div>
 
         <!-- Card 3 -->
-        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-fuchsia-500/40 via-violet-500/40 to-blue-500/40">
+        <div class="relative rounded-xl p-[1px] bg-gradient-to-r from-fuchsia-500/40 via-violet-500/40 to-blue-500/40   interactive-scale">
           <article class="rounded-[11px] bg-gradient-to-br from-fuchsia-950/30 to-violet-950/30 p-6 shadow-sm">
             <h3 class="text-base font-semibold text-pink-300">Benefícios desbloqueáveis</h3>
             <p class="mt-2 text-sm text-[#e0e0dd]">
@@ -166,7 +168,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
       <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Testimonial 1 -->
-        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-violet-500/40 via-fuchsia-500/40 to-blue-500/40">
+        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-violet-500/40 via-fuchsia-500/40 to-blue-500/40 interactive-scale">
           <article class="rounded-[15px] bg-gradient-to-br from-violet-950/30 to-blue-950/20 p-5 shadow-sm">
             <p class="text-sm text-[#ededed]">
               “Os desafios deram um gás na turma. O ranking motiva e os relatórios ajudam muito nas reuniões.”
@@ -176,7 +178,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </div>
 
         <!-- Testimonial 2 -->
-        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-blue-500/40 via-fuchsia-500/40 to-violet-500/40">
+        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-blue-500/40 via-fuchsia-500/40 to-violet-500/40 interactive-scale">
           <article class="rounded-[15px] bg-gradient-to-br from-blue-950/30 to-fuchsia-950/20 p-5 shadow-sm">
             <p class="text-sm text-[#ededed]">
               “Gostei da validação automática e dos feedbacks. Fica claro o que estudar pra subir de nível.”
@@ -186,7 +188,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </div>
 
         <!-- Testimonial 3 -->
-        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-500/40 via-violet-500/40 to-blue-500/40">
+        <div class="relative rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-500/40 via-violet-500/40 to-blue-500/40 interactive-scale">
           <article class="rounded-[15px] bg-gradient-to-br from-violet-950/30 to-pink-950/20 p-5 shadow-sm">
             <p class="text-sm text-[#ededed]">
               “Conseguimos atrelar benefícios ao desempenho de forma transparente. O engajamento subiu.”
@@ -228,11 +230,12 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <footer class="border-t border-white/10 py-10">
       <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
         <div class="flex items-center gap-2">
-          <img src="/imgs/logo-tankcode.png" alt="Logotipo TankCode" class="h-6 w-auto" />
           <span class="text-xs">© {{ new Date().getFullYear() }} TankCode</span>
         </div>
-        <div class="text-xs text-[#c7c7c0]">Feito com Inertia + Vue 3 + Tailwind</div>
       </div>
     </footer>
   </div>
 </template>
+<style scoped>  
+
+</style>

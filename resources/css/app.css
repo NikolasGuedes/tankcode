@@ -129,4 +129,62 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    html {
+        scroll-behavior: smooth;
+    }
 }
+/* Efeito de aumentar containers*/
+@layer utilities {
+  .interactive-scale {
+    @apply transform-gpu transition-transform duration-300 ease-out hover:scale-[1.03] active:scale-[0.995] motion-reduce:transform-none;
+  }
+}
+
+/* variável animável */
+@property --reveal {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* animação com revelação por clip-path (não usa width fixa) */
+@property --reveal {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@layer utilities {
+  /* Fonte fluida: ajusta automaticamente para caber em 1 linha */
+  .fluid-h1 {
+    /* 28px até 72px conforme largura da viewport */
+    font-size: clamp(28px, 6.5vw, 72px);
+    line-height: 1.1;
+  }
+
+  .typewriter-1line {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;                 /* 1 linha */
+    border-right: 2px solid currentColor;/* cursor */
+    /* revela o texto da esquerda p/ direita */
+    clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
+    animation:
+      typing-fit 2.6s steps(var(--steps, 36), end) .2s forwards,
+      caret .9s step-end infinite;
+  }
+}
+
+/* anima chega a 100% da largura do elemento */
+@keyframes typing-fit { to { --reveal: 100%; } }
+/* cursor piscando */
+@keyframes caret { 50% { border-color: transparent } }
+
+/* acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-1line { animation: none !important; border-right: 0 }
+}
+
+
