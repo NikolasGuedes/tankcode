@@ -20,10 +20,9 @@ class StudentsController extends Controller
 
         $students = Student::query()
             ->when($filters['search'] ?? false, function ($query) use ($filters) {
-                $query->where('first_name', 'like', '%' . $filters['search'] . '%')
-                      ->orWhere('last_name', 'like', '%' . $filters['search'] . '%')
-                      ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                      ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
+                $query->where('name', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
             })
             ->orderBy('created_at', 'desc')
             ->get();
@@ -46,23 +45,22 @@ class StudentsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email',
-            'cod' => 'required|string|max:255|unique:students,cod',
         ]);
 
-        try {
-            DB::transaction(function () use ($request) {
-                // Separar o nome em first_name e last_name
-                $nameParts = explode(' ', $request['name'], 2);
-                $firstName = $nameParts[0];
-                $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
+        // Gerar um código único no formato AAA-123 (AAA aleatório)
+        do {
+            $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
+            $cod = $prefix . '-' . rand(100, 999);
+        } while (Student::where('cod', $cod)->exists());
 
-                Student::create([
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $request['email'],
-                    'cod' => $request['cod'],
-                    'password' => bcrypt('password'), // Password padrão
-                ]);
+        try {
+            DB::transaction(function () use ($request, $cod) {
+                $student = new Student();
+                $student->name = $request['name'];
+                $student->email = $request['email'];
+                $student->cod = $cod;
+                $student->password = bcrypt('password123'); // Password padrão
+                $student->save();
             });
         } catch (\Throwable $th) {
             Log::error('Failed to create student: ' . $th->getMessage(), [
@@ -81,22 +79,15 @@ class StudentsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email,' . $id,
-            'cod' => 'required|string|max:255|unique:students,cod,' . $id,
         ]);
 
         try {
             DB::transaction(function () use ($id, $request) {
-                // Separar o nome em first_name e last_name
-                $nameParts = explode(' ', $request['name'], 2);
-                $firstName = $nameParts[0];
-                $lastName = isset($nameParts[1]) ? $nameParts[1] : '';
 
-                Student::where('id', $id)->update([
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $request['email'],
-                    'cod' => $request['cod'],
-                ]);
+                $student = Student::findOrFail($id);
+                $student->name = $request['name'];
+                $student->email = $request['email'];
+                $student->save();
             });
         } catch (\Throwable $th) {
             Log::error('Failed to update student: ' . $th->getMessage(), [

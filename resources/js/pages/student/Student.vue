@@ -57,7 +57,6 @@ const openDialogEdit = (id: number) => {
     if (selectedStudent) {
         editForm.name = selectedStudent.name;
         editForm.email = selectedStudent.email;
-        editForm.cod = selectedStudent.cod;
     }
     isDialogOpenEdit.value = true;
 };
@@ -65,13 +64,11 @@ const openDialogEdit = (id: number) => {
 const studentForm = useForm({
     name: '',
     email: '',
-    cod: '',
 });
 
 const editForm = useForm({
     name: '',
     email: '',
-    cod: '',
 });
 
 const saveStudent = () => {
@@ -124,7 +121,7 @@ const deleteStudent = () => {
 
 const submitSearch = (e: Event) => {
     e.preventDefault();
-    router.get(route('students.index', { search: search.value }));
+    router.get(route('students'), { search: search.value });
 };
 
 const getInitials = (name: string): string => {
@@ -198,7 +195,7 @@ const columns = [
                                 </TableCell>
                                 <TableCell class="py-4 px-6">
                                     <Button @click="openDialogEdit(student.id)"
-                                        class="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white text-sm px-4 py-2">
+                                        class="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white text-sm px-4 py-2 cursor-pointer flex items-center">
                                         <Edit class="h-4 w-4 mr-2" />
                                         Editar Perfil
                                     </Button>
@@ -248,13 +245,7 @@ const columns = [
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-white text-sm font-medium mb-2 block">Código do Estudante</label>
-                            <Input v-model="studentForm.cod" placeholder="STD-123" class="w-full" />
-                            <div v-if="studentForm.errors.cod" class="text-red-400 text-sm mt-1">
-                                {{ studentForm.errors.cod }}
-                            </div>
-                        </div>
+                       
                     </div>
 
                     <DialogFooter class="pt-4">
@@ -297,13 +288,7 @@ const columns = [
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-white text-sm font-medium mb-2 block">Código do Estudante</label>
-                            <Input v-model="editForm.cod" placeholder="STD-123" class="w-full" />
-                            <div v-if="editForm.errors.cod" class="text-red-400 text-sm mt-1">
-                                {{ editForm.errors.cod }}
-                            </div>
-                        </div>
+                       
                     </div>
 
                     <DialogFooter class="flex gap-3 pt-4">
