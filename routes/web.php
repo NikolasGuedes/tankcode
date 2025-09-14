@@ -9,7 +9,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::prefix('students')->middleware('auth')->group(function () {
-   Route::get('/', [StudentsController::class, 'index'])->middleware('auth')->name('students');
+   Route::get('/', [StudentsController::class, 'index'])->name('students');
+   Route::post('/store', [StudentsController::class, 'store'])->name('students.store');
+   Route::put('/{id}', [StudentsController::class, 'update'])->name('students.update');
+   Route::delete('/{id}', [StudentsController::class, 'destroy'])->name('students.destroy');
 });
 
 
