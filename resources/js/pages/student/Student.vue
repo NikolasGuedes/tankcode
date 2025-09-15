@@ -57,6 +57,7 @@ const openDialogEdit = (id: number) => {
     if (selectedStudent) {
         editForm.name = selectedStudent.name;
         editForm.email = selectedStudent.email;
+
         editForm.cod = selectedStudent.cod;
     }
     isDialogOpenEdit.value = true;
@@ -150,7 +151,7 @@ const columns = [
                 <label for="search" class="font-bold text-white">Pesquisar: </label>
                 <Input v-model="search" placeholder="Nome, email ou código..." class="w-80 max-sm:w-full"></Input>
                 <Button type="submit" class="cursor-pointer max-sm:w-full bg-[var(--primary)]">
-                    <Search class="h-5 w-5" />
+                    <Search class="h-5 w-5"/>
                     Pesquisar
                 </Button>
             </form>

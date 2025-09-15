@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClassController;
 use App\Http\Controllers\StudentsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -11,6 +12,11 @@ Route::get('/', function () {
 Route::prefix('students')->middleware('auth')->group(function () {
    Route::get('/', [StudentsController::class, 'index'])->middleware('auth')->name('students');
 });
+
+Route::prefix('class')->middleware('auth')->group(function () {
+   Route::get('/', [ClassController::class, 'index'])->middleware('auth')->name('class');
+});
+
 
 
 require __DIR__.'/settings.php';
