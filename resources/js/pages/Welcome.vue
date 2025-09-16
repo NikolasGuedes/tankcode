@@ -1,46 +1,20 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
-import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { onMounted } from 'vue'
 
-/* ===== Scroll suave com velocidade controlada ===== */
-const HEADER_OFFSET = 72
-function easeInOut(t: number) { return 0.5 * (1 - Math.cos(Math.PI * t)) }
-function animateScrollTo(targetY: number, duration = 900) {
-  const startY = window.pageYOffset, delta = targetY - startY, start = performance.now()
-  function step(now: number) {
-    const t = Math.min((now - start) / duration, 1)
-    window.scrollTo(0, startY + delta * easeInOut(t))
-    if (t < 1) requestAnimationFrame(step)
+/**
+ * Scrolls smoothly to the section with the given selector and updates the active nav link.
+ */
+function goTo(selector: string, section: string) {
+  const el = document.querySelector(selector)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
   }
-  requestAnimationFrame(step)
 }
 
-/* ===== Navbar ativa (click + scroll-spy) ===== */
-type Sec = 'home' | 'sobre' | 'features' | 'exemplos'
-const activeSection = ref<Sec>('home')
-function goTo(hash: `#${Sec}`, sec: Sec) {
-  const el = document.querySelector(hash) as HTMLElement | null
-  if (!el) return
-  const top = el.getBoundingClientRect().top + window.pageYOffset - HEADER_OFFSET
-  animateScrollTo(top, 950)
-  activeSection.value = sec
-}
 
-let observer: IntersectionObserver | null = null
-onMounted(() => {
-  const ids: Sec[] = ['home','sobre','features','exemplos']
-  observer = new IntersectionObserver((entries) => {
-    // pega a que está mais “no centro” da viewport
-    const visible = entries.filter(e => e.isIntersecting)
-    if (!visible.length) return
-    // a maior intersecção vence
-    visible.sort((a,b) => b.intersectionRatio - a.intersectionRatio)
-    const id = (visible[0].target as HTMLElement).id as Sec
-    activeSection.value = id
-  }, { rootMargin: '-20% 0px -60% 0px', threshold: [0.25, 0.5, 0.75] })
-  ids.forEach(id => { const el = document.getElementById(id); if (el) observer!.observe(el) })
-})
-onBeforeUnmount(() => { observer?.disconnect() })
+
 </script>
 
 <template>
@@ -60,25 +34,24 @@ onBeforeUnmount(() => { observer?.disconnect() })
             <li>
               <a href="#home"
                  class="navlink"
-                 :class="{'navlink--active': activeSection==='home'}"
                  @click.prevent="goTo('#home','home')">home</a>
             </li>
             <li>
               <a href="#sobre"
                  class="navlink"
-                 :class="{'navlink--active': activeSection==='sobre'}"
+                
                  @click.prevent="goTo('#sobre','sobre')">sobre</a>
             </li>
             <li>
               <a href="#features"
                  class="navlink"
-                 :class="{'navlink--active': activeSection==='features'}"
+                 
                  @click.prevent="goTo('#features','features')">features</a>
             </li>
             <li>
               <a href="#exemplos"
                  class="navlink"
-                 :class="{'navlink--active': activeSection==='exemplos'}"
+                
                  @click.prevent="goTo('#exemplos','exemplos')">exemplos</a>
             </li>
           </ul>
