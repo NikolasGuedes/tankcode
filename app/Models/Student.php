@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'email',
         'picture',
         'cod',
+        'password',
+        'password_changed_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -28,6 +34,8 @@ class Student extends Model
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_changed_at' => 'datetime',
+            'must_change_password' => 'boolean',
         ];
     }
 
@@ -47,4 +55,6 @@ class Student extends Model
             });
         }
     }
+
+    
 }

@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-
     <Head title="Welcome">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
@@ -31,8 +30,30 @@ import { Head, Link } from '@inertiajs/vue3';
         <div
             class="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
             <main class="flex w-full items-center justify-center overflow-hidden rounded-lg lg:max-w-4xl lg:flex-row">
-                <div class="">
-                    <img src="/imgs/logo-tankcode.png" alt="Tankcode Logo">
+                <div class="text-center">
+                    <img src="/imgs/logo-tankcode.png" alt="Tankcode Logo" class="mx-auto mb-8">
+                    
+                    <!-- Botões de acesso -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                        <Link :href="route('student.login')"
+                            class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3 text-white font-semibold hover:bg-blue-700 transition-colors">
+                            Área do Estudante
+                        </Link>
+                        
+                        <Link v-if="!$page.props.auth.user" :href="route('login')"
+                            class="inline-flex items-center justify-center rounded-lg border border-[#19140035] px-8 py-3 text-[#1b1b18] font-semibold hover:bg-gray-50 dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:bg-gray-800 transition-colors">
+                            Área Administrativa
+                        </Link>
+                        
+                        <Link v-else :href="route('students')"
+                            class="inline-flex items-center justify-center rounded-lg border border-[#19140035] px-8 py-3 text-[#1b1b18] font-semibold hover:bg-gray-50 dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:bg-gray-800 transition-colors">
+                            Área Administrativa
+                        </Link>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-6 max-w-md mx-auto">
+                        Acesse a área do estudante para ver seus cursos e materiais, ou a área administrativa para gerenciar o sistema.
+                    </p>
                 </div>
             </main>
         </div>
