@@ -34,7 +34,7 @@ const submit = () => {
                 <img src="/imgs/logo-tankcode.png" alt="Tankcode Logo" class="mx-auto mb-4 h-16">
                 <h1 class="text-2xl font-bold text-[#1b1b18] dark:text-[#EDEDEC]">Primeiro Acesso</h1>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    Olá, <strong>{{ student.name }}</strong>! Por favor, altere sua senha para continuar.
+                    Olá, <strong>{{ props.student.name }}</strong>! Por favor, altere sua senha para continuar.
                 </p>
             </div>
 

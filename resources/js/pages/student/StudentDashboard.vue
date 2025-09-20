@@ -32,7 +32,7 @@ const logout = () => {
                     <img src="/imgs/logo-tankcode.png" alt="Tankcode Logo" class="h-10">
                     <div>
                         <h1 class="text-2xl font-bold text-[#1b1b18] dark:text-[#EDEDEC]">
-                            Bem-vindo, {{ student.name }}!
+                            Bem-vindo, {{ props.student.name }}!
                         </h1>
                         <p class="text-sm text-gray-600 dark:text-gray-400">Área do Estudante</p>
                     </div>
@@ -50,20 +50,20 @@ const logout = () => {
                 
                 <div class="flex items-start gap-6">
                     <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                        {{ getInitials(student.name) }}
+                        {{ getInitials(props.student.name) }}
                     </div>
                     <div class="flex-1 space-y-3">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Nome</p>
-                            <p class="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">{{ student.name }}</p>
+                            <p class="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">{{ props.student.name }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Email</p>
-                            <p class="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">{{ student.email }}</p>
+                            <p class="font-medium text-[#1b1b18] dark:text-[#EDEDEC]">{{ props.student.email }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Código do Estudante</p>
-                            <p class="font-medium text-blue-600">{{ student.cod }}</p>
+                            <p class="font-medium text-blue-600">{{ props.student.cod }}</p>
                         </div>
                     </div>
                 </div>
