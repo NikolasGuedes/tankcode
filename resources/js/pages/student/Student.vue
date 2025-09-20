@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Plus, Edit, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'vue-sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -77,10 +76,16 @@ const saveStudent = () => {
         onSuccess: () => {
             isDialogOpen.value = false;
             studentForm.reset();
-            toast.success('Estudante adicionado com sucesso.');
+            toast.success('Estudante adicionado com sucesso', {
+                description: 'O estudante foi criado e adicionado à lista.',
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
         },
         onError: () => {
-            toast.error('Erro ao adicionar estudante.');
+            toast.error('Erro ao adicionar estudante', {
+                description: 'Verifique os dados e tente novamente.',
+                style: { background: 'var(--destructive)', color: 'black' }
+            });
         },
     });
 };
@@ -93,11 +98,17 @@ const editStudent = () => {
             isDialogOpenEdit.value = false;
             editForm.reset();
             isUpdating.value = false;
-            toast.success('Estudante editado com sucesso.');
+            toast.success('Estudante editado com sucesso', {
+                description: 'As informações foram atualizadas.',
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
         },
         onError: () => {
             isUpdating.value = false;
-            toast.error('Erro ao editar estudante.');
+            toast.error('Erro ao editar estudante', {
+                description: 'Verifique os dados e tente novamente.',
+                style: { background: 'var(--destructive)', color: 'black' }
+            });
         },
     });
 };
@@ -110,11 +121,17 @@ const deleteStudent = () => {
             isDialogOpenEdit.value = false;
             editForm.reset();
             isDeleting.value = false;
-            toast.success('Estudante deletado com sucesso.');
+            toast.success('Estudante deletado com sucesso', {
+                description: 'O estudante foi removido permanentemente.',
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
         },
         onError: () => {
             isDeleting.value = false;
-            toast.error('Erro ao deletar estudante.');
+            toast.error('Erro ao deletar estudante', {
+                description: 'Não foi possível deletar o estudante.',
+                style: { background: 'var(--destructive)', color: 'black' }
+            });
         },
     });
 };
@@ -137,9 +154,8 @@ const columns = [
 </script>
 
 <template>
-    <Head title="Alunos" />
-    <Toaster />
 
+    <Head title="Alunos" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-fit items-start justify-between flex-row rounded-xl flex-wrap p-4 gap-4">
             <form @submit.prevent="submitSearch"
@@ -245,7 +261,7 @@ const columns = [
                             </div>
                         </div>
 
-                       
+
                     </div>
 
                     <DialogFooter class="pt-4">
@@ -288,7 +304,7 @@ const columns = [
                             </div>
                         </div>
 
-                       
+
                     </div>
 
                     <DialogFooter class="flex gap-3 pt-4">
@@ -310,4 +326,3 @@ const columns = [
         </Dialog>
     </AppLayout>
 </template>
-
