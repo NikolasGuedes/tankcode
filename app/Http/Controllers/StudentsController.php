@@ -60,6 +60,7 @@ class StudentsController extends Controller
                 $student->email = $request['email'];
                 $student->cod = $cod;
                 $student->password = bcrypt('password123'); // Password padrão
+                $student->must_change_password = true; // Forçar troca de senha
                 $student->save();
             });
         } catch (\Throwable $th) {
