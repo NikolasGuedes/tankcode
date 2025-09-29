@@ -20,14 +20,20 @@ return new class extends Migration
             $table->string('cod')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            if (!Schema::hasColumn('students', 'password_changed_at')) {
+                $table->timestamp('password_changed_at')->nullable();
+            }
+            if (!Schema::hasColumn('students', 'must_change_password')) {
+                $table->boolean('must_change_password')->default(true);
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::table('students', function (Blueprint $table) {
+            $table->dropColumn(['password_changed_at', 'must_change_password']);
+        });
     }
 };
