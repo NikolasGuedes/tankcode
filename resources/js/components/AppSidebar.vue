@@ -15,7 +15,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Salas',
-        href: '/salas',
+        href: '/rooms',
         icon: Blocks,
     },
     {
