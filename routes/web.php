@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\StudentAuthController;
+use App\Http\Controllers\RoomsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -32,6 +33,10 @@ Route::prefix('student')->group(function () {
     Route::middleware('student.auth')->group(function () {
         Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
     });
+});
+
+Route::prefix('rooms')->middleware('auth')->group(function () {
+    Route::get('/', [RoomsController::class, 'index']);
 });
 
 require __DIR__.'/settings.php';
