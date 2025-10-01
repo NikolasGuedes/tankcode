@@ -203,7 +203,7 @@ const columns = [
 
         <Card class="bg-[var(--sidebar-background)] border-none m-4">
             <CardHeader>
-                <CardTitle class="text-white text-xl font-semibold">Lista de Quartos</CardTitle>
+                <CardTitle class="text-white text-xl font-semibold">Lista de Salas</CardTitle>
             </CardHeader>
             <CardContent class="p-0">
                 <div class="overflow-x-auto">
