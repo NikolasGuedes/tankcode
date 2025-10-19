@@ -6,10 +6,18 @@ import Input from '@/components/ui/input/Input.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Plus, Edit, Trash2 } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Upload, Download } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,12 +32,18 @@ const props = defineProps({
         default: ''
     },
     students: {
-        type: Array as () => Array<{
-            id: number;
-            name: string;
-            email: string;
-            cod: string;
-        }>,
+        type: Object as () => {
+            data: Array<{
+                id: number;
+                name: string;
+                email: string;
+                cod: string;
+            }>;
+            current_page: number;
+            last_page: number;
+            per_page: number;
+            total: number;
+        },
         required: true,
     }
 });
@@ -37,6 +51,7 @@ const props = defineProps({
 const search = ref(props.search);
 const isDialogOpen = ref(false);
 const isDialogOpenEdit = ref(false);
+const isDialogOpenImport = ref(false);
 const selectStudentId = ref<number | null>(null);
 const isDeleting = ref(false);
 const isUpdating = ref(false);
@@ -52,12 +67,17 @@ const openDialog = () => {
 
 const openDialogEdit = (id: number) => {
     selectStudentId.value = id;
-    const selectedStudent = props.students.find(s => s.id === id);
+    const selectedStudent = props.students.data.find(s => s.id === id);
     if (selectedStudent) {
         editForm.name = selectedStudent.name;
         editForm.email = selectedStudent.email;
     }
     isDialogOpenEdit.value = true;
+};
+
+const openDialogImport = () => {
+    isDialogOpenImport.value = true;
+    importForm.reset();
 };
 
 const studentForm = useForm({
@@ -68,6 +88,10 @@ const studentForm = useForm({
 const editForm = useForm({
     name: '',
     email: '',
+});
+
+const importForm = useForm({
+    file: null as File | null,
 });
 
 const saveStudent = () => {
@@ -136,9 +160,49 @@ const deleteStudent = () => {
     });
 };
 
+const importStudents = () => {
+    if (!importForm.file) {
+        toast.error('Selecione um arquivo', {
+            description: 'Por favor, selecione um arquivo Excel para importar.',
+            style: { background: 'var(--destructive)', color: 'black' }
+        });
+        return;
+    }
+
+    importForm.post(route('students.import'), {
+        preserveState: true,
+        onSuccess: () => {
+            isDialogOpenImport.value = false;
+            importForm.reset();
+            toast.success('Estudantes importados com sucesso', {
+                description: 'Os dados do Excel foram processados e importados.',
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
+        },
+        onError: (errors) => {
+            toast.error('Erro ao importar estudantes', {
+                description: errors.msg || 'Verifique o arquivo e tente novamente.',
+                style: { background: 'var(--destructive)', color: 'black' }
+            });
+        },
+    });
+};
+
+const handleFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        importForm.file = target.files[0];
+    }
+};
+
 const submitSearch = (e: Event) => {
     e.preventDefault();
-    router.get(route('students'), { search: search.value });
+    router.get(route('students'), { search: search.value, page: 1 });
+};
+
+const goToPage = (page: number) => {
+    if (page < 1 || page > props.students.last_page) return;
+    router.get(route('students'), { search: search.value, page });
 };
 
 const getInitials = (name: string): string => {
@@ -151,6 +215,10 @@ const columns = [
     { key: 'cod', label: 'COD' },
     { key: 'actions', label: 'ACTIONS' }
 ];
+
+const downloadTemplate = () => {
+    window.location.href = route('students.download-template');
+};
 </script>
 
 <template>
@@ -168,10 +236,22 @@ const columns = [
                 </Button>
             </form>
 
-            <Button class="cursor-pointer max-sm:w-full bg-[var(--primary)]" @click="openDialog">
-                <Plus class="h-5 w-5" />
-                Adicionar novo
-            </Button>
+            <div class="flex gap-2 max-sm:w-full">
+                <Button class="cursor-pointer max-sm:flex-1 bg-green-600 hover:bg-green-700" @click="downloadTemplate">
+                    <Download class="h-5 w-5" />
+                    Baixar Template
+                </Button>
+                
+                <Button class="cursor-pointer max-sm:flex-1 bg-[var(--secondary)]" @click="openDialogImport">
+                    <Upload class="h-5 w-5" />
+                    Importar Excel
+                </Button>
+                
+                <Button class="cursor-pointer max-sm:flex-1 bg-[var(--primary)]" @click="openDialog">
+                    <Plus class="h-5 w-5" />
+                    Adicionar novo
+                </Button>
+            </div>
         </div>
 
         <!-- Data Table Card -->
@@ -191,7 +271,7 @@ const columns = [
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="student in students" :key="student.id"
+                            <TableRow v-for="student in students.data" :key="student.id"
                                 class="border-b border-gray-700 hover:bg-[var(--secondary)]/30 transition-colors">
                                 <TableCell class="py-4 px-6">
                                     <div class="flex items-center gap-3">
@@ -217,7 +297,7 @@ const columns = [
                                     </Button>
                                 </TableCell>
                             </TableRow>
-                            <TableRow v-if="students.length === 0">
+                            <TableRow v-if="students.data.length === 0">
                                 <TableCell colspan="4" class="text-center py-12 text-gray-400">
                                     <div class="flex flex-col items-center gap-2">
                                         <Search class="h-12 w-12 text-gray-500" />
@@ -231,6 +311,41 @@ const columns = [
                 </div>
             </CardContent>
         </Card>
+
+        <!-- Pagination -->
+        <div v-if="students.last_page > 1" class="flex justify-center py-4 m-4">
+            <Pagination v-slot="{ page }" :items-per-page="students.per_page" :total="students.total" :default-page="students.current_page">
+                <PaginationContent v-slot="{ items }">
+                    <PaginationPrevious 
+                        @click.prevent="goToPage(page - 1)"
+                        :class="page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'"
+                    />
+
+                    <template v-for="(item, index) in items" :key="index">
+                        <PaginationItem
+                            v-if="item.type === 'page'"
+                            :value="item.value"
+                            :is-active="item.value === page"
+                            @click.prevent="goToPage(item.value)"
+                            :class="[
+                                'cursor-pointer',
+                                item.value === page 
+                                    ? 'bg-[var(--primary)] text-white hover:bg-[var(--primary)]' 
+                                    : 'text-white hover:bg-[var(--primary)]/20'
+                            ]"
+                        >
+                            {{ item.value }}
+                        </PaginationItem>
+                        <PaginationEllipsis v-else-if="item.type === 'ellipsis'" :index="index" class="text-white" />
+                    </template>
+
+                    <PaginationNext 
+                        @click.prevent="goToPage(page + 1)"
+                        :class="page >= students.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'"
+                    />
+                </PaginationContent>
+            </Pagination>
+        </div>
 
         <!-- Add Student Dialog -->
         <Dialog v-model:open="isDialogOpen">
@@ -319,6 +434,50 @@ const columns = [
                             :disabled="isUpdating">
                             <Edit class="h-4 w-4" />
                             {{ isUpdating ? 'ATUALIZANDO...' : 'ATUALIZAR ESTUDANTE' }}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Import Students Dialog -->
+        <Dialog v-model:open="isDialogOpenImport">
+            <DialogContent class="bg-[var(--sidebar-background)] border-none min-w-xl max-sm:min-w-fit mx-auto">
+                <form @submit.prevent="importStudents" class="space-y-6">
+                    <DialogHeader class="pb-4">
+                        <DialogTitle class="text-white text-xl font-semibold flex items-center gap-2">
+                            <Upload class="h-5 w-5" />
+                            Importar Estudantes via Excel
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-white text-sm font-medium mb-2 block">Arquivo Excel</label>
+                            <input 
+                                type="file" 
+                                @change="handleFileChange"
+                                accept=".xlsx,.xls"
+                                class="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--primary)] file:text-white hover:file:bg-[var(--primary)]/80 file:cursor-pointer cursor-pointer"
+                            />
+                            <p class="text-gray-400 text-xs mt-2">
+                                Formato aceito: .xlsx, .xls
+                            </p>
+                            <p class="text-gray-400 text-xs mt-1">
+                                Colunas esperadas: Nome (A), Email (B)
+                            </p>
+                            <div v-if="importForm.errors.file" class="text-red-400 text-sm mt-1">
+                                {{ importForm.errors.file }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter class="pt-4">
+                        <Button type="submit"
+                            class="w-full bg-[var(--primary)] text-white font-semibold py-3 rounded-lg cursor-pointer hover:bg-[var(--primary)]/90 transition-colors flex items-center justify-center gap-2"
+                            :disabled="importForm.processing">
+                            <Upload class="h-4 w-4" />
+                            {{ importForm.processing ? 'IMPORTANDO...' : 'IMPORTAR ESTUDANTES' }}
                         </Button>
                     </DialogFooter>
                 </form>

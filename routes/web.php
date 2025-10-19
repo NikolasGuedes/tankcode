@@ -13,6 +13,8 @@ Route::get('/', function () {
 Route::prefix('students')->middleware('auth')->group(function () {
    Route::get('/', [StudentsController::class, 'index'])->name('students');
    Route::post('/store', [StudentsController::class, 'store'])->name('students.store');
+   Route::post('/import', [StudentsController::class, 'import'])->name('students.import');
+   Route::get('/download-template', [StudentsController::class, 'downloadTemplate'])->name('students.download-template');
    Route::put('/{id}', [StudentsController::class, 'update'])->name('students.update');
    Route::delete('/{id}', [StudentsController::class, 'destroy'])->name('students.destroy');
 });
