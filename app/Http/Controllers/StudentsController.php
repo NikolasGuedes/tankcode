@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 
 class StudentsController extends Controller
@@ -18,26 +20,19 @@ class StudentsController extends Controller
             'search' => 'nullable|string|max:255',
         ]);
 
-        $students = Student::query()
+        return Inertia::render('student/Student', [
+            'students' => Student::query()
             ->when($filters['search'] ?? false, function ($query) use ($filters) {
                 $query->where('name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
+                ->orWhere('email', 'like', '%' . $filters['search'] . '%')
+                ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
             })
             ->orderBy('created_at', 'desc')
-            ->get();
-
-        return Inertia::render('student/Student', [
-            'students' => $students->map(function ($student) {
-                return [
-                    'id' => $student->id,
-                    'name' => $student->name, // Usa o accessor
-                    'email' => $student->email,
-                    'cod' => $student->cod,
-                ];
-            }),
+            ->paginate(10)
+            ->withQueryString(),
             'search' => $filters['search'] ?? ''
         ]);
+           
     }
 
     public function store(Request $request)
@@ -120,5 +115,137 @@ class StudentsController extends Controller
                 'error' => 'Failed to delete student: ' . $th->getMessage()
             ]);
         }
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+        $allSheets = Excel::toArray([], $file);
+        $hasErrors = false;
+        $validStudents = [];
+
+        // Primeiro loop: validar todos os dados
+        foreach ($allSheets as $sheetIndex => $sheetData) {
+            $rows = array_slice($sheetData, 1); // Pula o cabeçalho
+
+            foreach ($rows as $rowIndex => $row) {
+                // Pular linhas completamente vazias
+                if (empty(array_filter($row, function ($value) {
+                    return !is_null($value) && trim($value) !== '';
+                }))) {
+                    continue;
+                }
+
+                $name = isset($row[0]) ? trim($row[0]) : null;
+                $email = isset($row[1]) ? trim($row[1]) : null;
+
+                // Validar nome
+                if (is_null($name) || $name === '') {
+                    $hasErrors = true;
+                    Log::warning('Import error: Missing name on row ' . ($rowIndex + 2), [
+                        'file' => $file->getClientOriginalName(),
+                        'row' => $rowIndex + 2
+                    ]);
+                    continue;
+                }
+
+                // Validar email
+                if (is_null($email) || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $hasErrors = true;
+                    Log::warning('Import error: Invalid email on row ' . ($rowIndex + 2), [
+                        'file' => $file->getClientOriginalName(),
+                        'name' => $name,
+                        'email' => $email,
+                        'row' => $rowIndex + 2
+                    ]);
+                    continue;
+                }
+
+                // Verificar se email já existe
+                if (Student::where('email', $email)->exists()) {
+                    $hasErrors = true;
+                    Log::warning('Import error: Duplicate email on row ' . ($rowIndex + 2), [
+                        'file' => $file->getClientOriginalName(),
+                        'name' => $name,
+                        'email' => $email,
+                        'row' => $rowIndex + 2
+                    ]);
+                    continue;
+                }
+
+                // Se chegou aqui, os dados são válidos
+                $validStudents[] = [
+                    'name' => $name,
+                    'email' => $email
+                ];
+            }
+        }
+
+        if ($hasErrors) {
+            throw ValidationException::withMessages([
+                'msg' => 'Ocorreram erros ao importar alguns estudantes. Verifique os logs para mais detalhes.',
+            ]);
+        }
+
+        if (empty($validStudents)) {
+            throw ValidationException::withMessages([
+                'msg' => 'Nenhum estudante válido encontrado no arquivo.',
+            ]);
+        }
+
+        // Se chegou até aqui, todos os dados são válidos - pode importar
+        DB::beginTransaction();
+        try {
+            foreach ($validStudents as $studentData) {
+                // Gerar código único
+                do {
+                    $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
+                    $cod = $prefix . '-' . rand(100, 999);
+                } while (Student::where('cod', $cod)->exists());
+
+                Student::create([
+                    'name' => $studentData['name'],
+                    'email' => $studentData['email'],
+                    'cod' => $cod,
+                    'password' => bcrypt('password123'),
+                    'must_change_password' => true,
+                ]);
+
+                Log::info('Student imported successfully', [
+                    'name' => $studentData['name'],
+                    'email' => $studentData['email'],
+                    'cod' => $cod,
+                    'user' => Auth::user()->name ?? 'System'
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Failed to import students: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'msg' => 'Erro ao importar estudantes: ' . $th->getMessage(),
+            ]);
+        }
+
+        return redirect()->route('students')->with('success', count($validStudents) . ' estudante(s) importado(s) com sucesso!');
+    }
+
+    public function downloadTemplate()
+    {
+        $filePath = public_path('templates/TemplateImportarAlunos.xlsx');
+
+        if (!file_exists($filePath)) {
+            return response()->json(['error' => 'Template file not found'], 404);
+        }
+
+        return response()->download($filePath, 'TemplateImportarAlunos.xlsx');
     }
 }
