@@ -34,10 +34,21 @@ Route::prefix('student')->group(function () {
         Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
     });
 });
+// Route::resource('rooms', RoomsController::class)
+//     ->only(['index', 'store', 'update'])
+//     ->middleware('auth')
+//     ->names('rooms');
 
 Route::prefix('rooms')->middleware('auth')->group(function () {
-    Route::get('/', [RoomsController::class, 'index']);
+    Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
+    Route::post('/store', [RoomsController::class, 'store'])->name('rooms.store');
+    Route::put('/{id}', [RoomsController::class, 'update'])->name('rooms.update');
+    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.editrooms');
+    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
+    Route::post('/{room}/add-student', [RoomsController::class, 'addStudent'])->name('rooms.addStudent');
+    Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
 });
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
