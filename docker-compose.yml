@@ -35,7 +35,6 @@ services:
     restart: unless-stopped
     volumes:
       - mariadb_data:/var/lib/mysql
-
     environment:
       MARIADB_ROOT_PASSWORD: "${DB_PASSWORD}"
       MARIADB_DATABASE: "${DB_DATABASE}"
@@ -44,11 +43,29 @@ services:
     networks:
       - networks
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - mailpit_data:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - networks
+
 volumes:
   mariadb_data:
-    name: volumes
+    driver: local
+  mailpit_data:
+    driver: local
 
 networks:
   networks:
-    name: networks
     driver: bridge
