@@ -29,10 +29,10 @@ function goTo(selector: string) {
 
         <nav class="hidden md:block">
           <ul class="flex items-center gap-6 text-sm text-white/70">
-            <a href="#home" class='navlink'@click.prevent="goTo('#home')">home</a>
-            <a href="#sobre" class='navlink'@click.prevent="goTo('#sobre')">sobre</a>
-            <a href="#features" class='navlink'@click.prevent="goTo('#features')">features</a>
-            <a href="#exemplos" class='navlink'@click.prevent="goTo('#exemplos')">exemplos</a>
+            <a href="#home" class='navlink' @click.prevent="goTo('#home')">home</a>
+            <a href="#sobre" class='navlink' @click.prevent="goTo('#sobre')">sobre</a>
+            <a href="#features" class='navlink' @click.prevent="goTo('#features')">features</a>
+            <a href="#exemplos" class='navlink' @click.prevent="goTo('#exemplos')">exemplos</a>
           </ul>
         </nav>
         <div class="flex items-center gap-2">

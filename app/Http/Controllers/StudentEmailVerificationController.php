@@ -25,15 +25,29 @@ class StudentEmailVerificationController extends Controller
             $student = Student::findOrFail($studentId);
 
             if ($student->hasVerifiedEmail()) {
-                return redirect()->route('student.login')->with('info', 'Email já verificado. Faça login.');
+                // Se já tem senha, redireciona para login
+                if ($student->password) {
+                    return redirect()->route('student.login')->with('info', 'Email já verificado. Faça login.');
+                }
+                
+                // Se não tem senha, permite criar senha novamente
+                return Inertia::render('student/CreatePassword', [
+                    'student' => [
+                        'id' => $student->id,
+                        'name' => $student->name,
+                        'email' => $student->email,
+                        'cod' => $student->cod,
+                    ],
+                    'token' => $token,
+                    'message' => 'Email já verificado! Agora crie sua senha para acessar a plataforma.',
+                ]);
             }
 
-            DB::transaction(function () use ($student, $token) {
+            // Verifica o email mas NÃO remove o token ainda
+            DB::transaction(function () use ($student) {
                 $student->email_verified_at = now();
                 $student->platform_access = true;
                 $student->save();
-
-                Cache::forget("student_verification_token:{$token}");
             });
 
             $student->refresh();
@@ -45,6 +59,7 @@ class StudentEmailVerificationController extends Controller
                     'email' => $student->email,
                     'cod' => $student->cod,
                 ],
+                'token' => $token,
                 'message' => 'Email verificado com sucesso! Agora crie sua senha para acessar a plataforma.',
             ]);
         } catch (\Throwable $th) {
@@ -61,9 +76,17 @@ class StudentEmailVerificationController extends Controller
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'password' => 'required|min:8|confirmed',
+            'token' => 'required',
         ]);
 
         try {
+            // Verifica se o token ainda é válido
+            $studentIdFromCache = Cache::get("student_verification_token:{$request->token}");
+            
+            if (!$studentIdFromCache || $studentIdFromCache != $request->student_id) {
+                return back()->withErrors(['error' => 'Token inválido ou expirado. Entre em contato com o professor para reenviar o email.']);
+            }
+
             $student = Student::findOrFail($request->student_id);
 
             if (!$student->hasVerifiedEmail()) {
@@ -71,11 +94,16 @@ class StudentEmailVerificationController extends Controller
             }
 
             if ($student->password) {
+                // Remove o token já que a senha já foi criada
+                Cache::forget("student_verification_token:{$request->token}");
                 return redirect()->route('student.login')->with('info', 'Senha já foi criada. Faça login.');
             }
 
             $student->password = bcrypt($request->password);
             $student->save();
+
+            // Agora sim remove o token após criar a senha com sucesso
+            Cache::forget("student_verification_token:{$request->token}");
 
             Log::info('Password created successfully', ['student_id' => $student->id]);
 

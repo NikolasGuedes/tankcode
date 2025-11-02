@@ -173,18 +173,6 @@ class StudentsController extends Controller
                     continue;
                 }
 
-                // Verificar se email já existe
-                if (Student::where('email', $email)->exists()) {
-                    $hasErrors = true;
-                    Log::warning('Import error: Duplicate email on row ' . ($rowIndex + 2), [
-                        'file' => $file->getClientOriginalName(),
-                        'name' => $name,
-                        'email' => $email,
-                        'row' => $rowIndex + 2
-                    ]);
-                    continue;
-                }
-
                 // Se chegou aqui, os dados são válidos
                 $validStudents[] = [
                     'name' => $name,
@@ -208,33 +196,63 @@ class StudentsController extends Controller
         // Se chegou até aqui, todos os dados são válidos - pode importar
         DB::beginTransaction();
         try {
+            $created = 0;
+            $updated = 0;
+
             foreach ($validStudents as $studentData) {
-                // Gerar código único
-                do {
-                    $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
-                    $cod = $prefix . '-' . rand(100, 999);
-                } while (Student::where('cod', $cod)->exists());
+                $existingStudent = Student::where('email', $studentData['email'])->first();
+                
+                if ($existingStudent) {
+                    // Atualizar estudante existente
+                    $existingStudent->update([
+                        'name' => $studentData['name'],
+                    ]);
+                    $updated++;
 
-                $student = Student::create([
-                    'name' => $studentData['name'],
-                    'email' => $studentData['email'],
-                    'cod' => $cod,
-                    'email_verified_at' => null,
-                    'platform_access' => false,
-                ]);
+                    Log::info('Student updated via import', [
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'user' => Auth::user()->name ?? 'System'
+                    ]);
+                } else {
+                    // Criar novo estudante
+                    do {
+                        $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
+                        $cod = $prefix . '-' . rand(100, 999);
+                    } while (Student::where('cod', $cod)->exists());
 
-                // Enviar email de verificação
-                $this->sendVerificationEmail($student);
+                    $student = Student::create([
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'cod' => $cod,
+                        'email_verified_at' => null,
+                        'platform_access' => false,
+                    ]);
 
-                Log::info('Student imported successfully', [
-                    'name' => $studentData['name'],
-                    'email' => $studentData['email'],
-                    'cod' => $cod,
-                    'user' => Auth::user()->name ?? 'System'
-                ]);
+                    // Enviar email de verificação apenas para novos estudantes
+                    $this->sendVerificationEmail($student);
+                    $created++;
+
+                    Log::info('Student created via import', [
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'cod' => $cod,
+                        'user' => Auth::user()->name ?? 'System'
+                    ]);
+                }
             }
 
             DB::commit();
+            
+            $message = [];
+            if ($created > 0) {
+                $message[] = "{$created} estudante(s) criado(s)";
+            }
+            if ($updated > 0) {
+                $message[] = "{$updated} estudante(s) atualizado(s)";
+            }
+
+            return redirect()->route('students')->with('success', implode(' e ', $message) . ' com sucesso!');
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Failed to import students: ' . $th->getMessage(), [
@@ -245,8 +263,6 @@ class StudentsController extends Controller
                 'msg' => 'Erro ao importar estudantes: ' . $th->getMessage(),
             ]);
         }
-
-        return redirect()->route('students')->with('success', count($validStudents) . ' estudante(s) importado(s) com sucesso!');
     }
 
     public function togglePlatformAccess($id)

@@ -148,18 +148,18 @@ const editStudent = () => {
     });
 };
 
-// AJUSTE: deleteStudent aceita id opcional (usa selectStudentId como fallback)
-const deleteStudent = (id?: number) => {
-    const targetId = id ?? selectStudentId.value;
-    if (!targetId) return;
+// AJUSTE: deleteStudent agora usa apenas selectStudentId
+const deleteStudent = () => {
+    if (!selectStudentId.value) return;
 
     isDeleting.value = true;
-    editForm.delete(route('students.destroy', targetId), {
+    editForm.delete(route('students.destroy', selectStudentId.value), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
             editForm.reset();
             isDeleting.value = false;
+            selectStudentId.value = null;
             toast.success('Estudante deletado com sucesso', {
                 description: 'O estudante foi removido permanentemente.',
                 style: { background: 'var(--green_site)', color: 'black' }
@@ -225,12 +225,12 @@ const getInitials = (name: string): string => {
 };
 
 const columns = [
-    { key: 'name', label: 'NAME' },
+    { key: 'name', label: 'NOME' },
     { key: 'email', label: 'EMAIL' },
-    { key: 'cod', label: 'COD' },
+    { key: 'cod', label: 'CÓDIGO' },
     { key: 'email_verified', label: 'EMAIL VERIFICADO' },
     { key: 'platform_access', label: 'ACESSO PLATAFORMA' },
-    { key: 'actions', label: 'ACTIONS' }
+    { key: 'actions', label: 'AÇÕES' }
 ];
 
 const downloadTemplate = () => {
@@ -323,7 +323,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                         <TableHeader>
                             <TableRow class="border-b border-gray-700 hover:bg-transparent">
                                 <TableHead v-for="column in columns" :key="column.key"
-                                    class="text-white font-semibold py-4 px-6">
+                                    class="text-white font-semibold py-4 px-6 text-center">
                                     {{ column.label }}
                                 </TableHead>
                             </TableRow>
@@ -340,15 +340,15 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                         <span class="text-white font-medium">{{ student.name }}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell class="py-4 px-6 text-white">{{ student.email }}</TableCell>
-                                <TableCell class="py-4 px-6">
+                                <TableCell class="py-4 px-6 text-white text-center">{{ student.email }}</TableCell>
+                                <TableCell class="py-4 px-6 text-center">
                                     <span
                                         class="bg-[var(--secondary)] text-white text-xs px-3 py-1 rounded-full font-medium">
                                         {{ student.cod }}
                                     </span>
                                 </TableCell>
                                 <TableCell class="py-4 px-6 text-center">
-                                    <div class="flex justify-center">
+                                    <div class="flex justify-center items-center">
                                         <CheckCircle2 
                                             v-if="student.email_verified_at" 
                                             class="w-5 h-5 text-green-500" 
@@ -362,23 +362,25 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                     </div>
                                 </TableCell>
                                 <TableCell class="py-4 px-6 text-center">
-                                    <Select
-                                        :model-value="student.platform_access ? '1' : '0'"
-                                        @update:model-value="() => togglePlatformAccess(student.id)"
-                                        :disabled="!student.email_verified_at"
-                                    >
-                                        <SelectTrigger class="w-32 mx-auto">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">
-                                                <span class="text-green-500 font-medium">Habilitado</span>
-                                            </SelectItem>
-                                            <SelectItem value="0">
-                                                <span class="text-destructive font-medium">Desabilitado</span>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div class="flex justify-center items-center">
+                                        <Select
+                                            :model-value="student.platform_access ? '1' : '0'"
+                                            @update:model-value="() => togglePlatformAccess(student.id)"
+                                            :disabled="!student.email_verified_at"
+                                        >
+                                            <SelectTrigger class="w-32">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="1">
+                                                    <span class="text-green-500 font-medium">Habilitado</span>
+                                                </SelectItem>
+                                                <SelectItem value="0">
+                                                    <span class="text-destructive font-medium">Desabilitado</span>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </TableCell>
                                 <TableCell class="py-4 px-6">
                                     <div class="flex items-center justify-center gap-2">
@@ -388,6 +390,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                             size="sm"
                                             @click="resendVerificationEmail(student.id, student.name)"
                                             title="Reenviar email de verificação"
+                                            class="text-white hover:text-white/80"
                                         >
                                             <Mail class="w-4 h-4" />
                                         </Button>
@@ -396,17 +399,10 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                             variant="ghost"
                                             size="sm"
                                             @click="openDialogEdit(student.id)"
+                                            class="text-white hover:text-white/80"
                                         >
                                             <Edit class="h-4 w-4" />
                                             Editar Perfil
-                                        </Button>
-                                        
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            @click="deleteStudent(student.id)"
-                                        >
-                                            <Trash2 class="w-4 h-4 text-destructive" />
                                         </Button>
                                     </div>
                                 </TableCell>

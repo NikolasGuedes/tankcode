@@ -3,6 +3,7 @@
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\StudentEmailVerificationController;
+use App\Http\Controllers\StudentPasswordResetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,6 +28,12 @@ Route::prefix('student')->group(function () {
     Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('student.login');
     Route::post('/login', [StudentAuthController::class, 'login'])->name('student.login.submit');
     Route::get('/logout', [StudentAuthController::class, 'logout'])->name('student.logout');
+    
+    // Rotas de reset de senha
+    Route::get('/forgot-password', [StudentPasswordResetController::class, 'showRequestForm'])->name('student.password.request');
+    Route::post('/forgot-password', [StudentPasswordResetController::class, 'sendResetLinkEmail'])->name('student.password.email');
+    Route::get('/reset-password/{token}', [StudentPasswordResetController::class, 'showResetForm'])->name('student.password.reset');
+    Route::post('/reset-password', [StudentPasswordResetController::class, 'reset'])->name('student.password.update');
     
     Route::middleware('student.auth')->group(function () {
         Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
