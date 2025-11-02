@@ -6,7 +6,7 @@ import Input from '@/components/ui/input/Input.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Plus, Edit, Trash2, Upload, Download } from 'lucide-vue-next';
+import { Search, Plus, Edit, Trash2, Upload, Download, Mail, CheckCircle2, XCircle } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,12 +40,15 @@ const props = defineProps({
         default: ''
     },
     students: {
+        // Ajuste de tipagem para incluir os campos usados no template
         type: Object as () => {
             data: Array<{
                 id: number;
                 name: string;
                 email: string;
                 cod: string;
+                email_verified_at: string | null;
+                platform_access: boolean;
             }>;
             current_page: number;
             last_page: number;
@@ -137,9 +148,13 @@ const editStudent = () => {
     });
 };
 
-const deleteStudent = () => {
+// AJUSTE: deleteStudent aceita id opcional (usa selectStudentId como fallback)
+const deleteStudent = (id?: number) => {
+    const targetId = id ?? selectStudentId.value;
+    if (!targetId) return;
+
     isDeleting.value = true;
-    editForm.delete(route('students.destroy', selectStudentId.value), {
+    editForm.delete(route('students.destroy', targetId), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
@@ -213,11 +228,47 @@ const columns = [
     { key: 'name', label: 'NAME' },
     { key: 'email', label: 'EMAIL' },
     { key: 'cod', label: 'COD' },
+    { key: 'email_verified', label: 'EMAIL VERIFICADO' },
+    { key: 'platform_access', label: 'ACESSO PLATAFORMA' },
     { key: 'actions', label: 'ACTIONS' }
 ];
 
 const downloadTemplate = () => {
     window.location.href = route('students.download-template');
+};
+
+// REMOVA as funções togglePlatformAccess e resendVerificationEmail antigas
+// ADICIONE:
+const togglePlatformAccess = (studentId: number) => {
+    router.post(route('students.toggle-access', studentId), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Acesso à plataforma atualizado!', {
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
+        },
+        onError: () => {
+            toast.error('Erro ao alterar acesso à plataforma');
+        }
+    });
+};
+
+const resendVerificationEmail = (studentId: number, studentName: string) => {
+    if (!confirm(`Reenviar email de verificação para ${studentName}?`)) {
+        return;
+    }
+
+    router.post(route('students.resend-verification', studentId), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Email de verificação reenviado com sucesso!', {
+                style: { background: 'var(--green_site)', color: 'black' }
+            });
+        },
+        onError: () => {
+            toast.error('Erro ao reenviar email de verificação');
+        }
+    });
 };
 </script>
 
@@ -234,22 +285,29 @@ const downloadTemplate = () => {
                     <Search class="h-5 w-5" />
                     Pesquisar
                 </Button>
+
+                <!-- Adicionar novo - visível apenas em telas grandes -->
+                <Button type="button" class="cursor-pointer bg-[var(--primary)] ml-2 max-sm:hidden" @click="openDialog">
+                    <Plus class="h-5 w-5" />
+                    Adicionar novo
+                </Button>
             </form>
 
-            <div class="flex gap-2 max-sm:w-full">
-                <Button class="cursor-pointer max-sm:flex-1 bg-green-600 hover:bg-green-700" @click="downloadTemplate">
+            <div class="flex gap-2 max-sm:w-full max-sm:flex-col">
+                <!-- Adicionar novo - visível apenas em telas pequenas -->
+                <Button type="button" class="cursor-pointer bg-[var(--primary)] hidden max-sm:block" @click="openDialog">
+                    <Plus class="h-5 w-5" />
+                    Adicionar novo
+                </Button>
+                
+                <Button class="cursor-pointer max-sm:flex-1 bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-white" @click="downloadTemplate">
                     <Download class="h-5 w-5" />
                     Baixar Template
                 </Button>
                 
-                <Button class="cursor-pointer max-sm:flex-1 bg-[var(--secondary)]" @click="openDialogImport">
+                <Button class="cursor-pointer max-sm:flex-1 bg-green-600 hover:bg-green-700 text-white" @click="openDialogImport">
                     <Upload class="h-5 w-5" />
                     Importar Excel
-                </Button>
-                
-                <Button class="cursor-pointer max-sm:flex-1 bg-[var(--primary)]" @click="openDialog">
-                    <Plus class="h-5 w-5" />
-                    Adicionar novo
                 </Button>
             </div>
         </div>
@@ -289,16 +347,72 @@ const downloadTemplate = () => {
                                         {{ student.cod }}
                                     </span>
                                 </TableCell>
+                                <TableCell class="py-4 px-6 text-center">
+                                    <div class="flex justify-center">
+                                        <CheckCircle2 
+                                            v-if="student.email_verified_at" 
+                                            class="w-5 h-5 text-green-500" 
+                                            :title="`Verificado em ${new Date(student.email_verified_at).toLocaleString('pt-BR')}`"
+                                        />
+                                        <XCircle 
+                                            v-else 
+                                            class="w-5 h-5 text-destructive" 
+                                            title="Email não verificado"
+                                        />
+                                    </div>
+                                </TableCell>
+                                <TableCell class="py-4 px-6 text-center">
+                                    <Select
+                                        :model-value="student.platform_access ? '1' : '0'"
+                                        @update:model-value="() => togglePlatformAccess(student.id)"
+                                        :disabled="!student.email_verified_at"
+                                    >
+                                        <SelectTrigger class="w-32 mx-auto">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="1">
+                                                <span class="text-green-500 font-medium">Habilitado</span>
+                                            </SelectItem>
+                                            <SelectItem value="0">
+                                                <span class="text-destructive font-medium">Desabilitado</span>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </TableCell>
                                 <TableCell class="py-4 px-6">
-                                    <Button @click="openDialogEdit(student.id)"
-                                        class="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white text-sm px-4 py-2 cursor-pointer flex items-center">
-                                        <Edit class="h-4 w-4 mr-2" />
-                                        Editar Perfil
-                                    </Button>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <Button
+                                            v-if="!student.email_verified_at"
+                                            variant="ghost"
+                                            size="sm"
+                                            @click="resendVerificationEmail(student.id, student.name)"
+                                            title="Reenviar email de verificação"
+                                        >
+                                            <Mail class="w-4 h-4" />
+                                        </Button>
+                                        
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            @click="openDialogEdit(student.id)"
+                                        >
+                                            <Edit class="h-4 w-4" />
+                                            Editar Perfil
+                                        </Button>
+                                        
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            @click="deleteStudent(student.id)"
+                                        >
+                                            <Trash2 class="w-4 h-4 text-destructive" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                             <TableRow v-if="students.data.length === 0">
-                                <TableCell colspan="4" class="text-center py-12 text-gray-400">
+                                <TableCell colspan="6" class="text-center py-12 text-gray-400">
                                     <div class="flex flex-col items-center gap-2">
                                         <Search class="h-12 w-12 text-gray-500" />
                                         <p class="text-lg font-medium">Nenhum estudante encontrado</p>

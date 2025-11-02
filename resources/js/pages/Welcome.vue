@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
-import { onMounted } from 'vue'
 
 /**
  * Scrolls smoothly to the section with the given selector and updates the active nav link.

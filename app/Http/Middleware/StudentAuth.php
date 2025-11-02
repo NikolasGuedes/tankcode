@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Student;
 
 class StudentAuth
 {
@@ -14,21 +14,24 @@ class StudentAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!session('student_id')) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Não autorizado'], 401);
-            }
-            
-            return redirect()->route('student.login')->with('error', 'Você precisa fazer login para acessar esta área.');
+        // Verificar se está autenticado com o guard student
+        if (!Auth::guard('student')->check()) {
+            return redirect()->route('student.login')->with('error', 'Você precisa estar logado para acessar esta área.');
         }
 
-        // Verificar se o estudante precisa trocar a senha (exceto nas rotas de troca de senha)
-        if (!$request->routeIs('student.change-password*')) {
-            $student = Student::find(session('student_id'));
-            
-            if ($student && $student->must_change_password) {
-                return redirect()->route('student.change-password');
-            }
+        /** @var \App\Models\Student $student */
+        $student = Auth::guard('student')->user();
+
+        // Verificar se o email foi verificado
+        if (!$student->hasVerifiedEmail()) {
+            Auth::guard('student')->logout();
+            return redirect()->route('student.login')->with('error', 'Você precisa verificar seu email antes de acessar a plataforma. Verifique sua caixa de entrada.');
+        }
+
+        // Verificar se tem acesso à plataforma
+        if (!$student->platform_access) {
+            Auth::guard('student')->logout();
+            return redirect()->route('student.login')->with('error', 'Seu acesso à plataforma foi desativado. Entre em contato com o administrador.');
         }
 
         return $next($request);
