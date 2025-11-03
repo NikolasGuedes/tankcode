@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import CurvedLoop from '@/Components/ui/CurvedLoop/CurvedLoop.vue'
 
 /** Navegação com smooth-scrolling (o offset é resolvido via scroll-margin-top no CSS) */
 function goTo(selector: string) {
@@ -96,7 +97,7 @@ onBeforeUnmount(() => {
   <div class="min-h-screen bg-[#0a0a0a] text-white antialiased overflow-x-hidden">
     <!-- NAVBAR: sticky + animação de esconder/mostrar -->
     <header class="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#0a0a0a]/70 backdrop-blur">
-      
+
       <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
         <a href="#home" @click.prevent="goTo('#home')" class="inline-flex items-center">
           <img src="/imgs/logo-tankcode.png" alt="TankCode" class="h-9 w-auto" />
@@ -182,52 +183,68 @@ onBeforeUnmount(() => {
     </header>
 
     <!-- HERO ocupa a tela (menos o header) graças à scroll-margin-top e à min-h-screen nas seções seguintes -->
-    <section id="home" class="section mx-auto mt-8 max-w-7xl px-4">
-      <!-- container clipado -->
-      <div class="relative overflow-hidden rounded-[28px] border border-white/10">
-        <!-- bg do figma -->
-        <img src="/imgs/Rectangle.png" alt="" class="absolute inset-0 h-full w-full rounded-[28px] object-cover" />
-
-        <!-- glows só em >= sm para não vazar -->
+    <section id="home" class="w-full min-h-screen
+         pt-[calc(var(--nav-h,64px)+16px)]
+         scroll-mt-[calc(var(--nav-h,64px)+12px)]">
+      <!-- wrapper central com margem responsiva -->
+      <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <!-- container clipado: AGORA relative -->
         <div
-          class="pointer-events-none absolute -left-24 -top-20 z-10 hidden h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl sm:block">
-        </div>
-        <div
-          class="pointer-events-none absolute -right-20 -bottom-16 z-10 hidden h-72 w-72 rounded-full bg-[#FF58BD]/25 blur-3xl sm:block">
-        </div>
+          class="relative overflow-hidden rounded-[36px] border border-white/10 ring-1 ring-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
 
-        <!-- conteúdo: altura fluida + reserva do card -->
-        <div class="relative z-20 flex min-h-[58vh] flex-col items-center justify-center px-4 text-center
-                 sm:min-h-[62vh] md:min-h-[66vh] lg:min-h-[70vh] xl:min-h-[74vh]
-                 pb-40 sm:pb-48 md:pb-52 lg:pb-56 xl:pb-64">
-          <h1
-            class="hero-title mx-auto max-w-6xl text-3xl leading-tight sm:text-4xl md:text-6xl lg:text-[64px] lg:leading-[1.05]">
-            VENHA <span class="text-white">TANKAR</span> ESTE DESAFIO!
-          </h1>
-          <p class="mx-auto mt-4 max-w-3xl text-sm text-white/80 sm:text-base">
-            Aprenda programação se divertindo e faça exercícios com as linguagens mais requisitadas do mercado.
-          </p>
-          <Link :href="route('login')"
-            class="mx-auto mt-6 inline-flex items-center justify-center rounded-xl border border-white/60 px-5 py-3 text-sm font-semibold backdrop-blur hover:bg-white/10 sm:mt-7 sm:text-base">
-          Iniciar agora
-          </Link>
-        </div>
+          <!-- BG do figma preso ao container, não à section -->
+          <img src="/imgs/Rectangle.png" alt="" class="absolute inset-0 h-full w-full object-cover" />
 
-        <!-- CARD DO DESAFIO — maior e responsivo, DENTRO do container -->
-        <div class="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 sm:px-6 md:px-8 lg:px-10">
-          <img src="/imgs/desafio exemplo.png" alt="Mock do card" class="mx-auto w-[92%] max-w-[520px] sm:max-w-[680px] md:max-w-[860px] lg:max-w-[980px] xl:max-w-[1080px]
-                   rounded-2xl ring-1 ring-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.55)]" />
+          <!-- glows -->
+          <div
+            class="pointer-events-none absolute -left-24 -top-20 z-10 hidden h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl sm:block">
+          </div>
+          <div
+            class="pointer-events-none absolute -right-20 -bottom-16 z-10 hidden h-72 w-72 rounded-full bg-[#FF58BD]/25 blur-3xl sm:block">
+          </div>
+
+          <!-- conteúdo -->
+          <div class="relative z-20 flex min-h-[58vh] flex-col items-center justify-center px-4 text-center
+                  sm:min-h-[62vh] md:min-h-[66vh] lg:min-h-[80vh] xl:min-h-[80vh]
+                  pb-[clamp(120px,18vw,260px)]">
+            <h1
+              class="hero-title mx-auto max-w-6xl text-3xl leading-tight sm:text-4xl md:text-6xl lg:text-[64px] lg:leading-[1.05]">
+              VENHA <span class="text-white">TANKAR</span> ESTE DESAFIO!
+            </h1>
+            <p class="mx-auto mt-5 max-w-3xl text-sm text-white/80 sm:text-base">
+              Aprenda programação se divertindo e faça exercícios com as linguagens mais requisitadas do mercado.
+            </p>
+            <Link :href="route('login')"
+              class="mx-auto mt-6 inline-flex items-center justify-center rounded-xl border border-white/60 px-5 py-3 text-sm font-semibold backdrop-blur hover:bg-white/10 sm:mt-7 sm:text-base">
+            Iniciar agora
+            </Link>
+          </div>
+
+          <!-- card do desafio (continua absoluto, mas agora relativo ao container) -->
+          <div class="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-3 sm:px-6 md:px-8 lg:px-10">
+            <img src="/imgs/desafio exemplo.png" alt="Mock do card"
+              class="mx-auto h-auto w-[clamp(320px,92vw,1080px)] max-w-none rounded-2xl ring-1 ring-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.55)]" />
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- espaçador menor (card está dentro) -->
-    <div class="h-12 sm:h-14 md:h-16 lg:h-20"></div>
 
     <!-- Seções “tela cheia” -->
-    <section id="sobre" class="section mx-auto max-w-7xl px-4">
-      <h2 class="mb-4 text-2xl font-semibold text-white/90">Sobre</h2>
-      <p class="max-w-3xl text-sm text-white/70">Texto de exemplo…</p>
+    <section id="sobre" class="h-min-screen">
+      <p class="mt-6 text-center text-white/80 text-base sm:text-lg">
+        Aprenda linguagens como:
+      </p>
+      <!-- LOOP no topo -->
+      <div class="relative mt-0 flex justify-center">
+        <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
+          style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
+          <CurvedLoop class="loop-color"
+            marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
+            :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
+        </div>
+      </div>
+
     </section>
 
     <section id="features" class="section mx-auto max-w-7xl px-4">
@@ -277,18 +294,6 @@ onBeforeUnmount(() => {
   letter-spacing: -0.02em;
 }
 
-/* Compensa o header fixo ao rolar até um #id (âncora) e garante “tela cheia” */
-.section {
-  /* ocupa a altura da viewport, com um respiro de 16px para não “colar” no rodapé visual */
-  min-height: calc(100vh - var(--section-pad, 0px));
-  /* padding vertical da seção */
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-
-  /* MUITO IMPORTANTE: ao usar anchors com header sticky, evita que o topo seja coberto */
-  scroll-margin-top: calc(var(--nav-h, 64px) + 12px);
-}
-
 /* Ajuste opcional: em telas muito pequenas, reduz um pouco o alvo de altura */
 @media (max-width: 640px) {
   :root {
@@ -299,5 +304,63 @@ onBeforeUnmount(() => {
 /* Desativa o scroll-behavior nativo (usamos JS) */
 html {
   scroll-behavior: auto;
+}
+
+.mask-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* Estilo do texto dentro do CurvedLoop (gradiente + glow)  */
+.loop-color :deep(span),
+.loop-color :deep(.marquee-item),
+.loop-color :deep(.marquee),
+.loop-color :deep(svg text) {
+  font-weight: 800;
+  letter-spacing: .02em;
+  font-size: clamp(28px, 6vw, 56px);
+  /* gradiente controlado por variáveis */
+  background-image: linear-gradient(90deg, var(--loop-1), var(--loop-2) 45%, var(--loop-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  /* força usar o gradiente */
+  opacity: .96;
+  filter: drop-shadow(0 2px 8px rgb(117, 4, 255));
+  /* leve glow */
+}
+
+/* fade nas bordas */
+.mask-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* ---- COR E ESTÉTICA DO TEXTO DO LOOP ---- */
+/* Caso o texto seja HTML (spans/divs) */
+.loop-color :deep(span),
+.loop-color :deep(.marquee-item),
+.loop-color :deep(.cl-char),
+.loop-color :deep(.cl-text) {
+  font-weight: 800;
+  letter-spacing: .01em;
+  font-size: clamp(28px, 6vw, 56px);
+
+  /* degrade bonito */
+  background-image: linear-gradient(90deg, #000000 0%, #000000 45%, #ff008c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+
+  /* leve glow */
+  filter: drop-shadow(0 2px 8px rgba(110, 48, 255, 0.35));
+}
+
+/* Caso o texto seja SVG <text> (background-clip não funciona em SVG) */
+.loop-color :deep(svg text) {
+  fill: #8471FF !important;
+  /* cor sólida */
+  /* se preferir outra cor: #EDEBFE, #B793FF, etc. */
 }
 </style>

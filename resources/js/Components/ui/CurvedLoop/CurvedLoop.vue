@@ -45,8 +45,8 @@ const textLength = computed(() => spacing.value);
 const totalText = computed(() => {
     return textLength.value
         ? Array(Math.ceil(1800 / textLength.value) + 2)
-              .fill(text.value)
-              .join('')
+            .fill(text.value)
+            .join('')
         : text.value;
 });
 const ready = computed(() => spacing.value > 0);
@@ -146,18 +146,12 @@ watch([spacing, () => props.speed], () => {
 </script>
 
 <template>
-    <div
-        class="flex min-h-screen w-full items-center justify-center"
-        :style="{
-            visibility: ready ? 'visible' : 'hidden',
-            cursor: cursorStyle,
-        }"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="endDrag"
-        @pointerleave="endDrag"
-    >
-        <svg class="block aspect-[100/12] w-full overflow-visible text-[6rem] leading-none font-bold uppercase select-none" viewBox="0 0 1440 120">
+    <div class="flex  w-full items-center justify-center" :style="{
+        visibility: ready ? 'visible' : 'hidden',
+        cursor: cursorStyle,
+    }" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="endDrag" @pointerleave="endDrag">
+        <svg class="block aspect-[100/12] w-full overflow-visible text-[6rem] leading-none font-bold uppercase select-none"
+            viewBox="0 0 1440 120">
             <text ref="measureRef" xml:space="preserve" style="visibility: hidden; opacity: 0; pointer-events: none">
                 {{ text }}
             </text>
