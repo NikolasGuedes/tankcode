@@ -8,9 +8,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use App\Mail\StudentEmailVerification as StudentEmailVerificationMail;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StudentsController extends Controller
 {
@@ -50,13 +54,17 @@ class StudentsController extends Controller
 
         try {
             DB::transaction(function () use ($request, $cod) {
-                $student = new Student();
-                $student->name = $request['name'];
-                $student->email = $request['email'];
-                $student->cod = $cod;
-                $student->password = bcrypt('password123'); // Password padrão
-                $student->must_change_password = true; // Forçar troca de senha
+                $student = new Student([
+                    'name' => $request['name'],
+                    'email' => $request['email'],
+                    'cod' => $cod,
+                    'email_verified_at' => null,
+                    'platform_access' => false,
+                ]);
                 $student->save();
+
+                // Enviar email de verificação
+                $this->sendVerificationEmail($student);
             });
         } catch (\Throwable $th) {
             Log::error('Failed to create student: ' . $th->getMessage(), [
@@ -165,18 +173,6 @@ class StudentsController extends Controller
                     continue;
                 }
 
-                // Verificar se email já existe
-                if (Student::where('email', $email)->exists()) {
-                    $hasErrors = true;
-                    Log::warning('Import error: Duplicate email on row ' . ($rowIndex + 2), [
-                        'file' => $file->getClientOriginalName(),
-                        'name' => $name,
-                        'email' => $email,
-                        'row' => $rowIndex + 2
-                    ]);
-                    continue;
-                }
-
                 // Se chegou aqui, os dados são válidos
                 $validStudents[] = [
                     'name' => $name,
@@ -200,30 +196,63 @@ class StudentsController extends Controller
         // Se chegou até aqui, todos os dados são válidos - pode importar
         DB::beginTransaction();
         try {
+            $created = 0;
+            $updated = 0;
+
             foreach ($validStudents as $studentData) {
-                // Gerar código único
-                do {
-                    $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
-                    $cod = $prefix . '-' . rand(100, 999);
-                } while (Student::where('cod', $cod)->exists());
+                $existingStudent = Student::where('email', $studentData['email'])->first();
+                
+                if ($existingStudent) {
+                    // Atualizar estudante existente
+                    $existingStudent->update([
+                        'name' => $studentData['name'],
+                    ]);
+                    $updated++;
 
-                Student::create([
-                    'name' => $studentData['name'],
-                    'email' => $studentData['email'],
-                    'cod' => $cod,
-                    'password' => bcrypt('password123'),
-                    'must_change_password' => true,
-                ]);
+                    Log::info('Student updated via import', [
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'user' => Auth::user()->name ?? 'System'
+                    ]);
+                } else {
+                    // Criar novo estudante
+                    do {
+                        $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
+                        $cod = $prefix . '-' . rand(100, 999);
+                    } while (Student::where('cod', $cod)->exists());
 
-                Log::info('Student imported successfully', [
-                    'name' => $studentData['name'],
-                    'email' => $studentData['email'],
-                    'cod' => $cod,
-                    'user' => Auth::user()->name ?? 'System'
-                ]);
+                    $student = Student::create([
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'cod' => $cod,
+                        'email_verified_at' => null,
+                        'platform_access' => false,
+                    ]);
+
+                    // Enviar email de verificação apenas para novos estudantes
+                    $this->sendVerificationEmail($student);
+                    $created++;
+
+                    Log::info('Student created via import', [
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'cod' => $cod,
+                        'user' => Auth::user()->name ?? 'System'
+                    ]);
+                }
             }
 
             DB::commit();
+            
+            $message = [];
+            if ($created > 0) {
+                $message[] = "{$created} estudante(s) criado(s)";
+            }
+            if ($updated > 0) {
+                $message[] = "{$updated} estudante(s) atualizado(s)";
+            }
+
+            return redirect()->route('students')->with('success', implode(' e ', $message) . ' com sucesso!');
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Failed to import students: ' . $th->getMessage(), [
@@ -234,8 +263,55 @@ class StudentsController extends Controller
                 'msg' => 'Erro ao importar estudantes: ' . $th->getMessage(),
             ]);
         }
+    }
 
-        return redirect()->route('students')->with('success', count($validStudents) . ' estudante(s) importado(s) com sucesso!');
+    public function togglePlatformAccess($id)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            
+            if (!$student->hasVerifiedEmail()) {
+                return back()->with('error', 'O estudante precisa verificar o email antes de ter acesso à plataforma.');
+            }
+
+            $student->platform_access = !$student->platform_access;
+            $student->save();
+
+            Log::info('Platform access toggled', [
+                'student_id' => $id,
+                'platform_access' => $student->platform_access,
+                'user' => Auth::user()->name ?? 'System'
+            ]);
+
+            return back()->with('success', 'Acesso à plataforma atualizado com sucesso!');
+        } catch (\Throwable $th) {
+            Log::error('Failed to toggle platform access: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
+                'student_id' => $id
+            ]);
+
+            return back()->with('error', 'Erro ao alterar acesso à plataforma.');
+        }
+    }
+
+    public function sendVerificationEmail(Student $student)
+    {
+        // Gerar token único
+        $token = Str::random(64);
+        
+        // Armazenar token no cache por 24 horas
+        Cache::put("student_verification_token:{$token}", $student->id, now()->addHours(24));
+
+        $verificationUrl = route('student.verify-email', ['token' => $token]);
+
+        Mail::to($student->email)->send(
+            new StudentEmailVerificationMail($student, $verificationUrl)
+        );
+
+        Log::info('Verification email sent', [
+            'student_id' => $student->id,
+            'email' => $student->email,
+        ]);
     }
 
     public function downloadTemplate()
@@ -247,5 +323,33 @@ class StudentsController extends Controller
         }
 
         return response()->download($filePath, 'TemplateImportarAlunos.xlsx');
+    }
+
+    public function resendVerificationEmail($id)
+    {
+        try {
+            $student = Student::findOrFail($id);
+            
+            if ($student->hasVerifiedEmail()) {
+                return back()->with('error', 'Este estudante já verificou o email.');
+            }
+
+            $this->sendVerificationEmail($student);
+
+            Log::info('Verification email resent', [
+                'student_id' => $id,
+                'email' => $student->email,
+                'user' => Auth::user()->name ?? 'System'
+            ]);
+
+            return back()->with('success', 'Email de verificação reenviado com sucesso!');
+        } catch (\Throwable $th) {
+            Log::error('Failed to resend verification email: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
+                'student_id' => $id
+            ]);
+
+            return back()->with('error', 'Erro ao reenviar email de verificação.');
+        }
     }
 }

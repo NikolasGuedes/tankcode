@@ -15,25 +15,17 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('name');
-            $table->string('email');
+            $table->string('email')->unique();
             $table->string('picture')->nullable();
             $table->string('cod')->unique();
+            $table->string('password')->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-
-            if (!Schema::hasColumn('students', 'password_changed_at')) {
-                $table->timestamp('password_changed_at')->nullable();
-            }
-            if (!Schema::hasColumn('students', 'must_change_password')) {
-                $table->boolean('must_change_password')->default(true);
-            }
+            $table->boolean('platform_access')->default(false);
         });
     }
 
     public function down(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropColumn(['password_changed_at', 'must_change_password']);
-        });
+        Schema::dropIfExists('students');
     }
 };
