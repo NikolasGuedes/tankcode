@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Student extends Model
+class Student extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'email',
-        'picture',
         'cod',
         'password',
-        'password_changed_at',
-        'must_change_password',
+        'email_verified_at',
+        'platform_access',
     ];
 
     protected $hidden = [
@@ -24,37 +24,18 @@ class Student extends Model
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'platform_access' => 'boolean',
+    ];
+
+    public function hasVerifiedEmail(): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'password_changed_at' => 'datetime',
-            'must_change_password' => 'boolean',
-        ];
+        return !is_null($this->email_verified_at);
     }
 
-    public function getNameAttribute()
+    public function hasPlatformAccess(): bool
     {
-        return $this->attributes['name'];
+        return $this->platform_access && $this->hasVerifiedEmail();
     }
-
-
-    public function scopeOfFilter($query, array $filters)
-    {
-        if ($filters['search'] ?? false) {
-            $query->where(function ($query) use ($filters) {
-                $query->where('name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
-            });
-        }
-    }
-
-    
 }

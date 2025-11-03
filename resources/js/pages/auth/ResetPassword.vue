@@ -17,8 +17,8 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <AuthLayout title="Reset password" description="Please enter your new password below">
-        <Head title="Reset password" />
+    <AuthLayout title="Redefinir senha" description="Por favor, digite sua nova senha abaixo">
+        <Head title="Redefinir senha" />
 
         <Form
             method="post"
@@ -35,7 +35,7 @@ const inputEmail = ref(props.email);
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Senha</Label>
                     <Input
                         id="password"
                         type="password"
@@ -43,27 +43,27 @@ const inputEmail = ref(props.email);
                         autocomplete="new-password"
                         class="block w-full mt-1"
                         autofocus
-                        placeholder="Password"
+                        placeholder="Senha"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation"> Confirm Password </Label>
+                    <Label for="password_confirmation"> Confirmar Senha </Label>
                     <Input
                         id="password_confirmation"
                         type="password"
                         name="password_confirmation"
                         autocomplete="new-password"
                         class="block w-full mt-1"
-                        placeholder="Confirm password"
+                        placeholder="Confirmar senha"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <Button type="submit" class="w-full mt-4" :disabled="processing">
                     <LoaderCircle v-if="processing" class="w-4 h-4 animate-spin" />
-                    Reset password
+                    Redefinir senha
                 </Button>
             </div>
         </Form>
