@@ -6,7 +6,7 @@ import { Head, useForm, router } from '@inertiajs/vue3';
 import Input from '@/components/ui/input/Input.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Plus, Trash2 } from 'lucide-vue-next'; // Importe Plus e Trash2
+import { Search, Plus, Trash2, ArrowLeft } from 'lucide-vue-next'; // Importe Plus, Trash2 e ArrowLeft
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -92,7 +92,7 @@ const removeStudent = (studentId: number) => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            toast.success('Aluno removido!', {
+            toast.success('Aluno removido com sucesso!', {
                 description: 'O aluno foi desvinculado da sala.',
             });
             form.reset('student_id');
@@ -124,6 +124,13 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
+// Navegar para a página anterior (botão de voltar)
+const goBack = () => {
+  // Navega diretamente para a página de criação de sala
+  // Usa router.get para manter compatibilidade com Inertia (substitua 'rooms.create' caso o nome da rota seja diferente)
+  router.get(route('rooms.create'));
+};
+
 // 'columns' não está sendo usado no template, mas pode ser útil para futuras refatorações
 const columns = [
   { key: 'name', label: 'NAME' },
@@ -148,6 +155,13 @@ const columns = [
           Pesquisar
         </Button>
       </form>
+      <!-- Botão de voltar posicionado à direita (área destacada em vermelho na screenshot) -->
+      <div class="flex items-center">
+        <Button @click="goBack" type="button" class="bg-[var(--primary)]">
+          <ArrowLeft class="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+      </div>
     </div>
 
     <Card class="bg-[var(--sidebar-background)] border-none m-4">
@@ -197,7 +211,7 @@ const columns = [
                   <template v-else>
                       <Button
                           @click="addStudent(student.id)"
-                          class="bg-[var(--green_site)] hover:bg-[var(--green_site)]/80 text-black text-sm px-4 py-2 flex items-center justify-center gap-2"
+                          class="bg-[var(--green_site)] hover:bg-[var(--green_site)]/80 text-with text-sm px-4 py-2 flex items-center justify-center gap-2"
                           :disabled="form.processing"
                       >
                           <Plus class="h-4 w-4" />

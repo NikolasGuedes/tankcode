@@ -24,6 +24,7 @@
     },
     "dependencies": {
         "@inertiajs/vue3": "^2.1.0",
+        "@radix-ui/react-tabs": "^1.1.13",
         "@tailwindcss/vite": "^4.1.11",
         "@tanstack/vue-table": "^8.21.3",
         "@vitejs/plugin-vue": "^6.0.1",
