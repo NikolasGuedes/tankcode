@@ -10,6 +10,14 @@ import { Search, Plus, Edit, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 // ----------------------------------------------------------------
 // Breadcrumbs e título
@@ -27,11 +35,17 @@ const props = defineProps({
         default: ''
     },
     rooms: {
-        type: Array as () => Array<{
-            id: number;
-            name_room: string;
-            code: string;
-        }>,
+        type: Object as () => {
+            data: Array<{
+                id: number;
+                name_room: string;
+                code: string;
+            }>;
+            current_page: number;
+            last_page: number;
+            per_page: number;
+            total: number;
+        },
         required: true,
     }
 });
@@ -71,7 +85,7 @@ const openDialog = () => {
 
 const openDialogEdit = (id: number) => {
     selectRoomId.value = id;
-    const selectedRoom = props.rooms.find(r => r.id === id);
+    const selectedRoom = props.rooms.data.find((r: { id: number }) => r.id === id);
     if (selectedRoom) {
         editForm.name_room = selectedRoom.name_room;
     }
@@ -146,7 +160,12 @@ const deleteRoom = () => {
 
 const submitSearch = (e: Event) => {
     e.preventDefault();
-    router.get(route('rooms.index'), { search: searchQuery.value });
+    router.get(route('rooms.index'), { search: searchQuery.value, page: 1 });
+};
+
+const goToPage = (page: number) => {
+    if (page < 1 || page > props.rooms.last_page) return;
+    router.get(route('rooms.index'), { search: searchQuery.value, page });
 };
 
 
@@ -202,7 +221,7 @@ const columns = [
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="room in rooms" :key="room.id" class="border-b border-gray-700 hover:bg-[var(--secondary)]/30 transition-colors">
+              <TableRow v-for="room in rooms.data" :key="room.id" class="border-b border-gray-700 hover:bg-[var(--secondary)]/30 transition-colors">
                 <TableCell class="py-4 px-6">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -224,13 +243,13 @@ const columns = [
                   @click="router.visit(route('rooms.EditRooms', room.id) + '?tab=students')"
                   class="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white text-sm px-4 py-2 flex items-center gap-2">
                   <Edit class="h-4 w-4" />
-                  Adicionar Aluno
+                  Gerenciar Alunos
                 </Button>
                 </div>
                 </TableCell>
                 
               </TableRow>
-              <TableRow v-if="rooms.length === 0">
+              <TableRow v-if="rooms.data.length === 0">
                 <TableCell colspan="3" class="text-center py-12 text-gray-400">
                   <div class="flex flex-col items-center gap-2">
                     <Search class="h-12 w-12 text-gray-500" />
@@ -244,6 +263,35 @@ const columns = [
         </div>
       </CardContent>
     </Card>
+
+    <!-- Paginação -->
+    <div v-if="rooms.last_page > 1" class="flex justify-center py-4 m-4">
+      <Pagination v-slot="{ page }" :items-per-page="rooms.per_page" :total="rooms.total" :default-page="rooms.current_page">
+        <PaginationContent v-slot="{ items }">
+          <PaginationPrevious 
+            @click.prevent="goToPage(rooms.current_page - 1)"
+            :class="rooms.current_page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'"
+          />
+
+          <template v-for="(item, index) in items" :key="index">
+            <PaginationItem
+              v-if="item.type === 'page'"
+              :value="item.value"
+              :is-active="item.value === rooms.current_page"
+              @click.prevent="goToPage(item.value)"
+            >
+              {{ item.value }}
+            </PaginationItem>
+            <PaginationEllipsis v-else-if="item.type === 'ellipsis'" :index="index" class="text-white" />
+          </template>
+
+          <PaginationNext 
+            @click.prevent="goToPage(rooms.current_page + 1)"
+            :class="rooms.current_page >= rooms.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'"
+          />
+        </PaginationContent>
+      </Pagination>
+    </div>
 
     <!-- Dialog: Adicionar nova Sala -->
     <Dialog v-model:open="isDialogOpen">

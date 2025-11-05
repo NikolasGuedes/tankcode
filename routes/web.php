@@ -49,8 +49,9 @@ Route::prefix('rooms')->middleware('auth')->group(function () {
     Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
     Route::post('/store', [RoomsController::class, 'store'])->name('rooms.store');
     Route::put('/{id}', [RoomsController::class, 'update'])->name('rooms.update');
+    Route::delete('/{id}', [RoomsController::class, 'destroy'])->name('rooms.destroy');
     Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.editrooms');
-    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
+    Route::get('/{id}/edit2', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
     Route::post('/{room}/add-student', [RoomsController::class, 'addStudent'])->name('rooms.addStudent');
     Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
 });

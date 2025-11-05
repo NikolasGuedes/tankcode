@@ -22,7 +22,7 @@ class RoomsController extends Controller
                       ->orWhere('code', 'like', "%{$search}%");
             })
             ->orderBy('name_room')
-            ->get();
+            ->paginate(10);
 
         return Inertia::render('rooms/Rooms', [
             'rooms' => $rooms,
@@ -95,40 +95,73 @@ class RoomsController extends Controller
     {
         $filters = request()->validate([
             'search' => 'nullable|string|max:255',
+            // Adicionamos 'filter' com um valor padrão
+            'filter' => 'nullable|string|in:linked,unlinked',
         ]);
 
         $search = $filters['search'] ?? '';
+        $filter = $filters['filter'] ?? 'linked'; // Define 'linked' como padrão
+        
 
-        $room = Room::with('students')->findOrFail($id); // EAGER LOAD para ter a lista de alunos da sala
+        $room = Room::with('students')->findOrFail($id); 
 
-        // Lógica para pegar alunos NÃO VINCULADOS a esta sala OU VINCULADOS A ELA (para a busca)
-        $students = Student::query()
-            ->where(function ($query) use ($room) {
-                // Seleciona alunos que não têm sala OU alunos que já estão nesta sala específica
-                $query->whereNull('room_id')
-                      ->orWhere('room_id', $room->id);
-            })
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', '%' . $search . '%')
-                             ->orWhere('email', 'like', '%' . $search . '%')
-                             ->orWhere('cod', 'like', '%' . $search . '%');
-                });
-            })
-            ->select('id', 'name', 'email', 'cod', 'room_id') // Selecionar o room_id
-            ->orderBy('name')
-            ->get()
-            ->map(function ($student) use ($room) {
-                // Adiciona uma flag para o frontend saber se o aluno já está vinculado
-                $student->is_linked = $student->room_id === $room->id;
-                return $student;
+        // Construir a query base
+        $studentsQuery = Student::query()
+            ->whereNotNull('email_verified_at');
+            
+        // Aplicar os filtros com base na aba selecionada
+        if ($filter === 'linked') {
+            $studentsQuery->where('room_id', $room->id);
+        } else {
+            $studentsQuery->whereNull('room_id');
+        }
+
+        // Aplicar busca se houver
+        if ($search) {
+            $studentsQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('cod', 'like', '%' . $search . '%');
             });
+        }
+
+        // Selecionar campos necessários
+        $studentsQuery->select('id', 'name', 'email', 'cod', 'room_id');
+
+        // Obtém a paginação dos alunos
+        $students = $studentsQuery->orderBy('name')->paginate(10);
+
+        // Mapeia os resultados após a paginação
+        $students->through(function ($student) use ($room) {
+            $student->is_linked = $student->room_id === $room->id;
+            return $student;
+        });
+
+        // Calcula os totais independentemente da paginação
+        $totalLinked = Student::whereNotNull('email_verified_at')
+            ->where('room_id', $room->id)
+            ->count();
+
+        $totalUnlinked = Student::whereNotNull('email_verified_at')
+            ->whereNull('room_id')
+            ->count();
+
+        // Retorna com os totais e a paginação para ambas as abas
+        return Inertia::render('rooms/EditRooms', [
+            'room' => $room,
+            'students' => $students,
+            'search' => $search,
+            'filter' => $filter,
+            'totalLinked' => $totalLinked,
+            'totalUnlinked' => $totalUnlinked,
+        ]);
             
 
         return Inertia::render('rooms/EditRooms', [
             'room' => $room,
             'students' => $students,
             'search' => $search,
+            'filter' => $filter, // **Passa o filtro atual de volta para o Vue**
         ]);
     }
     
@@ -149,7 +182,35 @@ class RoomsController extends Controller
         $student->room()->associate($room);
         $student->save();
 
-        return redirect()->back()->with('success', 'Aluno adicionado à sala com sucesso!');
+        // Verifica se ainda existem alunos não vinculados
+        $remainingStudents = Student::whereNull('room_id')
+            ->whereNotNull('email_verified_at')
+            ->count();
+
+        // Se não houver mais alunos na página atual mas ainda existirem alunos não vinculados,
+        // redireciona para a primeira página
+        $currentPage = $request->input('page', 1);
+        $perPage = 10;
+        
+        $studentsInCurrentPage = Student::whereNull('room_id')
+            ->whereNotNull('email_verified_at')
+            ->skip(($currentPage - 1) * $perPage)
+            ->take($perPage)
+            ->count();
+
+        if ($studentsInCurrentPage <= 1 && $remainingStudents > 0) {
+            return redirect()
+                ->route('rooms.editrooms', [
+                    'id' => $room->id,
+                    'filter' => 'unlinked',
+                    'page' => 1
+                ])
+                ->with('success', 'Aluno adicionado à sala com sucesso!');
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', 'Aluno adicionado à sala com sucesso!');
     }
 
     public function removeStudent(Request $request, Room $room, Student $student)
@@ -166,24 +227,26 @@ class RoomsController extends Controller
         return redirect()->back()->with('success', 'Aluno removido da sala com sucesso!');
     }
     
-    // public function destroy($id, Request $request)
-    // {
-    //     try {
-    //         DB::transaction(function () use ($id) {
-    //             $room = Room::findOrFail($id);
-    //             $room->delete();
-    //         });
-    //     } catch (\Throwable $th) {
-    //         Log::error('Erro ao deletar sala: ' . $th->getMessage(), [
-    //             'trace' => $th->getTraceAsString(),
-    //             'room_id' => $id,
-    //         ]);
+    public function destroy($id, Request $request)
+    {
+        try {
+            DB::transaction(function () use ($id) {
+                $room = Room::findOrFail($id);
+                // Desvincula todos os alunos da sala antes de deletá-la
+                $room->students()->update(['room_id' => null]);
+                $room->delete();
+            });
+        } catch (\Throwable $th) {
+            Log::error('Erro ao deletar sala: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
+                'room_id' => $id,
+            ]);
 
-    //         return redirect()->back()->withErrors([
-    //             'error' => 'Erro ao deletar sala: ' . $th->getMessage()
-    //         ]);
-    //     }
+            return redirect()->back()->withErrors([
+                'error' => 'Erro ao deletar sala: ' . $th->getMessage()
+            ]);
+        }
         
-    //     return redirect()->route('rooms.index')->with('success', 'Sala deletada com sucesso!');
-    // }
+        return redirect()->route('rooms.index')->with('success', 'Sala deletada com sucesso!');
+    }
 }
