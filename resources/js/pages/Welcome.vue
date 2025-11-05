@@ -231,21 +231,60 @@ onBeforeUnmount(() => {
 
 
     <!-- Seções “tela cheia” -->
-    <section id="sobre" class="h-min-screen">
-      <p class="mt-6 text-center text-white/80 text-base sm:text-lg">
-        Aprenda linguagens como:
-      </p>
-      <!-- LOOP no topo -->
-      <div class="relative mt-0 flex justify-center">
-        <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
-          style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
-          <CurvedLoop class="loop-color"
-            marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
-            :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
+<section id="sobre" class="min-h-screen">
+  <p class="mt-6 text-center text-white/80 text-base sm:text-lg">
+    Aprenda linguagens como:
+  </p>
+
+  <!-- LOOP no topo -->
+  <div class="relative mt-0 flex justify-center">
+    <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
+      style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
+      <CurvedLoop class="loop-color"
+        marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
+        :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
+    </div>
+  </div>
+
+  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- container principal -->
+    <div class="relative overflow-hidden rounded-[36px] border border-white/10 ring-1 ring-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+
+      <!-- BG flipado + correção de bordas -->
+      <img
+        src="/imgs/Rectangle.png" alt=""
+        class="absolute inset-0 h-full w-full object-cover transform-gpu scale-x-[-1] scale-[1.02] rounded-[inherit] [transform:translateZ(0)] [backface-visibility:hidden]" />
+
+      <!-- glows -->
+      <div class="pointer-events-none absolute -left-24 -top-20 z-10 hidden h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl sm:block"></div>
+      <div class="pointer-events-none absolute -right-20 -bottom-16 z-10 hidden h-72 w-72 rounded-full bg-[#FF58BD]/25 blur-3xl sm:block"></div>
+
+      <!-- conteúdo em 2 colunas -->
+      <div class="relative z-20 grid min-h-[60vh] gap-8 px-6 py-10 sm:py-12 md:py-16 lg:py-20 lg:grid-cols-2">
+        <!-- Coluna ESQUERDA: texto -->
+        <div class="flex flex-col justify-center text-left">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-white">Sobre a plataforma</h2>
+          <p class="mt-3 text-white/80 leading-relaxed">
+            Aqui você pode gerenciar alunos, salas e atividades, importar planilhas e acompanhar o progresso de cada turma.
+          </p>
+          <ul class="mt-5 space-y-2 text-white/75">
+            <li>• Importação de alunos via Excel</li>
+            <li>• Habilitar/desabilitar acesso rapidamente</li>
+            <li>• Verificação de e-mail e códigos únicos</li>
+          </ul>
+        </div>
+
+        <!-- Coluna DIREITA: mock menor e alinhado à direita -->
+        <div class="relative flex items-center justify-end">
+          <img
+            src="/imgs/controle_alunos.png" alt="Mock do card"
+            class="h-auto w-[min(560px,46vw)] max-h-[70vh] object-contain rounded-2xl
+                   ring-1 ring-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.55)] [transform:translateZ(0)]" />
         </div>
       </div>
-
-    </section>
+    </div>
+  </div>
+</section>
 
     <section id="features" class="section mx-auto max-w-7xl px-4">
       <h2 class="mb-4 text-2xl font-semibold text-white/90">Features</h2>
