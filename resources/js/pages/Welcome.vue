@@ -230,13 +230,12 @@ onBeforeUnmount(() => {
     </section>
 
 
-    <section id="sobre" class="py-20 scroll-mt-[calc(var(--nav-h,64px)+12px)]">
+    <section id="sobre" class="py-20 scroll-mt-[calc(var(--nav-h,64px)+12px)]"
+      style="--tc-1:#6a5cff; --tc-2:#ff58bd; --tc-3:#F9A8D4;">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-white/80 text-base sm:text-lg">
-          Aprenda linguagens como:
-        </p>
+        <p class="text-center text-white/80 text-base sm:text-lg">Aprenda linguagens como:</p>
 
-        <!-- LOOP no topo -->
+        <!-- LOOP no topo (sem mudanças) -->
         <div class="relative mt-2 flex justify-center">
           <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
             style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
@@ -246,37 +245,34 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <!-- GRID: texto à esquerda + imagem à direita (maior, sem vazar) -->
         <div class="mt-10 grid items-center gap-y-12 gap-x-16 xl:gap-x-20 lg:grid-cols-12">
           <!-- ESQUERDA -->
           <div class="min-w-0 lg:col-span-4 xl:col-span-4">
-            <h2 class="text-3xl sm:text-4xl font-semibold text-white">Sobre a plataforma</h2>
-            <p class="mt-3 max-w-[620px] text-white/80 leading-relaxed">
+            <h2 class="text-3xl sm:text-4xl font-semibold grad-title">Sobre a plataforma</h2>
+
+            <p class="mt-3 max-w-[990px] leading-relaxed copy-soft">
               Aqui você pode gerenciar alunos, salas e atividades, importar planilhas e acompanhar o progresso de cada
               turma.
             </p>
-            <ul class="mt-6 space-y-2 text-white/75">
-              <li>• Importação de alunos via Excel</li>
-              <li>• Habilitar/desabilitar acesso rapidamente</li>
-              <li>• Verificação de e-mail e códigos únicos</li>
+
+            <ul class="mt-6 space-y-2 list-tank">
+              <li>Importação de alunos via Excel</li>
+              <li>Habilitar/desabilitar acesso rapidamente</li>
+              <li>Verificação de e-mail e códigos únicos</li>
             </ul>
           </div>
 
-          <!-- DIREITA: imagem MAIOR dentro da coluna (8/12) -->
+          <!-- DIREITA (igual) -->
           <div class="min-w-0 lg:col-span-8 xl:col-span-8 justify-self-end w-full">
             <div class="relative w-full">
-              <!-- glows AZUIS -->
               <div
                 class="pointer-events-none absolute -left-24 -top-20 h-72 w-72 rounded-full bg-[#635BFF]/35 blur-3xl">
               </div>
               <div
                 class="pointer-events-none absolute -right-24 -bottom-20 h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl">
               </div>
-
-              <!-- mock (sem retângulo) -->
-              <img src="/imgs/controle_alunos.png" alt="Visual da lista de estudantes" class="relative z-10 block w-full h-auto object-contain
-               rounded-[28px] ring-1 ring-white/10
-               shadow-[0_24px_90px_rgba(0,0,0,0.55)]" />
+              <img src="/imgs/controle_alunos.png" alt="Visual da lista de estudantes" class="relative z-10 block w-full h-auto object-contain rounded-[28px] ring-1 ring-white/10
+                      shadow-[0_24px_90px_rgba(0,0,0,0.55)]" />
             </div>
           </div>
         </div>
@@ -394,5 +390,42 @@ html {
   fill: #8471FF !important;
   /* cor sólida */
   /* se preferir outra cor: #EDEBFE, #B793FF, etc. */
+}
+
+/* Título com o mesmo degradê do loop + glow leve */
+.grad-title {
+  background-image: linear-gradient(90deg, var(--tc-1), var(--tc-2) 55%, var(--tc-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(110, 48, 255, .35));
+}
+
+/* Texto com tom violeta sutil para combinar sem perder legibilidade */
+.copy-soft {
+  color: rgba(232, 228, 255, .90);
+  /* #E8E4FF */
+}
+
+/* Lista com bullets em degradê (variação do loop) */
+.list-tank {
+  color: rgba(232, 228, 255, .85);
+}
+
+.list-tank li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.list-tank li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .6em;
+  width: .45rem;
+  height: .45rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, var(--tc-2), var(--tc-1));
+  filter: drop-shadow(0 0 8px rgba(110, 48, 255, .45));
 }
 </style>
