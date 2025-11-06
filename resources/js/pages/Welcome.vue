@@ -230,66 +230,59 @@ onBeforeUnmount(() => {
     </section>
 
 
-    <!-- Seções “tela cheia” -->
-<section id="sobre" class="min-h-screen">
-  <p class="mt-6 text-center text-white/80 text-base sm:text-lg">
-    Aprenda linguagens como:
-  </p>
+    <section id="sobre" class="py-20 scroll-mt-[calc(var(--nav-h,64px)+12px)]">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-white/80 text-base sm:text-lg">
+          Aprenda linguagens como:
+        </p>
 
-  <!-- LOOP no topo -->
-  <div class="relative mt-0 flex justify-center">
-    <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
-      style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
-      <CurvedLoop class="loop-color"
-        marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
-        :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
-    </div>
-  </div>
-
-  <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-    <!-- container principal -->
-    <div class="relative overflow-hidden rounded-[36px] border border-white/10 ring-1 ring-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
-
-      <!-- BG flipado + correção de bordas -->
-      <img
-        src="/imgs/Rectangle.png" alt=""
-        class="absolute inset-0 h-full w-full object-cover transform-gpu scale-x-[-1] scale-[1.02] rounded-[inherit] [transform:translateZ(0)] [backface-visibility:hidden]" />
-
-      <!-- glows -->
-      <div class="pointer-events-none absolute -left-24 -top-20 z-10 hidden h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl sm:block"></div>
-      <div class="pointer-events-none absolute -right-20 -bottom-16 z-10 hidden h-72 w-72 rounded-full bg-[#FF58BD]/25 blur-3xl sm:block"></div>
-
-      <!-- conteúdo em 2 colunas -->
-      <div class="relative z-20 grid min-h-[60vh] gap-8 px-6 py-10 sm:py-12 md:py-16 lg:py-20 lg:grid-cols-2">
-        <!-- Coluna ESQUERDA: texto -->
-        <div class="flex flex-col justify-center text-left">
-          <h2 class="text-2xl sm:text-3xl font-semibold text-white">Sobre a plataforma</h2>
-          <p class="mt-3 text-white/80 leading-relaxed">
-            Aqui você pode gerenciar alunos, salas e atividades, importar planilhas e acompanhar o progresso de cada turma.
-          </p>
-          <ul class="mt-5 space-y-2 text-white/75">
-            <li>• Importação de alunos via Excel</li>
-            <li>• Habilitar/desabilitar acesso rapidamente</li>
-            <li>• Verificação de e-mail e códigos únicos</li>
-          </ul>
+        <!-- LOOP no topo -->
+        <div class="relative mt-2 flex justify-center">
+          <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
+            style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
+            <CurvedLoop class="loop-color"
+              marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
+              :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
+          </div>
         </div>
 
-        <!-- Coluna DIREITA: mock menor e alinhado à direita -->
-        <div class="relative flex items-center justify-end">
-          <img
-            src="/imgs/controle_alunos.png" alt="Mock do card"
-            class="h-auto w-[min(560px,46vw)] max-h-[70vh] object-contain rounded-2xl
-                   ring-1 ring-white/10 shadow-[0_24px_90px_rgba(0,0,0,0.55)] [transform:translateZ(0)]" />
+        <!-- GRID: texto à esquerda + imagem à direita (maior, sem vazar) -->
+        <div class="mt-10 grid items-center gap-y-12 gap-x-16 xl:gap-x-20 lg:grid-cols-12">
+          <!-- ESQUERDA -->
+          <div class="min-w-0 lg:col-span-4 xl:col-span-4">
+            <h2 class="text-3xl sm:text-4xl font-semibold text-white">Sobre a plataforma</h2>
+            <p class="mt-3 max-w-[620px] text-white/80 leading-relaxed">
+              Aqui você pode gerenciar alunos, salas e atividades, importar planilhas e acompanhar o progresso de cada
+              turma.
+            </p>
+            <ul class="mt-6 space-y-2 text-white/75">
+              <li>• Importação de alunos via Excel</li>
+              <li>• Habilitar/desabilitar acesso rapidamente</li>
+              <li>• Verificação de e-mail e códigos únicos</li>
+            </ul>
+          </div>
+
+          <!-- DIREITA: imagem MAIOR dentro da coluna (8/12) -->
+          <div class="min-w-0 lg:col-span-8 xl:col-span-8 justify-self-end w-full">
+            <div class="relative w-full">
+              <!-- glows AZUIS -->
+              <div
+                class="pointer-events-none absolute -left-24 -top-20 h-72 w-72 rounded-full bg-[#635BFF]/35 blur-3xl">
+              </div>
+              <div
+                class="pointer-events-none absolute -right-24 -bottom-20 h-72 w-72 rounded-full bg-[#635BFF]/30 blur-3xl">
+              </div>
+
+              <!-- mock (sem retângulo) -->
+              <img src="/imgs/controle_alunos.png" alt="Visual da lista de estudantes" class="relative z-10 block w-full h-auto object-contain
+               rounded-[28px] ring-1 ring-white/10
+               shadow-[0_24px_90px_rgba(0,0,0,0.55)]" />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-    <section id="features" class="section mx-auto max-w-7xl px-4">
-      <h2 class="mb-4 text-2xl font-semibold text-white/90">Features</h2>
-      <p class="max-w-3xl text-sm text-white/70">Texto de exemplo…</p>
     </section>
+
 
     <section id="exemplos" class="section mx-auto max-w-7xl px-4">
       <h2 class="mb-4 text-2xl font-semibold text-white/90">Exemplos</h2>
