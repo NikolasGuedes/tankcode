@@ -195,12 +195,14 @@ const year = new Date().getFullYear()
     <!-- SOBRE -->
     <section id="sobre" class="py-20 scroll-mt-[calc(var(--nav-h,64px)+12px)]">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p class="text-center text-white/80 text-base sm:text-lg">Aprenda linguagens como:</p>
+        <p class="text-center text-white/80 text-base sm:text-lg">
+          Aprenda linguagens como:
+        </p>
 
-        <!-- LOOP roxo fixo -->
+        <!-- LOOP no topo -->
         <div class="relative mt-2 flex justify-center">
           <div class="relative w-[clamp(360px,92vw,1200px)] overflow-hidden mask-edges"
-            style="--loop-1:#6a5cff; --loop-2:#6a5cff; --loop-3:#6a5cff;">
+            style="--loop-1:#6a5cff; --loop-2:#ff58bd; --loop-3:#F9A8D4;">
             <CurvedLoop class="loop-color"
               marquee-text="Python ∘ JavaScript ∘ TypeScript ∘ SQL ∘ PHP ∘ Java ∘ C# ∘ Go ∘ Rust ∘ Vue ∘ Laravel ∘ Docker ∘ Git ∘"
               :speed="1.6" :curve-amount="0" direction="left" :interactive="false" />
@@ -456,7 +458,9 @@ html {
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
 
-/* Texto do CurvedLoop — usa --loop-1..3 do container */
+/* LOOP — HTML e SVG com neon roxo-azulado */
+
+/* Estilo do texto dentro do CurvedLoop (gradiente + glow)  */
 .loop-color :deep(span),
 .loop-color :deep(.marquee-item),
 .loop-color :deep(.marquee),
@@ -464,13 +468,55 @@ html {
   font-weight: 800;
   letter-spacing: .02em;
   font-size: clamp(28px, 6vw, 56px);
+  /* gradiente controlado por variáveis */
   background-image: linear-gradient(90deg, var(--loop-1), var(--loop-2) 45%, var(--loop-3));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
+  /* força usar o gradiente */
   opacity: .96;
-  filter: drop-shadow(0 2px 8px rgba(106, 92, 255, .65));
+  filter: drop-shadow(0 2px 8px rgb(117, 4, 255));
+  /* leve glow */
 }
+
+/* ===== CurvedLoop – roxo-azulado com neon (HTML e SVG) ===== */
+
+
+/* ---- COR E ESTÉTICA DO TEXTO DO LOOP ---- */
+/* Caso o texto seja HTML (spans/divs) */
+.loop-color :deep(span),
+.loop-color :deep(.marquee-item),
+.loop-color :deep(.cl-char),
+.loop-color :deep(.cl-text) {
+  font-weight: 800;
+  letter-spacing: .01em;
+  font-size: clamp(28px, 6vw, 56px);
+
+  /* degrade bonito */
+  background-image: linear-gradient(90deg, #000000 0%, #000000 45%, #ff008c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+
+  /* leve glow */
+  filter: drop-shadow(0 2px 8px rgba(110, 48, 255, 0.35));
+}
+
+/* Caso o texto seja SVG <text> (background-clip não funciona em SVG) */
+.loop-color :deep(svg text) {
+  fill: #8471FF !important;
+  /* cor sólida */
+  /* se preferir outra cor: #EDEBFE, #B793FF, etc. */
+}
+
+/* mantém as bordas com fade do container do loop */
+.mask-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+
 
 /* SOBRE: roxo fixo + bullets */
 #sobre .grad-title {
