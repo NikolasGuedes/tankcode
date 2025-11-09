@@ -177,13 +177,6 @@ const getInitials = (name: string): string => {
         .slice(0, 2);
 };
 
-// ----------------------------------------------------------------
-// Colunas da tabela (para referência, se precisar de manipulação futura)
-// ----------------------------------------------------------------
-const columns = [
-    { key: 'name_room', label: 'NOME DA SALA' },
-    { key: 'code', label: 'CÓDIGO DA SALA' }
-];
 </script>
 <template>
 

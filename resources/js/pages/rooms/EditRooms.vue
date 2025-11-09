@@ -177,11 +177,7 @@ const goBack = () => {
   router.get(route('rooms.index'));
 };
 
-const columns = [
-  { key: 'name', label: 'NAME' },
-  { key: 'email', label: 'EMAIL' },
-  { key: 'actions', label: 'CODE/ACTIONS' }
-];
+
 
 const goToPage = (page: number) => {
   if (page < 1 || page > (props.students?.last_page || 1)) return;
