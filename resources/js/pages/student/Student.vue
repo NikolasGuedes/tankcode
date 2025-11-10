@@ -459,7 +459,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
 
         <!-- Add Student Dialog -->
         <Dialog v-model:open="isDialogOpen">
-            <DialogContent class="bg-[var(--sidebar-background)] border-none min-w-xl max-sm:min-w-fit mx-auto">
+            <DialogContent class="bg-[var(-bar-background)] border-none min-w-xl max-sm:min-w-fit mx-auto">
                 <form @submit.prevent="saveStudent" class="space-y-6">
                     <DialogHeader class="pb-4">
                         <DialogTitle class="text-white text-xl font-semibold flex items-center gap-2">
