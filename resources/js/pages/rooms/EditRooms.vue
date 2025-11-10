@@ -395,7 +395,7 @@ const goToPage = (page: number) => {
             </div>
             <!-- Paginação -->
             <div v-if="students.last_page > 1" class="flex justify-center py-4">
-              <Pagination v-slot="{ page }" :items-per-page="10" :total="totalUnlinked" :default-page="students.current_page">
+              <Pagination :items-per-page="10" :total="totalUnlinked" :default-page="students.current_page">
                 <PaginationContent v-slot="{ items }">
                   <PaginationPrevious 
                     @click.prevent="goToPage(students.current_page - 1)"
