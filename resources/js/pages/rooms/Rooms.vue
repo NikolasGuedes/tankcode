@@ -259,7 +259,7 @@ const getInitials = (name: string): string => {
 
     <!-- Paginação -->
     <div v-if="rooms.last_page > 1" class="flex justify-center py-4 m-4">
-      <Pagination v-slot="{ page }" :items-per-page="rooms.per_page" :total="rooms.total" :default-page="rooms.current_page">
+      <Pagination :items-per-page="rooms.per_page" :total="rooms.total" :default-page="rooms.current_page">
         <PaginationContent v-slot="{ items }">
           <PaginationPrevious 
             @click.prevent="goToPage(rooms.current_page - 1)"
