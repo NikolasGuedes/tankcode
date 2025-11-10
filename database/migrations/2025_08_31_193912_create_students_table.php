@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('platform_access')->default(false);
+            $table->foreignId('room_id')->nullable()->constrained('rooms')->onDelete('set null');
         });
     }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\StudentEmailVerificationController;
 use App\Http\Controllers\StudentPasswordResetController;
+use App\Http\Controllers\RoomsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -39,6 +40,22 @@ Route::prefix('student')->group(function () {
         Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
     });
 });
+// Route::resource('rooms', RoomsController::class)
+//     ->only(['index', 'store', 'update'])
+//     ->middleware('auth')
+//     ->names('rooms');
+
+Route::prefix('rooms')->middleware('auth')->group(function () {
+    Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
+    Route::post('/store', [RoomsController::class, 'store'])->name('rooms.store');
+    Route::put('/{id}', [RoomsController::class, 'update'])->name('rooms.update');
+    Route::delete('/{id}', [RoomsController::class, 'destroy'])->name('rooms.destroy');
+    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.editrooms');
+    Route::get('/{id}/edit2', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
+    Route::post('/{room}/add-student', [RoomsController::class, 'addStudent'])->name('rooms.addStudent');
+    Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
+});
+
 
 // Rotas de verificação de email e criação de senha do estudante
 Route::get('/student/verify-email/{token}', [StudentEmailVerificationController::class, 'verify'])

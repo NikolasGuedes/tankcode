@@ -38,4 +38,24 @@ class Student extends Authenticatable
     {
         return $this->platform_access && $this->hasVerifiedEmail();
     }
+
+    public function scopeOfFilter($query, array $filters)
+    {
+        if ($filters['search'] ?? false) {
+            $query->where(function ($query) use ($filters) {
+                $query->where('name', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
+                    ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
+            });
+        }
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
+
+
+
+    
 }
