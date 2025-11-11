@@ -13,7 +13,7 @@ class Room extends Model
     // Apenas os dois campos que você deseja: name_room e code
     protected $fillable = [
         'name_room',
-        'code',
+        'cod',
     ];
 
     public function students()

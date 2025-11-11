@@ -19,7 +19,7 @@ class RoomsController extends Controller
         $rooms = Room::query()
             ->when($search, function ($query, $search) {
                 $query->where('name_room', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
+                      ->orWhere('cod', 'like', "%{$search}%");
             })
             ->orderBy('name_room')
             ->paginate(10);
@@ -42,11 +42,11 @@ class RoomsController extends Controller
             do {
                 $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
                 $code = $prefix . '-' . rand(100, 999);
-            } while (Room::where('code', $code)->exists());
+            } while (Room::where('cod', $code)->exists());
 
             Room::create([
                 'name_room' => $request->name_room,
-                'code' => $code,
+                'cod' => $code,
             ]);
         });
     } catch (\Throwable $th) {

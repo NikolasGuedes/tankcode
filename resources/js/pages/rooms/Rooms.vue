@@ -39,7 +39,7 @@ const props = defineProps({
             data: Array<{
                 id: number;
                 name_room: string;
-                code: string;
+                cod: string;
             }>;
             current_page: number;
             last_page: number;
@@ -224,7 +224,7 @@ const getInitials = (name: string): string => {
                   </div>
                 </TableCell>
                 <TableCell class="py-4 px-6">
-                  <span class="text-white font-medium">{{ room.code }}</span>
+                  <span class="text-white font-medium">{{ room.cod }}</span>
                 </TableCell>
                 <TableCell class="py-4 px-6">
                 <div class="flex flex-row gap-2">
