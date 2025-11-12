@@ -70,7 +70,7 @@ const props = defineProps({
     type: Object as () => {
       id: number;
       name_room: string;
-      code: string;
+      cod: string;
     },
     required: true,
   }
@@ -199,7 +199,7 @@ const goToPage = (page: number) => {
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-4 bg-[var(--sidebar-background)] m-4 rounded-lg">
       <h1 class="text-white text-2xl font-bold">
-        Gerenciar Alunos na Sala: {{ room.name_room }} ({{ room.code }})
+        Gerenciar Alunos na Sala: {{ room.name_room }} ({{ room.cod }})
       </h1>
     </div>
 
