@@ -40,7 +40,6 @@ const props = defineProps({
         default: ''
     },
     students: {
-        // Ajuste de tipagem para incluir os campos usados no template
         type: Object as () => {
             data: Array<{
                 id: number;
@@ -49,6 +48,7 @@ const props = defineProps({
                 cod: string;
                 email_verified_at: string | null;
                 platform_access: boolean;
+                room_id: number | null;
             }>;
             current_page: number;
             last_page: number;
@@ -228,6 +228,7 @@ const columns = [
     { key: 'name', label: 'NOME' },
     { key: 'email', label: 'EMAIL' },
     { key: 'cod', label: 'CÓDIGO' },
+    { key: 'room', label: 'SALA (ID)' },
     { key: 'email_verified', label: 'EMAIL VERIFICADO' },
     { key: 'platform_access', label: 'ACESSO PLATAFORMA' },
     { key: 'actions', label: 'AÇÕES' }
@@ -347,6 +348,9 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                         {{ student.cod }}
                                     </span>
                                 </TableCell>
+                                <TableCell class="py-4 px-6 text-white text-center">
+                                    {{ student.room_id ? student.room_id : '' }}
+                                </TableCell>
                                 <TableCell class="py-4 px-6 text-center">
                                     <div class="flex justify-center items-center">
                                         <CheckCircle2 
@@ -408,7 +412,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                 </TableCell>
                             </TableRow>
                             <TableRow v-if="students.data.length === 0">
-                                <TableCell colspan="6" class="text-center py-12 text-gray-400">
+                                <TableCell colspan="7" class="text-center py-12 text-gray-400">
                                     <div class="flex flex-col items-center gap-2">
                                         <Search class="h-12 w-12 text-gray-500" />
                                         <p class="text-lg font-medium">Nenhum estudante encontrado</p>
@@ -459,7 +463,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
 
         <!-- Add Student Dialog -->
         <Dialog v-model:open="isDialogOpen">
-            <DialogContent class="bg-[var(-bar-background)] border-none min-w-xl max-sm:min-w-fit mx-auto">
+            <DialogContent class="bg-[var(--sidebar-background)] border-none min-w-xl max-sm:min-w-fit mx-auto">
                 <form @submit.prevent="saveStudent" class="space-y-6">
                     <DialogHeader class="pb-4">
                         <DialogTitle class="text-white text-xl font-semibold flex items-center gap-2">

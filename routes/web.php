@@ -5,6 +5,7 @@ use App\Http\Controllers\StudentAuthController;
 use App\Http\Controllers\StudentEmailVerificationController;
 use App\Http\Controllers\StudentPasswordResetController;
 use App\Http\Controllers\RoomsController;
+use App\Http\Controllers\ActivitiesController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -40,10 +41,6 @@ Route::prefix('student')->group(function () {
         Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
     });
 });
-// Route::resource('rooms', RoomsController::class)
-//     ->only(['index', 'store', 'update'])
-//     ->middleware('auth')
-//     ->names('rooms');
 
 Route::prefix('rooms')->middleware('auth')->group(function () {
     Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
@@ -56,13 +53,14 @@ Route::prefix('rooms')->middleware('auth')->group(function () {
     Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
 });
 
-
 // Rotas de verificação de email e criação de senha do estudante
 Route::get('/student/verify-email/{token}', [StudentEmailVerificationController::class, 'verify'])
     ->name('student.verify-email');
 
 Route::post('/student/create-password', [StudentEmailVerificationController::class, 'createPassword'])
     ->name('student.create-password');
+
+Route::middleware('auth')->get('/atividades', [ActivitiesController::class, 'index'])->name('activities.index');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

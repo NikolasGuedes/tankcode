@@ -39,7 +39,7 @@ onMounted(() => {
     { threshold: 0.35, rootMargin: `-${h}px 0px 0px 0px` }
   )
 
-    ;['home', 'sobre', 'beneficios', 'personas', 'exemplos'].forEach((id) => {
+    ;['home', 'sobre', 'beneficios', 'personas'].forEach((id) => {
       const el = document.getElementById(id)
       if (el) io!.observe(el)
     })
@@ -80,8 +80,6 @@ const year = new Date().getFullYear()
               @click.prevent="goTo('#beneficios')">benefícios</a>
             <a href="#personas" class="navlink" :class="{ 'navlink--active': activeSection === 'personas' }"
               @click.prevent="goTo('#personas')">personas</a>
-            <a href="#exemplos" class="navlink" :class="{ 'navlink--active': activeSection === 'exemplos' }"
-              @click.prevent="goTo('#exemplos')">exemplos</a>
           </ul>
         </nav>
 
@@ -134,9 +132,6 @@ const year = new Date().getFullYear()
             <a class="block rounded-lg px-3 py-2 text-white/80 hover:bg-white/10" href="#personas"
               :class="{ 'navlink--active': activeSection === 'personas' }"
               @click.prevent="goTo('#personas'); mobileOpen = false">personas</a>
-            <a class="block rounded-lg px-3 py-2 text-white/80 hover:bg-white/10" href="#exemplos"
-              :class="{ 'navlink--active': activeSection === 'exemplos' }"
-              @click.prevent="goTo('#exemplos'); mobileOpen = false">exemplos</a>
             <div class="mt-3 grid grid-cols-1 gap-2">
               <Link :href="route('register')"
                 class="rounded-full border border-indigo-400/40 px-3 py-2 text-center text-sm font-semibold text-indigo-300 hover:bg-white/5">
@@ -393,12 +388,6 @@ const year = new Date().getFullYear()
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- EXEMPLOS -->
-    <section id="exemplos" class="section mx-auto max-w-7xl px-4 min-h-[60vh]">
-      <h2 class="mb-4 text-2xl font-semibold text-white/90">Exemplos</h2>
-      <p class="max-w-3xl text-sm text-white/70">Texto de exemplo…</p>
     </section>
 
     <!-- FOOTER -->

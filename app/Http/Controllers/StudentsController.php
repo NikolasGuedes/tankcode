@@ -26,6 +26,7 @@ class StudentsController extends Controller
 
         return Inertia::render('student/Student', [
             'students' => Student::query()
+            ->with('room')
             ->when($filters['search'] ?? false, function ($query) use ($filters) {
                 $query->where('name', 'like', '%' . $filters['search'] . '%')
                 ->orWhere('email', 'like', '%' . $filters['search'] . '%')
