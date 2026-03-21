@@ -126,7 +126,7 @@ class StudentsController extends Controller
         }
     }
 
-    public function import(Request $request)
+    public function importStudents(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { students } from '@/routes';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
@@ -33,7 +34,7 @@ const mainNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('students')">
+                        <Link :href="students.url()">
                         <AppLogo />
                         </Link>
                     </SidebarMenuButton>

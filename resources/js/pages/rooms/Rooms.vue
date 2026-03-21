@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { destroy, edit, index, store, update } from '@/actions/App/Http/Controllers/RoomsController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, router } from '@inertiajs/vue3';
@@ -93,7 +94,7 @@ const openDialogEdit = (id: number) => {
 };
 
 const saveRoom = () => {
-    roomForm.post(route('rooms.store'), {
+    roomForm.post(store.url(), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpen.value = false;
@@ -114,7 +115,7 @@ const saveRoom = () => {
 
 const editRoom = () => {
     isUpdating.value = true;
-    editForm.put(route('rooms.update', selectRoomId.value), {
+    editForm.put(update.url(selectRoomId.value!), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
@@ -137,7 +138,7 @@ const editRoom = () => {
 
 const deleteRoom = () => {
     isDeleting.value = true;
-    editForm.delete(route('rooms.destroy', selectRoomId.value), {
+    editForm.delete(destroy.url(selectRoomId.value!), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
@@ -160,12 +161,12 @@ const deleteRoom = () => {
 
 const submitSearch = (e: Event) => {
     e.preventDefault();
-    router.get(route('rooms.index'), { search: searchQuery.value, page: 1 });
+    router.get(index.url(), { search: searchQuery.value, page: 1 });
 };
 
 const goToPage = (page: number) => {
     if (page < 1 || page > props.rooms.last_page) return;
-    router.get(route('rooms.index'), { search: searchQuery.value, page });
+    router.get(index.url(), { search: searchQuery.value, page });
 };
 
 
@@ -233,7 +234,7 @@ const getInitials = (name: string): string => {
                     Editar Sala
                   </Button>
                  <Button
-                  @click="router.visit(route('rooms.EditRooms', room.id) + '?tab=students')"
+                  @click="router.visit(edit.url(room.id, { query: { tab: 'students' } }))"
                   class="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-white text-sm px-4 py-2 flex items-center gap-2">
                   <Edit class="h-4 w-4" />
                   Gerenciar Alunos

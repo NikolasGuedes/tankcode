@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { login as studentLogin } from '@/actions/App/Http/Controllers/StudentAuthController';
+import { showRequestForm as studentForgotPassword } from '@/actions/App/Http/Controllers/StudentPasswordResetController';
+import { home } from '@/routes';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
@@ -23,7 +26,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('student.login.submit'), {
+    form.post(studentLogin.url(), {
         onFinish: () => {
             form.password = '';
         },
@@ -38,7 +41,7 @@ const submit = () => {
         <div class="max-w-md w-full bg-card border border-border rounded-lg shadow-2xl p-8">
             <!-- Logo -->
             <div class="text-center mb-8">
-                <Link :href="route('home')" class="inline-block mb-6 hover:opacity-80 transition-opacity">
+                <Link :href="home.url()" class="inline-block mb-6 hover:opacity-80 transition-opacity">
                     <img src="/imgs/logo-tankcode.png" alt="Logo TANKCODE" class="h-12 mx-auto" />
                 </Link>
                 <h1 class="text-2xl font-bold text-foreground mb-2">
@@ -85,7 +88,7 @@ const submit = () => {
                             Senha
                         </label>
                         <Link 
-                            :href="route('student.password.request')" 
+                            :href="studentForgotPassword.url()" 
                             class="text-sm text-primary hover:underline"
                         >
                             Esqueceu a senha?
@@ -110,7 +113,7 @@ const submit = () => {
             </form>
 
             <div class="mt-6 text-center">
-                <Link :href="route('home')" class="text-sm text-primary hover:text-primary/80 transition-colors">
+                <Link :href="home.url()" class="text-sm text-primary hover:text-primary/80 transition-colors">
                     ← Voltar para a página inicial
                 </Link>
             </div>

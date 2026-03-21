@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { destroy as logout } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
+import { store as sendVerificationEmail } from '@/actions/App/Http/Controllers/Auth/EmailVerificationNotificationController';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -18,13 +20,13 @@ defineProps<{
             Um novo link de verificação foi enviado para o endereço de email que você forneceu durante o registro.
         </div>
 
-        <Form method="post" :action="route('verification.send')" class="space-y-6 text-center" v-slot="{ processing }">
+        <Form method="post" :action="sendVerificationEmail.url()" class="space-y-6 text-center" v-slot="{ processing }">
             <Button :disabled="processing" variant="secondary">
                 <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                 Reenviar email de verificação
             </Button>
 
-            <TextLink :href="route('logout')" method="post" as="button" class="mx-auto block text-sm"> Sair </TextLink>
+            <TextLink :href="logout.url()" method="post" as="button" class="mx-auto block text-sm"> Sair </TextLink>
         </Form>
     </AuthLayout>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { home } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 
 
@@ -16,7 +17,7 @@ defineProps<{
                 class="absolute inset-0"
                 style="background-image: url('imgs/background-login.png'); background-size: cover; background-position: center;"
             />
-            <Link :href="route('home')" class="relative z-20 flex items-center text-lg font-medium">
+            <Link :href="home.url()" class="relative z-20 flex items-center text-lg font-medium">
                  <AppLogoIcon class="size-9 fill-current text-[var(--foreground)] dark:text-white" />
             </Link>
         </div>

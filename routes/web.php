@@ -16,8 +16,8 @@ Route::get('/', function () {
 // Rotas para área administrativa dos estudantes (admin)
 Route::prefix('students')->middleware('auth')->group(function () {
    Route::get('/', [StudentsController::class, 'index'])->name('students');
-   Route::post('/store', [StudentsController::class, 'store'])->name('students.store');
-   Route::post('/import', [StudentsController::class, 'import'])->name('students.import');
+   Route::post('/', [StudentsController::class, 'store'])->name('students.store');
+   Route::post('/import', [StudentsController::class, 'importStudents'])->name('students.import');
    Route::get('/download-template', [StudentsController::class, 'downloadTemplate'])->name('students.download-template');
    Route::put('/{id}', [StudentsController::class, 'update'])->name('students.update');
    Route::delete('/{id}', [StudentsController::class, 'destroy'])->name('students.destroy');
@@ -44,11 +44,10 @@ Route::prefix('student')->group(function () {
 
 Route::prefix('rooms')->middleware('auth')->group(function () {
     Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
-    Route::post('/store', [RoomsController::class, 'store'])->name('rooms.store');
+    Route::post('/', [RoomsController::class, 'store'])->name('rooms.store');
     Route::put('/{id}', [RoomsController::class, 'update'])->name('rooms.update');
     Route::delete('/{id}', [RoomsController::class, 'destroy'])->name('rooms.destroy');
-    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.editrooms');
-    Route::get('/{id}/edit2', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
+    Route::get('/{id}/edit', [RoomsController::class, 'edit'])->name('rooms.edit');
     Route::post('/{room}/add-student', [RoomsController::class, 'addStudent'])->name('rooms.addStudent');
     Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
 });

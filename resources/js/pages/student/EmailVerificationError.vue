@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { home } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
 import { XCircle } from 'lucide-vue-next';
 import Button from '@/components/ui/button/Button.vue';
@@ -14,7 +15,7 @@ defineProps<{
     <div class="min-h-screen flex items-center justify-center bg-background p-4">
         <div class="max-w-md w-full bg-card border border-border rounded-lg shadow-2xl p-8 text-center">
             <!-- Logo -->
-            <Link :href="route('home')" class="inline-block mb-6 hover:opacity-80 transition-opacity">
+            <Link :href="home.url()" class="inline-block mb-6 hover:opacity-80 transition-opacity">
                 <div class="flex items-center justify-center gap-2">
                     <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
                         <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -36,7 +37,7 @@ defineProps<{
             <p class="text-muted-foreground mb-6">{{ message }}</p>
             
             <Button 
-                @click="$inertia.visit(route('home'))"
+                @click="$inertia.visit(home.url())"
                 class="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             >
                 Voltar para Início

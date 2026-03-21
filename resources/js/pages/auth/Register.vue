@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { create as login } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
+import { store as register } from '@/actions/App/Http/Controllers/Auth/RegisteredUserController';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -15,7 +17,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 
         <Form
             method="post"
-            :action="route('register')"
+            :action="register.url()"
             :reset-on-success="['password', 'password_confirmation']"
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
@@ -61,7 +63,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 
             <div class="text-sm text-center text-muted-foreground">
                 Já tem uma conta?
-                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Fazer login</TextLink>
+                <TextLink :href="login.url()" class="underline underline-offset-4" :tabindex="6">Fazer login</TextLink>
             </div>
         </Form>
     </AuthBase>

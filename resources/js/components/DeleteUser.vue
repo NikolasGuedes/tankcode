@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { destroy as destroyProfile } from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { Form } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -37,7 +38,7 @@ const passwordInput = ref<HTMLInputElement | null>(null);
                 <DialogContent>
                     <Form
                         method="delete"
-                        :action="route('profile.destroy')"
+                        :action="destroyProfile.url()"
                         reset-on-success
                         @error="() => passwordInput?.focus()"
                         :options="{

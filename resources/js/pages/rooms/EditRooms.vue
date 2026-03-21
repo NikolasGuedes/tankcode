@@ -1,5 +1,6 @@
 // resources/js/Pages/rooms/EditRooms.vue
 <script setup lang="ts">
+import { addStudent as addStudentToRoom, edit, index, removeStudent as removeStudentFromRoom } from '@/actions/App/Http/Controllers/RoomsController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, router } from '@inertiajs/vue3';
@@ -101,7 +102,7 @@ const addStudent = (studentId: number) => {
   form.student_id = studentId;
 
   const currentPage = new URLSearchParams(window.location.search).get('page') || '1';
-  form.post(route('rooms.addStudent', props.room.id) + `?page=${currentPage}`, {
+  form.post(addStudentToRoom.url(props.room.id, { query: { page: currentPage } }), {
     preserveScroll: true,
     preserveState: true,
     onSuccess: () => {
@@ -122,7 +123,7 @@ const addStudent = (studentId: number) => {
 const removeStudent = (studentId: number) => {
   form.student_id = studentId;
 
-  form.delete(route('rooms.removeStudent', { room: props.room.id, student: studentId }), {
+  form.delete(removeStudentFromRoom.url({ room: props.room.id, student: studentId }), {
     preserveScroll: true,
     preserveState: true,
     onSuccess: () => {
@@ -142,7 +143,7 @@ const removeStudent = (studentId: number) => {
 
 const submitSearch = (e: Event) => {
   e.preventDefault();
-  router.get(route('rooms.editrooms', props.room.id), {
+  router.get(edit.url(props.room.id), {
     search: searchQuery.value,
     filter: activeTab.value
   }, {
@@ -154,7 +155,7 @@ const submitSearch = (e: Event) => {
 
 watch(activeTab, (newTab) => {
   if (newTab) {
-    router.get(route('rooms.editrooms', props.room.id), {
+    router.get(edit.url(props.room.id), {
       filter: newTab,
       search: searchQuery.value
     }, {
@@ -174,7 +175,7 @@ const getInitials = (name: string): string => {
 };
 
 const goBack = () => {
-  router.get(route('rooms.index'));
+  router.get(index.url());
 };
 
 
@@ -182,7 +183,7 @@ const goBack = () => {
 const goToPage = (page: number) => {
   if (page < 1 || page > (props.students?.last_page || 1)) return;
   
-  router.get(route('rooms.editrooms', props.room.id), {
+  router.get(edit.url(props.room.id), {
     search: searchQuery.value,
     filter: activeTab.value,
     page: page

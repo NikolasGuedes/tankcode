@@ -1,4 +1,14 @@
 <script setup lang="ts">
+import {
+    destroy as destroyStudent,
+    downloadTemplate as downloadStudentTemplate,
+    importStudents,
+    index as studentsIndex,
+    resendVerificationEmail,
+    store as storeStudent,
+    togglePlatformAccess as toggleStudentPlatformAccess,
+    update as updateStudent,
+} from '@/actions/App/Http/Controllers/StudentsController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, router } from '@inertiajs/vue3';
@@ -106,7 +116,7 @@ const importForm = useForm({
 });
 
 const saveStudent = () => {
-    studentForm.post(route('students.store'), {
+    studentForm.post(storeStudent.url(), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpen.value = false;
@@ -127,7 +137,7 @@ const saveStudent = () => {
 
 const editStudent = () => {
     isUpdating.value = true;
-    editForm.put(route('students.update', selectStudentId.value), {
+    editForm.put(updateStudent.url(selectStudentId.value!), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
@@ -153,7 +163,7 @@ const deleteStudent = () => {
     if (!selectStudentId.value) return;
 
     isDeleting.value = true;
-    editForm.delete(route('students.destroy', selectStudentId.value), {
+    editForm.delete(destroyStudent.url(selectStudentId.value), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenEdit.value = false;
@@ -184,7 +194,7 @@ const importStudents = () => {
         return;
     }
 
-    importForm.post(route('students.import'), {
+    importForm.post(importStudents.url(), {
         preserveState: true,
         onSuccess: () => {
             isDialogOpenImport.value = false;
@@ -212,12 +222,12 @@ const handleFileChange = (event: Event) => {
 
 const submitSearch = (e: Event) => {
     e.preventDefault();
-    router.get(route('students'), { search: search.value, page: 1 });
+    router.get(studentsIndex.url(), { search: search.value, page: 1 });
 };
 
 const goToPage = (page: number) => {
     if (page < 1 || page > props.students.last_page) return;
-    router.get(route('students'), { search: search.value, page });
+    router.get(studentsIndex.url(), { search: search.value, page });
 };
 
 const getInitials = (name: string): string => {
@@ -235,13 +245,13 @@ const columns = [
 ];
 
 const downloadTemplate = () => {
-    window.location.href = route('students.download-template');
+    window.location.href = downloadStudentTemplate.url();
 };
 
 // REMOVA as funções togglePlatformAccess e resendVerificationEmail antigas
 // ADICIONE:
 const togglePlatformAccess = (studentId: number) => {
-    router.post(route('students.toggle-access', studentId), {}, {
+    router.post(toggleStudentPlatformAccess.url(studentId), {}, {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Acesso à plataforma atualizado!', {
@@ -254,12 +264,12 @@ const togglePlatformAccess = (studentId: number) => {
     });
 };
 
-const resendVerificationEmail = (studentId: number, studentName: string) => {
+const resendStudentVerificationEmail = (studentId: number, studentName: string) => {
     if (!confirm(`Reenviar email de verificação para ${studentName}?`)) {
         return;
     }
 
-    router.post(route('students.resend-verification', studentId), {}, {
+    router.post(resendVerificationEmail.url(studentId), {}, {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Email de verificação reenviado com sucesso!', {
@@ -392,7 +402,7 @@ const resendVerificationEmail = (studentId: number, studentName: string) => {
                                             v-if="!student.email_verified_at"
                                             variant="ghost"
                                             size="sm"
-                                            @click="resendVerificationEmail(student.id, student.name)"
+                                                                @click="resendStudentVerificationEmail(student.id, student.name)"
                                             title="Reenviar email de verificação"
                                             class="text-white hover:text-white/80"
                                         >

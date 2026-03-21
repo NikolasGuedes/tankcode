@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { createPassword } from '@/actions/App/Http/Controllers/StudentEmailVerificationController';
+import { home } from '@/routes';
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import { Lock, User, Mail, Hash } from 'lucide-vue-next';
 import Button from '@/components/ui/button/Button.vue';
@@ -23,7 +25,7 @@ const form = useForm({
 });
 
 const submitPassword = () => {
-    form.post(route('student.create-password'), {
+    form.post(createPassword.url(), {
         onFinish: () => {
             form.password = '';
             form.password_confirmation = '';
@@ -39,7 +41,7 @@ const submitPassword = () => {
         <div class="max-w-md w-full bg-card border border-border rounded-lg shadow-2xl p-8">
             <!-- Logo -->
             <div class="text-center mb-8">
-                <Link :href="route('home')" class="inline-block mb-6 hover:opacity-80 transition-opacity">
+                <Link :href="home.url()" class="inline-block mb-6 hover:opacity-80 transition-opacity">
                     <img src="/imgs/logo-tankcode.png" alt="Logo TANKCODE" class="h-12 mx-auto" />
                 </Link>
                 <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { create as login } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController'
+import { create as register } from '@/actions/App/Http/Controllers/Auth/RegisteredUserController'
+import { showLogin as studentLogin } from '@/actions/App/Http/Controllers/StudentAuthController'
+import { students } from '@/routes'
 import { Head, Link } from '@inertiajs/vue3'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import CurvedLoop from '@/Components/ui/CurvedLoop/CurvedLoop.vue'
@@ -85,20 +89,20 @@ const year = new Date().getFullYear()
 
         <!-- ações desktop -->
         <div class="hidden items-center gap-2 md:flex">
-          <Link v-if="$page.props.auth?.user" :href="route('students')"
+          <Link v-if="$page.props.auth?.user" :href="students.url()"
             class="rounded-xl border border-white/20 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10">
           ESTUDANTES
           </Link>
           <template v-else>
-            <Link :href="route('register')"
+            <Link :href="register.url()"
               class="rounded-full border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-300 hover:bg-white/5">
             REGISTRAR-SE
             </Link>
-            <Link :href="route('student.login')"
+            <Link :href="studentLogin.url()"
               class="rounded-full border border-white/15 bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
             Área do Estudante
             </Link>
-            <Link :href="route('login')"
+            <Link :href="login.url()"
               class="rounded-full border border-indigo-400/40 px-3 py-2 text-sm font-semibold text-indigo-300 hover:bg-white/5">
             Área Administrativa
             </Link>
@@ -133,13 +137,13 @@ const year = new Date().getFullYear()
               :class="{ 'navlink--active': activeSection === 'personas' }"
               @click.prevent="goTo('#personas'); mobileOpen = false">personas</a>
             <div class="mt-3 grid grid-cols-1 gap-2">
-              <Link :href="route('register')"
+              <Link :href="register.url()"
                 class="rounded-full border border-indigo-400/40 px-3 py-2 text-center text-sm font-semibold text-indigo-300 hover:bg-white/5">
               REGISTRAR-SE</Link>
-              <Link :href="route('student.login')"
+              <Link :href="studentLogin.url()"
                 class="rounded-full border border-white/15 bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-500">
               Área do Estudante</Link>
-              <Link :href="route('login')"
+              <Link :href="login.url()"
                 class="rounded-full border border-indigo-400/40 px-3 py-2 text-center text-sm font-semibold text-indigo-300 hover:bg-white/5">
               Área Administrativa</Link>
             </div>
@@ -173,7 +177,7 @@ const year = new Date().getFullYear()
             <p class="mx-auto mt-5 max-w-3xl text-sm text-white/80 sm:text-base">
               Aprenda programação se divertindo e faça exercícios com as linguagens mais requisitadas do mercado.
             </p>
-            <Link :href="route('login')"
+            <Link :href="login.url()"
               class="mx-auto mt-6 inline-flex items-center justify-center rounded-xl border border-white/60 px-5 py-3 text-sm font-semibold backdrop-blur hover:bg-white/10 sm:mt-7 sm:text-base">
             Iniciar agora
             </Link>

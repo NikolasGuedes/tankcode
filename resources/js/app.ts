@@ -4,7 +4,6 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
-import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { Toaster } from '@/components/ui/sonner'
 import 'vue-sonner/style.css'
@@ -18,7 +17,6 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h('div', [h(App, props), h(Toaster)]) })
             .use(plugin)
-            .use(ZiggyVue)
             .mount(el);
     },
     progress: {

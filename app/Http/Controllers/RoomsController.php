@@ -91,7 +91,7 @@ class RoomsController extends Controller
     }
 
     
-    public function editrooms($id)
+    public function edit($id)
     {
         $filters = request()->validate([
             'search' => 'nullable|string|max:255',
@@ -200,7 +200,7 @@ class RoomsController extends Controller
 
         if ($studentsInCurrentPage <= 1 && $remainingStudents > 0) {
             return redirect()
-                ->route('rooms.editrooms', [
+                ->route('rooms.edit', [
                     'id' => $room->id,
                     'filter' => 'unlinked',
                     'page' => 1
