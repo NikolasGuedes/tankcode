@@ -100,7 +100,8 @@ class HandleInertiaRequests extends Middleware
                 ['title' => 'Alunos', 'href' => route('director.students.index', absolute: false)],
             ],
             RoleEnum::TEACHER => [
-                ['title' => 'Professor', 'href' => route('teacher.dashboard', absolute: false)],
+                ['title' => 'Visao geral', 'href' => route('teacher.dashboard', absolute: false)],
+                ['title' => 'Atividades', 'href' => route('teacher.activities.index', absolute: false)],
             ],
             RoleEnum::STUDENT => [
                 ['title' => 'Aluno', 'href' => route('student.dashboard', absolute: false)],

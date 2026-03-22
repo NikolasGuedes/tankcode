@@ -82,86 +82,6 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9.form = DashboardController42
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
 * @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-const DashboardControllercf6c8862b72e9807168cdec948a3d610 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: DashboardControllercf6c8862b72e9807168cdec948a3d610.url(options),
-    method: 'get',
-})
-
-DashboardControllercf6c8862b72e9807168cdec948a3d610.definition = {
-    methods: ["get","head"],
-    url: '/teacher',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-DashboardControllercf6c8862b72e9807168cdec948a3d610.url = (options?: RouteQueryOptions) => {
-    return DashboardControllercf6c8862b72e9807168cdec948a3d610.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-DashboardControllercf6c8862b72e9807168cdec948a3d610.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: DashboardControllercf6c8862b72e9807168cdec948a3d610.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-DashboardControllercf6c8862b72e9807168cdec948a3d610.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: DashboardControllercf6c8862b72e9807168cdec948a3d610.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-const DashboardControllercf6c8862b72e9807168cdec948a3d610Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: DashboardControllercf6c8862b72e9807168cdec948a3d610.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-DashboardControllercf6c8862b72e9807168cdec948a3d610Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: DashboardControllercf6c8862b72e9807168cdec948a3d610.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
-* @route '/teacher'
-*/
-DashboardControllercf6c8862b72e9807168cdec948a3d610Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: DashboardControllercf6c8862b72e9807168cdec948a3d610.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-DashboardControllercf6c8862b72e9807168cdec948a3d610.form = DashboardControllercf6c8862b72e9807168cdec948a3d610Form
-/**
-* @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 const DashboardController750319cbfe81e0c4644d439731acf91e = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -242,7 +162,6 @@ DashboardController750319cbfe81e0c4644d439731acf91e.form = DashboardController75
 
 const DashboardController = {
     '/dashboard': DashboardController42a740574ecbfbac32f8cc353fc32db9,
-    '/teacher': DashboardControllercf6c8862b72e9807168cdec948a3d610,
     '/student': DashboardController750319cbfe81e0c4644d439731acf91e,
 }
 
