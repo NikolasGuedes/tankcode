@@ -6,6 +6,7 @@ use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -52,7 +53,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'email_verified_at' => optional($user->email_verified_at)?->toIso8601String(),
-                    'avatar' => $user->photo,
+                    'avatar' => $user->photo ? Storage::disk('public')->url($user->photo) : null,
                     'status' => $user->status,
                     'last_login_at' => optional($user->last_login_at)?->toIso8601String(),
                     'role' => $user->role ? [
