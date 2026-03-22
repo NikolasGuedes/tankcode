@@ -11,7 +11,7 @@ Route::get('/', function () {
 require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {
-    require __DIR__.'/portal.php';
+    require __DIR__.'/authenticated.php';
 
     Route::prefix('admin')->name('admin.')->middleware('role:'.RoleEnum::TANK_ADMIN->value)->group(function () {
         require __DIR__.'/admin/dashboard.php';

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 const DashboardController42a740574ecbfbac32f8cc353fc32db9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 DashboardController42a740574ecbfbac32f8cc353fc32db9.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9.url = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 DashboardController42a740574ecbfbac32f8cc353fc32db9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9.get = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 DashboardController42a740574ecbfbac32f8cc353fc32db9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9.head = (options?: RouteQuery
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 const DashboardController42a740574ecbfbac32f8cc353fc32db9Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const DashboardController42a740574ecbfbac32f8cc353fc32db9Form = (options?: Route
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 DashboardController42a740574ecbfbac32f8cc353fc32db9Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9Form.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/dashboard'
 */
 DashboardController42a740574ecbfbac32f8cc353fc32db9Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ DashboardController42a740574ecbfbac32f8cc353fc32db9Form.head = (options?: RouteQ
 DashboardController42a740574ecbfbac32f8cc353fc32db9.form = DashboardController42a740574ecbfbac32f8cc353fc32db9Form
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 const DashboardControllercad30db1f60378b5d578214a41b1c51b = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51b.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 DashboardControllercad30db1f60378b5d578214a41b1c51b.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51b.url = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 DashboardControllercad30db1f60378b5d578214a41b1c51b.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51b.get = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 DashboardControllercad30db1f60378b5d578214a41b1c51b.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51b.head = (options?: RouteQuery
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 const DashboardControllercad30db1f60378b5d578214a41b1c51bForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const DashboardControllercad30db1f60378b5d578214a41b1c51bForm = (options?: Route
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 DashboardControllercad30db1f60378b5d578214a41b1c51bForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51bForm.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/owner'
 */
 DashboardControllercad30db1f60378b5d578214a41b1c51bForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -161,7 +161,7 @@ DashboardControllercad30db1f60378b5d578214a41b1c51bForm.head = (options?: RouteQ
 DashboardControllercad30db1f60378b5d578214a41b1c51b.form = DashboardControllercad30db1f60378b5d578214a41b1c51bForm
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 const DashboardControllercf6c8862b72e9807168cdec948a3d610 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -176,7 +176,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 DashboardControllercf6c8862b72e9807168cdec948a3d610.url = (options?: RouteQueryOptions) => {
@@ -185,7 +185,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610.url = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 DashboardControllercf6c8862b72e9807168cdec948a3d610.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -195,7 +195,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610.get = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 DashboardControllercf6c8862b72e9807168cdec948a3d610.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -205,7 +205,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610.head = (options?: RouteQuery
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 const DashboardControllercf6c8862b72e9807168cdec948a3d610Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -215,7 +215,7 @@ const DashboardControllercf6c8862b72e9807168cdec948a3d610Form = (options?: Route
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 DashboardControllercf6c8862b72e9807168cdec948a3d610Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -225,7 +225,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610Form.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/teacher'
 */
 DashboardControllercf6c8862b72e9807168cdec948a3d610Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -241,7 +241,7 @@ DashboardControllercf6c8862b72e9807168cdec948a3d610Form.head = (options?: RouteQ
 DashboardControllercf6c8862b72e9807168cdec948a3d610.form = DashboardControllercf6c8862b72e9807168cdec948a3d610Form
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 const DashboardController750319cbfe81e0c4644d439731acf91e = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -256,7 +256,7 @@ DashboardController750319cbfe81e0c4644d439731acf91e.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 DashboardController750319cbfe81e0c4644d439731acf91e.url = (options?: RouteQueryOptions) => {
@@ -265,7 +265,7 @@ DashboardController750319cbfe81e0c4644d439731acf91e.url = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 DashboardController750319cbfe81e0c4644d439731acf91e.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -275,7 +275,7 @@ DashboardController750319cbfe81e0c4644d439731acf91e.get = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 DashboardController750319cbfe81e0c4644d439731acf91e.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -285,7 +285,7 @@ DashboardController750319cbfe81e0c4644d439731acf91e.head = (options?: RouteQuery
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 const DashboardController750319cbfe81e0c4644d439731acf91eForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -295,7 +295,7 @@ const DashboardController750319cbfe81e0c4644d439731acf91eForm = (options?: Route
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 DashboardController750319cbfe81e0c4644d439731acf91eForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -305,7 +305,7 @@ DashboardController750319cbfe81e0c4644d439731acf91eForm.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\DashboardController::__invoke
-* @see app/Http/Controllers/DashboardController.php:11
+* @see app/Http/Controllers/DashboardController.php:9
 * @route '/student'
 */
 DashboardController750319cbfe81e0c4644d439731acf91eForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
