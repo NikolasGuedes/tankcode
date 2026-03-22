@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { create as forgotPassword } from '@/actions/App/Http/Controllers/Auth/PasswordResetLinkController';
-import { create as register } from '@/actions/App/Http/Controllers/Auth/RegisteredUserController';
 import { store as login } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -75,10 +74,6 @@ defineProps<{
                 </Button>
             </div>
 
-            <div class="text-sm text-center text-muted-foreground">
-                Não tem uma conta?
-                <TextLink :href="register.url()" :tabindex="5">Registrar-se</TextLink>
-            </div>
         </Form>
     </AuthBase>
 </template>

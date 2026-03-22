@@ -1,21 +1,15 @@
-import StudentsController from './StudentsController'
-import StudentAuthController from './StudentAuthController'
-import StudentPasswordResetController from './StudentPasswordResetController'
-import RoomsController from './RoomsController'
-import StudentEmailVerificationController from './StudentEmailVerificationController'
-import ActivitiesController from './ActivitiesController'
-import Settings from './Settings'
 import Auth from './Auth'
+import DashboardController from './DashboardController'
+import Admin from './Admin'
+import Director from './Director'
+import Settings from './Settings'
 
 const Controllers = {
-    StudentsController: Object.assign(StudentsController, StudentsController),
-    StudentAuthController: Object.assign(StudentAuthController, StudentAuthController),
-    StudentPasswordResetController: Object.assign(StudentPasswordResetController, StudentPasswordResetController),
-    RoomsController: Object.assign(RoomsController, RoomsController),
-    StudentEmailVerificationController: Object.assign(StudentEmailVerificationController, StudentEmailVerificationController),
-    ActivitiesController: Object.assign(ActivitiesController, ActivitiesController),
-    Settings: Object.assign(Settings, Settings),
     Auth: Object.assign(Auth, Auth),
+    DashboardController: Object.assign(DashboardController, DashboardController),
+    Admin: Object.assign(Admin, Admin),
+    Director: Object.assign(Director, Director),
+    Settings: Object.assign(Settings, Settings),
 }
 
 export default Controllers

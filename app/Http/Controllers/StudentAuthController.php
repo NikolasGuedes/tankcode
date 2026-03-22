@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use App\Models\Student;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class StudentAuthController extends Controller
 {
@@ -17,7 +17,7 @@ class StudentAuthController extends Controller
         if (Auth::guard('student')->check()) {
             return redirect()->route('student.dashboard');
         }
-        
+
         return Inertia::render('student/StudentLogin');
     }
 
@@ -31,28 +31,28 @@ class StudentAuthController extends Controller
         $student = Student::where('email', $credentials['email'])->first();
 
         // Não revelar se o estudante existe ou não
-        if (!$student || !$student->password) {
+        if (! $student || ! $student->password) {
             return back()->withErrors([
                 'email' => 'Credenciais inválidas.',
             ])->onlyInput('email');
         }
 
         // Verificar senha primeiro (não revelar outros detalhes se a senha estiver errada)
-        if (!Hash::check($credentials['password'], $student->password)) {
+        if (! Hash::check($credentials['password'], $student->password)) {
             return back()->withErrors([
                 'email' => 'Credenciais inválidas.',
             ])->onlyInput('email');
         }
 
         // Verificar se o email foi verificado
-        if (!$student->hasVerifiedEmail()) {
+        if (! $student->hasVerifiedEmail()) {
             return back()->withErrors([
                 'email' => 'Credenciais inválidas.',
             ])->onlyInput('email');
         }
 
         // Verificar se tem acesso à plataforma
-        if (!$student->platform_access) {
+        if (! $student->platform_access) {
             return back()->withErrors([
                 'email' => 'Credenciais inválidas.',
             ])->onlyInput('email');
@@ -73,8 +73,8 @@ class StudentAuthController extends Controller
     public function dashboard()
     {
         $student = Auth::guard('student')->user();
-        
-        if (!$student) {
+
+        if (! $student) {
             return redirect()->route('student.login')->with('error', 'Sessão expirada. Faça login novamente.');
         }
 
@@ -84,7 +84,7 @@ class StudentAuthController extends Controller
                 'name' => $student->name,
                 'email' => $student->email,
                 'cod' => $student->cod,
-            ]
+            ],
         ]);
     }
 
@@ -93,7 +93,7 @@ class StudentAuthController extends Controller
         Auth::guard('student')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
-        
+
         return redirect()->route('home')->with('success', 'Logout realizado com sucesso!');
     }
 }

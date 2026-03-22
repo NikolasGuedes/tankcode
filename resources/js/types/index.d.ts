@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
 export interface Auth {
-    user: User;
+    user: User | null;
+    navigation: NavItem[];
 }
 
 export interface BreadcrumbItem {
@@ -28,9 +29,17 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    status: string;
+    last_login_at: string | null;
+    role: {
+        name: string;
+        label: string;
+    } | null;
+    school: {
+        id: number;
+        name: string;
+    } | null;
     email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

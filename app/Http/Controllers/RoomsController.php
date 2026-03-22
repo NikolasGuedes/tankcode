@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\Room;
 use App\Models\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class RoomsController extends Controller
 {
@@ -19,7 +18,7 @@ class RoomsController extends Controller
         $rooms = Room::query()
             ->when($search, function ($query, $search) {
                 $query->where('name_room', 'like', "%{$search}%")
-                      ->orWhere('cod', 'like', "%{$search}%");
+                    ->orWhere('cod', 'like', "%{$search}%");
             })
             ->orderBy('name_room')
             ->paginate(10);
@@ -31,44 +30,44 @@ class RoomsController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name_room' => 'required|string|max:255',
-    ]);
+    {
+        $request->validate([
+            'name_room' => 'required|string|max:255',
+        ]);
 
-    try {
-        DB::transaction(function () use ($request) {
-            // Gerar um código único no formato AAA-123
-            do {
-                $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
-                $code = $prefix . '-' . rand(100, 999);
-            } while (Room::where('cod', $code)->exists());
+        try {
+            DB::transaction(function () use ($request) {
+                // Gerar um código único no formato AAA-123
+                do {
+                    $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
+                    $code = $prefix.'-'.rand(100, 999);
+                } while (Room::where('cod', $code)->exists());
 
-            Room::create([
-                'name_room' => $request->name_room,
-                'cod' => $code,
+                Room::create([
+                    'name_room' => $request->name_room,
+                    'cod' => $code,
+                ]);
+            });
+        } catch (\Throwable $th) {
+            Log::error('Erro ao adicionar sala: '.$th->getMessage(), [
+                'trace' => $th->getTraceAsString(),
+                'request_data' => $request->all(),
             ]);
-        });
-    } catch (\Throwable $th) {
-        Log::error('Erro ao adicionar sala: ' . $th->getMessage(), [
-            'trace' => $th->getTraceAsString(),
-            'request_data' => $request->all()
-        ]);
 
-        return redirect()->back()->withErrors([
-            'error' => 'Erro ao adicionar sala: ' . $th->getMessage()
-        ]);
+            return redirect()->back()->withErrors([
+                'error' => 'Erro ao adicionar sala: '.$th->getMessage(),
+            ]);
+        }
+
+        return redirect()->route('rooms.index')->with('success', 'Sala adicionada com sucesso!');
     }
-    
-    return redirect()->route('rooms.index')->with('success', 'Sala adicionada com sucesso!');
-}
 
     public function update($id, Request $request)
     {
         $request->validate([
             'name_room' => 'required|string|max:255',
         ]);
-    
+
         try {
             DB::transaction(function () use ($id, $request) {
                 $room = Room::findOrFail($id);
@@ -76,21 +75,20 @@ class RoomsController extends Controller
                 $room->save();
             });
         } catch (\Throwable $th) {
-            Log::error('Erro ao atualizar sala: ' . $th->getMessage(), [
+            Log::error('Erro ao atualizar sala: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
                 'room_id' => $id,
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             return redirect()->back()->withErrors([
-                'error' => 'Erro ao atualizar sala: ' . $th->getMessage()
+                'error' => 'Erro ao atualizar sala: '.$th->getMessage(),
             ]);
         }
-        
+
         return redirect()->route('rooms.index')->with('success', 'Sala atualizada com sucesso!');
     }
 
-    
     public function edit($id)
     {
         $filters = request()->validate([
@@ -101,14 +99,13 @@ class RoomsController extends Controller
 
         $search = $filters['search'] ?? '';
         $filter = $filters['filter'] ?? 'linked'; // Define 'linked' como padrão
-        
 
-        $room = Room::with('students')->findOrFail($id); 
+        $room = Room::with('students')->findOrFail($id);
 
         // Construir a query base
         $studentsQuery = Student::query()
             ->whereNotNull('email_verified_at');
-            
+
         // Aplicar os filtros com base na aba selecionada
         if ($filter === 'linked') {
             $studentsQuery->where('room_id', $room->id);
@@ -119,9 +116,9 @@ class RoomsController extends Controller
         // Aplicar busca se houver
         if ($search) {
             $studentsQuery->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('cod', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('cod', 'like', '%'.$search.'%');
             });
         }
 
@@ -134,6 +131,7 @@ class RoomsController extends Controller
         // Mapeia os resultados após a paginação
         $students->through(function ($student) use ($room) {
             $student->is_linked = $student->room_id === $room->id;
+
             return $student;
         });
 
@@ -155,7 +153,6 @@ class RoomsController extends Controller
             'totalLinked' => $totalLinked,
             'totalUnlinked' => $totalUnlinked,
         ]);
-            
 
         return Inertia::render('rooms/EditRooms', [
             'room' => $room,
@@ -164,7 +161,7 @@ class RoomsController extends Controller
             'filter' => $filter, // **Passa o filtro atual de volta para o Vue**
         ]);
     }
-    
+
     public function addStudent(Request $request, Room $room)
     {
         $validated = $request->validate([
@@ -172,12 +169,12 @@ class RoomsController extends Controller
         ]);
 
         $student = Student::findOrFail($validated['student_id']);
-        
+
         // Se o aluno já estiver na sala, não faça nada ou retorne um erro.
         if ($student->room_id === $room->id) {
-             return redirect()->back()->with('error', 'O aluno já está nesta sala!');
+            return redirect()->back()->with('error', 'O aluno já está nesta sala!');
         }
-        
+
         // VINCULA O ALUNO À NOVA SALA
         $student->room()->associate($room);
         $student->save();
@@ -191,7 +188,7 @@ class RoomsController extends Controller
         // redireciona para a primeira página
         $currentPage = $request->input('page', 1);
         $perPage = 10;
-        
+
         $studentsInCurrentPage = Student::whereNull('room_id')
             ->whereNotNull('email_verified_at')
             ->skip(($currentPage - 1) * $perPage)
@@ -203,7 +200,7 @@ class RoomsController extends Controller
                 ->route('rooms.edit', [
                     'id' => $room->id,
                     'filter' => 'unlinked',
-                    'page' => 1
+                    'page' => 1,
                 ])
                 ->with('success', 'Aluno adicionado à sala com sucesso!');
         }
@@ -226,7 +223,7 @@ class RoomsController extends Controller
 
         return redirect()->back()->with('success', 'Aluno removido da sala com sucesso!');
     }
-    
+
     public function destroy($id, Request $request)
     {
         try {
@@ -237,16 +234,16 @@ class RoomsController extends Controller
                 $room->delete();
             });
         } catch (\Throwable $th) {
-            Log::error('Erro ao deletar sala: ' . $th->getMessage(), [
+            Log::error('Erro ao deletar sala: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
                 'room_id' => $id,
             ]);
 
             return redirect()->back()->withErrors([
-                'error' => 'Erro ao deletar sala: ' . $th->getMessage()
+                'error' => 'Erro ao deletar sala: '.$th->getMessage(),
             ]);
         }
-        
+
         return redirect()->route('rooms.index')->with('success', 'Sala deletada com sucesso!');
     }
 }
