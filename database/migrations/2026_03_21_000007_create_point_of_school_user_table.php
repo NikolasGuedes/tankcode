@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignId('point_of_school_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('title')->nullable();
-            $table->string('enrollment_code')->nullable();
             $table->boolean('is_primary')->default(false);
             $table->string('status')->default('active');
             $table->timestamps();

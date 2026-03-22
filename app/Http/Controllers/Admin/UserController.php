@@ -184,20 +184,12 @@ class UserController extends Controller
             return;
         }
 
-        $existingPivots = $user->pointOfSchools()
-            ->withPivot(['enrollment_code'])
-            ->get()
-            ->keyBy('id');
-
         $syncPayload = collect($pointIds)
             ->values()
-            ->mapWithKeys(function (int $pointId, int $index) use ($existingPivots, $title) {
-                $existingPivot = $existingPivots->get($pointId)?->pivot;
-
+            ->mapWithKeys(function (int $pointId, int $index) use ($title) {
                 return [
                     $pointId => [
                         'title' => $title,
-                        'enrollment_code' => $existingPivot?->enrollment_code ?? strtoupper(Str::random(8)),
                         'is_primary' => $index === 0,
                         'status' => 'active',
                     ],

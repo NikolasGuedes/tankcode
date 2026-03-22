@@ -31,7 +31,7 @@ class PointOfSchool extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withPivot(['title', 'enrollment_code', 'is_primary', 'status'])
+            ->withPivot(['title', 'is_primary', 'status'])
             ->withTimestamps();
     }
 

@@ -4,6 +4,8 @@ use App\Http\Controllers\Director\TeacherController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/teachers', [TeacherController::class, 'index'])->name('teachers.index');
+Route::get('/teachers/create', [TeacherController::class, 'create'])->name('teachers.create');
+Route::get('/teachers/{teacher}/edit', [TeacherController::class, 'edit'])->name('teachers.edit');
 Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
 Route::put('/teachers/{teacher}', [TeacherController::class, 'update'])->name('teachers.update');
 Route::patch('/teachers/{teacher}/access', [TeacherController::class, 'updateAccess'])->name('teachers.access.update');

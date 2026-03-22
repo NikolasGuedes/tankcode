@@ -189,14 +189,11 @@ class SchoolDemoSeeder extends Seeder
 
     private function syncPoints(User $user, array $pointIds, string $title): void
     {
-        $existingPivots = $user->pointOfSchools()->withPivot(['enrollment_code'])->get()->keyBy('id');
-
         $payload = collect($pointIds)
             ->values()
             ->mapWithKeys(fn (int $pointId, int $index) => [
                 $pointId => [
                     'title' => $title,
-                    'enrollment_code' => $existingPivots->get($pointId)?->pivot?->enrollment_code ?? strtoupper(Str::random(8)),
                     'is_primary' => $index === 0,
                     'status' => 'active',
                 ],

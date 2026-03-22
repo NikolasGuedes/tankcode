@@ -70,7 +70,7 @@ class User extends Authenticatable
     public function pointOfSchools(): BelongsToMany
     {
         return $this->belongsToMany(PointOfSchool::class)
-            ->withPivot(['title', 'enrollment_code', 'is_primary', 'status'])
+            ->withPivot(['title', 'is_primary', 'status'])
             ->withTimestamps();
     }
 

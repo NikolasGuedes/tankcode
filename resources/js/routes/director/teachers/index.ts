@@ -82,8 +82,194 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
+    method: 'get',
+})
+
+create.definition = {
+    methods: ["get","head"],
+    url: '/director/teachers/create',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: create.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: create.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: create.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: create.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::create
+* @see app/Http/Controllers/Director/TeacherController.php:66
+* @route '/director/teachers/create'
+*/
+createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: create.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+create.form = createForm
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+export const edit = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+
+edit.definition = {
+    methods: ["get","head"],
+    url: '/director/teachers/{teacher}/edit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+edit.url = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { teacher: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { teacher: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            teacher: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        teacher: typeof args.teacher === 'object'
+        ? args.teacher.id
+        : args.teacher,
+    }
+
+    return edit.definition.url
+            .replace('{teacher}', parsedArgs.teacher.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+edit.get = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+edit.head = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: edit.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+const editForm = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: edit.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+editForm.get = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: edit.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Director\TeacherController::edit
+* @see app/Http/Controllers/Director/TeacherController.php:74
+* @route '/director/teachers/{teacher}/edit'
+*/
+editForm.head = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: edit.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+edit.form = editForm
+
+/**
 * @see \App\Http\Controllers\Director\TeacherController::store
-* @see app/Http/Controllers/Director/TeacherController.php:71
+* @see app/Http/Controllers/Director/TeacherController.php:90
 * @route '/director/teachers'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -98,7 +284,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::store
-* @see app/Http/Controllers/Director/TeacherController.php:71
+* @see app/Http/Controllers/Director/TeacherController.php:90
 * @route '/director/teachers'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -107,7 +293,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::store
-* @see app/Http/Controllers/Director/TeacherController.php:71
+* @see app/Http/Controllers/Director/TeacherController.php:90
 * @route '/director/teachers'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -117,7 +303,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::store
-* @see app/Http/Controllers/Director/TeacherController.php:71
+* @see app/Http/Controllers/Director/TeacherController.php:90
 * @route '/director/teachers'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -127,7 +313,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::store
-* @see app/Http/Controllers/Director/TeacherController.php:71
+* @see app/Http/Controllers/Director/TeacherController.php:90
 * @route '/director/teachers'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -139,7 +325,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:92
+* @see app/Http/Controllers/Director/TeacherController.php:111
 * @route '/director/teachers/{teacher}'
 */
 export const update = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -154,7 +340,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:92
+* @see app/Http/Controllers/Director/TeacherController.php:111
 * @route '/director/teachers/{teacher}'
 */
 update.url = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -187,7 +373,7 @@ update.url = (args: { teacher: string | number | { id: string | number } } | [te
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:92
+* @see app/Http/Controllers/Director/TeacherController.php:111
 * @route '/director/teachers/{teacher}'
 */
 update.put = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -197,7 +383,7 @@ update.put = (args: { teacher: string | number | { id: string | number } } | [te
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:92
+* @see app/Http/Controllers/Director/TeacherController.php:111
 * @route '/director/teachers/{teacher}'
 */
 const updateForm = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +398,7 @@ const updateForm = (args: { teacher: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:92
+* @see app/Http/Controllers/Director/TeacherController.php:111
 * @route '/director/teachers/{teacher}'
 */
 updateForm.put = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -229,7 +415,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::resendInvitation
-* @see app/Http/Controllers/Director/TeacherController.php:138
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/resend-invitation'
 */
 export const resendInvitation = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -244,7 +430,7 @@ resendInvitation.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::resendInvitation
-* @see app/Http/Controllers/Director/TeacherController.php:138
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/resend-invitation'
 */
 resendInvitation.url = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -277,7 +463,7 @@ resendInvitation.url = (args: { teacher: string | number | { id: string | number
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::resendInvitation
-* @see app/Http/Controllers/Director/TeacherController.php:138
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/resend-invitation'
 */
 resendInvitation.post = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -287,7 +473,7 @@ resendInvitation.post = (args: { teacher: string | number | { id: string | numbe
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::resendInvitation
-* @see app/Http/Controllers/Director/TeacherController.php:138
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/resend-invitation'
 */
 const resendInvitationForm = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -297,7 +483,7 @@ const resendInvitationForm = (args: { teacher: string | number | { id: string | 
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::resendInvitation
-* @see app/Http/Controllers/Director/TeacherController.php:138
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/resend-invitation'
 */
 resendInvitationForm.post = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -309,7 +495,7 @@ resendInvitation.form = resendInvitationForm
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::destroy
-* @see app/Http/Controllers/Director/TeacherController.php:109
+* @see app/Http/Controllers/Director/TeacherController.php:128
 * @route '/director/teachers/{teacher}'
 */
 export const destroy = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -324,7 +510,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::destroy
-* @see app/Http/Controllers/Director/TeacherController.php:109
+* @see app/Http/Controllers/Director/TeacherController.php:128
 * @route '/director/teachers/{teacher}'
 */
 destroy.url = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -357,7 +543,7 @@ destroy.url = (args: { teacher: string | number | { id: string | number } } | [t
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::destroy
-* @see app/Http/Controllers/Director/TeacherController.php:109
+* @see app/Http/Controllers/Director/TeacherController.php:128
 * @route '/director/teachers/{teacher}'
 */
 destroy.delete = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -367,7 +553,7 @@ destroy.delete = (args: { teacher: string | number | { id: string | number } } |
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::destroy
-* @see app/Http/Controllers/Director/TeacherController.php:109
+* @see app/Http/Controllers/Director/TeacherController.php:128
 * @route '/director/teachers/{teacher}'
 */
 const destroyForm = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -382,7 +568,7 @@ const destroyForm = (args: { teacher: string | number | { id: string | number } 
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::destroy
-* @see app/Http/Controllers/Director/TeacherController.php:109
+* @see app/Http/Controllers/Director/TeacherController.php:128
 * @route '/director/teachers/{teacher}'
 */
 destroyForm.delete = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -399,6 +585,8 @@ destroy.form = destroyForm
 
 const teachers = {
     index: Object.assign(index, index),
+    create: Object.assign(create, create),
+    edit: Object.assign(edit, edit),
     store: Object.assign(store, store),
     update: Object.assign(update, update),
     access: Object.assign(access, access),

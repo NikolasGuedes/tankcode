@@ -62,6 +62,16 @@ class StoreClassroomRequest extends FormRequest
 
                 if ($validStudentsCount !== $studentIds->count()) {
                     $validator->errors()->add('student_ids', 'Selecione apenas alunos vinculados ao ponto de ensino informado.');
+                    return;
+                }
+
+                $alreadyAssignedCount = User::query()
+                    ->whereIn('id', $studentIds)
+                    ->whereHas('classrooms')
+                    ->count();
+
+                if ($alreadyAssignedCount > 0) {
+                    $validator->errors()->add('student_ids', 'Um aluno so pode estar vinculado a uma unica sala.');
                 }
             },
         ];

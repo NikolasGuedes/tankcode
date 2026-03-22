@@ -59,12 +59,31 @@ class TeacherController extends Controller
                 'active' => $teachers->where('status', 'active')->count(),
                 'points' => $pointIds->count(),
             ],
-            'points' => PointOfSchool::query()
-                ->whereIn('id', $pointIds)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
             'teachers' => $teachers,
+        ]);
+    }
+
+    public function create(TeacherIndexRequest $request): Response
+    {
+        return Inertia::render('director/Teachers/Form', [
+            'teacher' => null,
+            ...$this->formPayload($request->user()),
+        ]);
+    }
+
+    public function edit(Request $request, User $teacher): Response
+    {
+        abort_unless($this->canManageTeacher($request->user(), $teacher), 404);
+
+        return Inertia::render('director/Teachers/Form', [
+            'teacher' => [
+                'id' => $teacher->id,
+                'name' => $teacher->name,
+                'email' => $teacher->email,
+                'status' => $teacher->status,
+                'point_of_school_ids' => $teacher->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
+            ],
+            ...$this->formPayload($request->user()),
         ]);
     }
 
@@ -150,14 +169,11 @@ class TeacherController extends Controller
 
     private function syncPoints(User $user, array $pointIds, string $title): void
     {
-        $existingPivots = $user->pointOfSchools()->withPivot(['enrollment_code'])->get()->keyBy('id');
-
         $payload = collect($pointIds)
             ->values()
             ->mapWithKeys(fn (int $pointId, int $index) => [
                 $pointId => [
                     'title' => $title,
-                    'enrollment_code' => $existingPivots->get($pointId)?->pivot?->enrollment_code ?? strtoupper(Str::random(8)),
                     'is_primary' => $index === 0,
                     'status' => 'active',
                 ],
@@ -176,5 +192,18 @@ class TeacherController extends Controller
         $allowedIds = $director->pointOfSchools()->pluck('point_of_schools.id');
 
         return $teacher->pointOfSchools()->whereIn('point_of_schools.id', $allowedIds)->exists();
+    }
+
+    private function formPayload(?User $director): array
+    {
+        $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+
+        return [
+            'points' => PointOfSchool::query()
+                ->whereIn('id', $pointIds)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
+        ];
     }
 }

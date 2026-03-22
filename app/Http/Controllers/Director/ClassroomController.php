@@ -11,6 +11,7 @@ use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,44 +50,39 @@ class ClassroomController extends Controller
                 'student_ids' => $classroom->students->pluck('id')->values()->all(),
             ]);
 
-        $teachers = User::query()
-            ->where('school_id', $director?->school_id)
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::TEACHER->value))
-            ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
-            ->orderBy('name')
-            ->get()
-            ->map(fn (User $teacher) => [
-                'id' => $teacher->id,
-                'name' => $teacher->name,
-                'point_of_school_ids' => $teacher->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
-            ]);
-
-        $students = User::query()
-            ->where('school_id', $director?->school_id)
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
-            ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
-            ->orderBy('name')
-            ->get()
-            ->map(fn (User $student) => [
-                'id' => $student->id,
-                'name' => $student->name,
-                'point_of_school_ids' => $student->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
-            ]);
-
         return Inertia::render('director/Classrooms/Index', [
             'stats' => [
                 'total' => $classrooms->count(),
                 'active' => $classrooms->where('status', 'active')->count(),
                 'students' => $classrooms->sum('students_count'),
             ],
-            'points' => PointOfSchool::query()
-                ->whereIn('id', $pointIds)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
-            'teachers' => $teachers,
-            'students' => $students,
             'classrooms' => $classrooms,
+        ]);
+    }
+
+    public function create(ClassroomIndexRequest $request): Response
+    {
+        return Inertia::render('director/Classrooms/Form', [
+            'classroom' => null,
+            ...$this->formPayload($request->user()),
+        ]);
+    }
+
+    public function edit(Request $request, Classroom $classroom): Response
+    {
+        abort_unless($this->canManageClassroom($request->user(), $classroom), 404);
+
+        return Inertia::render('director/Classrooms/Form', [
+            'classroom' => [
+                'id' => $classroom->id,
+                'point_of_school_id' => $classroom->point_of_school_id,
+                'teacher_id' => $classroom->teacher_id,
+                'name' => $classroom->name,
+                'code' => $classroom->code,
+                'status' => $classroom->status,
+                'student_ids' => $classroom->students()->pluck('users.id')->values()->all(),
+            ],
+            ...$this->formPayload($request->user(), $classroom),
         ]);
     }
 
@@ -135,5 +131,48 @@ class ClassroomController extends Controller
         }
 
         return $director->pointOfSchools()->where('point_of_schools.id', $classroom->point_of_school_id)->exists();
+    }
+
+    private function formPayload(?User $director, ?Classroom $currentClassroom = null): array
+    {
+        $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+
+        $teachers = User::query()
+            ->where('school_id', $director?->school_id)
+            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::TEACHER->value))
+            ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
+            ->orderBy('name')
+            ->get()
+            ->map(fn (User $teacher) => [
+                'id' => $teacher->id,
+                'name' => $teacher->name,
+                'point_of_school_ids' => $teacher->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
+            ]);
+
+        $students = User::query()
+            ->with(['classrooms:id,name'])
+            ->where('school_id', $director?->school_id)
+            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
+            ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
+            ->orderBy('name')
+            ->get()
+            ->map(fn (User $student) => [
+                'id' => $student->id,
+                'name' => $student->name,
+                'point_of_school_ids' => $student->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
+                'assigned_classroom_id' => $student->classrooms->first()?->id,
+                'assigned_classroom_name' => $student->classrooms->first()?->name,
+                'is_assigned_to_current_classroom' => $currentClassroom ? $student->classrooms->contains('id', $currentClassroom->id) : false,
+            ]);
+
+        return [
+            'points' => PointOfSchool::query()
+                ->whereIn('id', $pointIds)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
+            'teachers' => $teachers,
+            'students' => $students,
+        ];
     }
 }

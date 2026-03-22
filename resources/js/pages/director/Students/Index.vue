@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
+    downloadTemplate as downloadStudentTemplate,
     destroy as destroyStudent,
+    importStudents as importStudentsAction,
     resendInvitation as resendStudentInvitation,
     store as storeStudent,
     update as updateStudent,
@@ -15,10 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { CheckCircle2, Download, Mail, Pencil, Plus, Trash2, Upload, XCircle } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 type PointOption = { id: number; name: string };
+type ClassroomOption = { id: number; point_of_school_id: number; name: string; code: string };
 type StudentRow = {
     id: number;
     name: string;
@@ -35,6 +38,7 @@ type StudentRow = {
 const props = defineProps<{
     stats: { total: number; active: number; points: number };
     points: PointOption[];
+    classrooms: ClassroomOption[];
     students: StudentRow[];
 }>();
 
@@ -44,13 +48,22 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const dialogOpen = ref(false);
+const importDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedStudent = ref<StudentRow | null>(null);
 const accessUpdatingId = ref<number | null>(null);
 const resendingInvitationId = ref<number | null>(null);
 const form = useForm({ name: '', email: '', point_of_school_id: '', status: 'active' });
+const importForm = useForm({
+    point_of_school_id: props.points[0]?.id ? String(props.points[0].id) : '',
+    classroom_id: '',
+    file: null as File | null,
+});
 const deleteForm = useForm({});
 const accessLabel: Record<string, string> = { active: 'Habilitado', inactive: 'Desabilitado' };
+const availableImportClassrooms = computed(() =>
+    props.classrooms.filter((classroom) => String(classroom.point_of_school_id) === importForm.point_of_school_id),
+);
 
 const resetForm = () => {
     form.clearErrors();
@@ -64,6 +77,23 @@ const closeDialog = () => {
     dialogOpen.value = false;
     selectedStudent.value = null;
     resetForm();
+};
+
+const resetImportForm = () => {
+    importForm.clearErrors();
+    importForm.point_of_school_id = props.points[0]?.id ? String(props.points[0].id) : '';
+    importForm.classroom_id = '';
+    importForm.file = null;
+};
+
+const openImportDialog = () => {
+    resetImportForm();
+    importDialogOpen.value = true;
+};
+
+const closeImportDialog = () => {
+    importDialogOpen.value = false;
+    resetImportForm();
 };
 
 const openCreateDialog = () => {
@@ -112,6 +142,19 @@ const submitDelete = () => {
     });
 };
 
+const handleImportFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    importForm.file = target.files?.[0] ?? null;
+};
+
+const submitImport = () => {
+    importForm.post(importStudentsAction().url, {
+        preserveScroll: true,
+        forceFormData: true,
+        onSuccess: () => closeImportDialog(),
+    });
+};
+
 const updateAccess = (student: StudentRow, value: unknown) => {
     const nextStatus = ['string', 'number', 'bigint'].includes(typeof value) ? String(value) : '';
 
@@ -151,6 +194,18 @@ const resendInvitation = (student: StudentRow) => {
         },
     );
 };
+
+watch(
+    () => importForm.point_of_school_id,
+    (pointId) => {
+        const matchingClassrooms = props.classrooms.filter((classroom) => String(classroom.point_of_school_id) === pointId);
+
+        if (!matchingClassrooms.some((classroom) => String(classroom.id) === importForm.classroom_id)) {
+            importForm.classroom_id = matchingClassrooms[0]?.id ? String(matchingClassrooms[0].id) : '';
+        }
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -174,7 +229,19 @@ const resendInvitation = (student: StudentRow) => {
                         <h2 class="text-2xl font-semibold text-white">Alunos cadastrados</h2>
                         <p class="text-sm text-white/60">Controle validacao de e-mail, acesso a plataforma e vinculacao de cada aluno.</p>
                     </div>
-                    <Button class="rounded-2xl" @click="openCreateDialog"><Plus class="size-4" />Novo Aluno</Button>
+                    <div class="flex flex-wrap items-center justify-end gap-3">
+                        <Button as-child class="rounded-2xl !bg-primary !text-white hover:!bg-[var(--primary-hover)]">
+                            <a :href="downloadStudentTemplate().url">
+                                <Download class="size-4" />
+                                Baixar template
+                            </a>
+                        </Button>
+                        <Button class="rounded-2xl !bg-primary !text-white hover:!bg-[var(--primary-hover)]" @click="openImportDialog">
+                            <Upload class="size-4" />
+                            Importar alunos
+                        </Button>
+                        <Button class="rounded-2xl" @click="openCreateDialog"><Plus class="size-4" />Novo Aluno</Button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -210,6 +277,61 @@ const resendInvitation = (student: StudentRow) => {
             </AppReveal>
         </section>
     </AppLayout>
+
+    <Dialog :open="importDialogOpen" @update:open="(value) => !value ? closeImportDialog() : (importDialogOpen = value)">
+        <DialogContent class="border-border bg-card text-white sm:max-w-xl">
+            <DialogHeader>
+                <DialogTitle>Importar alunos</DialogTitle>
+                <DialogDescription class="text-white/60">Use o template padrao com as colunas NOME e EMAIL e escolha o ponto de ensino que recebera os alunos importados.</DialogDescription>
+            </DialogHeader>
+            <form class="space-y-5" @submit.prevent="submitImport">
+                <div class="grid gap-2">
+                    <Label for="import-student-point">Ponto de Ensino</Label>
+                    <Select v-model="importForm.point_of_school_id">
+                        <SelectTrigger id="import-student-point" class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Selecione o ponto de ensino" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem v-for="point in props.points" :key="point.id" :value="String(point.id)">
+                                {{ point.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="import-student-classroom">Turma</Label>
+                    <Select v-model="importForm.classroom_id">
+                        <SelectTrigger id="import-student-classroom" class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem v-for="classroom in availableImportClassrooms" :key="classroom.id" :value="String(classroom.id)">
+                                {{ classroom.name }}<span v-if="classroom.code"> - {{ classroom.code }}</span>
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p class="text-xs text-white/50">A lista de turmas acompanha o ponto de ensino selecionado.</p>
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="import-student-file">Arquivo</Label>
+                    <Input id="import-student-file" type="file" class="border-white/10 bg-[var(--surface-elevated)] text-white file:text-white" accept=".xlsx,.xls,.csv" @change="handleImportFileChange" />
+                    <p class="text-xs text-white/50">Formatos aceitos: XLSX, XLS e CSV.</p>
+                </div>
+
+                <DialogFooter class="gap-2">
+                    <DialogClose as-child>
+                        <Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeImportDialog">Cancelar</Button>
+                    </DialogClose>
+                    <Button type="submit" :disabled="importForm.processing">
+                        <Upload class="size-4" />
+                        Importar planilha
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
 
     <Dialog :open="dialogOpen" @update:open="(value) => !value ? closeDialog() : (dialogOpen = value)">
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">

@@ -66,6 +66,19 @@ class UpdateClassroomRequest extends FormRequest
 
                 if ($validStudentsCount !== $studentIds->count()) {
                     $validator->errors()->add('student_ids', 'Selecione apenas alunos vinculados ao ponto de ensino informado.');
+                    return;
+                }
+
+                /** @var Classroom $classroom */
+                $classroom = $this->route('classroom');
+
+                $alreadyAssignedCount = User::query()
+                    ->whereIn('id', $studentIds)
+                    ->whereHas('classrooms', fn ($query) => $query->where('classrooms.id', '!=', $classroom->id))
+                    ->count();
+
+                if ($alreadyAssignedCount > 0) {
+                    $validator->errors()->add('student_ids', 'Um aluno so pode estar vinculado a uma unica sala.');
                 }
             },
         ];
