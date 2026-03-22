@@ -2,6 +2,7 @@ import Auth from './Auth'
 import DashboardController from './DashboardController'
 import Admin from './Admin'
 import Director from './Director'
+import Owner from './Owner'
 import Settings from './Settings'
 
 const Controllers = {
@@ -9,6 +10,7 @@ const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
     Admin: Object.assign(Admin, Admin),
     Director: Object.assign(Director, Director),
+    Owner: Object.assign(Owner, Owner),
     Settings: Object.assign(Settings, Settings),
 }
 

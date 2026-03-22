@@ -69,12 +69,15 @@ class SchoolDemoSeeder extends Seeder
             email: 'owner@escola.local',
         );
 
-        $director = $this->createUser(
+        $directors = collect([
+            ['name' => 'Director Demo', 'email' => 'director@escola.local'],
+            ['name' => 'Director Norte', 'email' => 'director.norte@escola.local'],
+        ])->map(fn (array $director) => $this->createUser(
             roleId: $roles[RoleEnum::DIRECTOR->value]->id,
             schoolId: $school->id,
-            name: 'Director Demo',
-            email: 'director@escola.local',
-        );
+            name: $director['name'],
+            email: $director['email'],
+        ));
 
         $teachers = collect([
             ['name' => 'Ana Souza', 'email' => 'ana.souza@escola.local'],
@@ -101,10 +104,15 @@ class SchoolDemoSeeder extends Seeder
             email: $student['email'],
         ));
 
-        $this->syncPoints($owner, $points->pluck('id')->all(), RoleEnum::OWNER->label());
-        $this->syncPoints($director, $points->pluck('id')->all(), RoleEnum::DIRECTOR->label());
+        $ownerPointIds = [$points[0]->id, $points[1]->id];
+        $directorCentroPointIds = [$points[0]->id];
+        $directorNortePointIds = [$points[1]->id];
 
-        $this->syncPoints($teachers[0], [$points[0]->id, $points[1]->id], RoleEnum::TEACHER->label());
+        $this->syncPoints($owner, $ownerPointIds, RoleEnum::OWNER->label());
+        $this->syncPoints($directors[0], $directorCentroPointIds, RoleEnum::DIRECTOR->label());
+        $this->syncPoints($directors[1], $directorNortePointIds, RoleEnum::DIRECTOR->label());
+
+        $this->syncPoints($teachers[0], [$points[0]->id], RoleEnum::TEACHER->label());
         $this->syncPoints($teachers[1], [$points[1]->id], RoleEnum::TEACHER->label());
         $this->syncPoints($teachers[2], [$points[2]->id], RoleEnum::TEACHER->label());
 
@@ -157,9 +165,9 @@ class SchoolDemoSeeder extends Seeder
             return $classroom;
         });
 
-        $director->forceFill([
-            'last_login_at' => now()->subDay(),
-        ])->save();
+        $directors->each(fn (User $director, int $index) => $director->forceFill([
+            'last_login_at' => now()->subDay()->subHours($index),
+        ])->save());
 
         $teachers->each(fn (User $teacher, int $index) => $teacher->forceFill([
             'last_login_at' => now()->subHours($index + 2),

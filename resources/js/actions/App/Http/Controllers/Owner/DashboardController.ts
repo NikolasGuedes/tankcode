@@ -1,16 +1,15 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
-import directors from './directors'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Owner\DashboardController::__invoke
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: dashboard.url(options),
+const DashboardController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: DashboardController.url(options),
     method: 'get',
 })
 
-dashboard.definition = {
+DashboardController.definition = {
     methods: ["get","head"],
     url: '/owner',
 } satisfies RouteDefinition<["get","head"]>
@@ -20,8 +19,8 @@ dashboard.definition = {
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-dashboard.url = (options?: RouteQueryOptions) => {
-    return dashboard.definition.url + queryParams(options)
+DashboardController.url = (options?: RouteQueryOptions) => {
+    return DashboardController.definition.url + queryParams(options)
 }
 
 /**
@@ -29,8 +28,8 @@ dashboard.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: dashboard.url(options),
+DashboardController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: DashboardController.url(options),
     method: 'get',
 })
 
@@ -39,8 +38,8 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: dashboard.url(options),
+DashboardController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: DashboardController.url(options),
     method: 'head',
 })
 
@@ -49,8 +48,8 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dashboard.url(options),
+const DashboardControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: DashboardController.url(options),
     method: 'get',
 })
 
@@ -59,8 +58,8 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dashboard.url(options),
+DashboardControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: DashboardController.url(options),
     method: 'get',
 })
 
@@ -69,8 +68,8 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 * @see app/Http/Controllers/Owner/DashboardController.php:13
 * @route '/owner'
 */
-dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: dashboard.url({
+DashboardControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: DashboardController.url({
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -79,11 +78,6 @@ dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
     method: 'get',
 })
 
-dashboard.form = dashboardForm
+DashboardController.form = DashboardControllerForm
 
-const owner = {
-    dashboard: Object.assign(dashboard, dashboard),
-    directors: Object.assign(directors, directors),
-}
-
-export default owner
+export default DashboardController

@@ -26,7 +26,11 @@ class TeacherController extends Controller
         $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
 
         $teachersQuery = User::query()
-            ->with(['pointOfSchools:id,name'])
+            ->with([
+                'pointOfSchools' => fn ($query) => $query
+                    ->whereIn('point_of_schools.id', $pointIds)
+                    ->select('point_of_schools.id', 'point_of_schools.name'),
+            ])
             ->withCount('classroomsAsTeacher')
             ->where('school_id', $director?->school_id)
             ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::TEACHER->value))
@@ -91,7 +95,9 @@ class TeacherController extends Controller
 
     public function edit(Request $request, User $teacher): Response
     {
-        abort_unless($this->canManageTeacher($request->user(), $teacher), 404);
+        $director = $request->user();
+        abort_unless($this->canManageTeacher($director, $teacher), 404);
+        $allowedPointIds = $director?->pointOfSchools()->pluck('point_of_schools.id')->map(fn ($id) => (int) $id) ?? collect();
 
         return Inertia::render('director/Teachers/Form', [
             'teacher' => [
@@ -99,9 +105,14 @@ class TeacherController extends Controller
                 'name' => $teacher->name,
                 'email' => $teacher->email,
                 'status' => $teacher->status,
-                'point_of_school_ids' => $teacher->pointOfSchools()->pluck('point_of_schools.id')->values()->all(),
+                'point_of_school_ids' => $teacher->pointOfSchools()
+                    ->whereIn('point_of_schools.id', $allowedPointIds)
+                    ->pluck('point_of_schools.id')
+                    ->map(fn ($id) => (int) $id)
+                    ->values()
+                    ->all(),
             ],
-            ...$this->formPayload($request->user()),
+            ...$this->formPayload($director),
         ]);
     }
 

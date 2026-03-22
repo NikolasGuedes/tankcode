@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {
-    store as storeTeacher,
-    update as updateTeacher,
-} from '@/actions/App/Http/Controllers/Director/TeacherController';
+    store as storeDirector,
+    update as updateDirector,
+} from '@/actions/App/Http/Controllers/Owner/DirectorController';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,7 +16,7 @@ import { ArrowLeft } from 'lucide-vue-next';
 import { watch } from 'vue';
 
 type PointOption = { id: number; name: string };
-type TeacherFormData = {
+type DirectorFormData = {
     id: number;
     name: string;
     email: string;
@@ -25,21 +25,21 @@ type TeacherFormData = {
 } | null;
 
 const props = defineProps<{
-    teacher: TeacherFormData;
+    director: DirectorFormData;
     points: PointOption[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
-    { title: 'Professores', href: '/director/teachers' },
-    { title: props.teacher ? 'Editar Professor' : 'Novo Professor', href: props.teacher ? `/director/teachers/${props.teacher.id}/edit` : '/director/teachers/create' },
+    { title: 'Visao geral', href: '/owner' },
+    { title: 'Diretores', href: '/owner/directors' },
+    { title: props.director ? 'Editar Diretor' : 'Novo Diretor', href: props.director ? `/owner/directors/${props.director.id}/edit` : '/owner/directors/create' },
 ];
 
 const form = useForm({
-    name: props.teacher?.name ?? '',
-    email: props.teacher?.email ?? '',
-    point_of_school_ids: props.teacher?.point_of_school_ids.map(String) ?? [],
-    status: props.teacher?.status ?? 'active',
+    name: props.director?.name ?? '',
+    email: props.director?.email ?? '',
+    point_of_school_ids: props.director?.point_of_school_ids.map(String) ?? [],
+    status: props.director?.status ?? 'active',
 });
 
 const togglePoint = (pointId: string, checked: boolean | 'indeterminate') => {
@@ -57,12 +57,12 @@ const togglePoint = (pointId: string, checked: boolean | 'indeterminate') => {
 const submit = () => {
     const options = { preserveScroll: true };
 
-    if (props.teacher) {
-        form.put(updateTeacher(props.teacher.id).url, options);
+    if (props.director) {
+        form.put(updateDirector(props.director.id).url, options);
         return;
     }
 
-    form.post(storeTeacher().url, options);
+    form.post(storeDirector().url, options);
 };
 
 watch(
@@ -76,18 +76,18 @@ watch(
 </script>
 
 <template>
-    <Head :title="props.teacher ? 'Editar Professor' : 'Novo Professor'" />
+    <Head :title="props.director ? 'Editar Diretor' : 'Novo Diretor'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <section class="space-y-6 p-6">
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <h1 class="text-4xl font-semibold tracking-tight text-white">{{ props.teacher ? 'Editar Professor' : 'Novo Professor' }}</h1>
-                        <p class="mt-2 max-w-3xl text-lg text-white/70">Gerencie os dados do professor em uma pagina dedicada, com mais conforto para revisar os pontos de ensino vinculados.</p>
+                        <h1 class="text-4xl font-semibold tracking-tight text-white">{{ props.director ? 'Editar Diretor' : 'Novo Diretor' }}</h1>
+                        <p class="mt-2 max-w-3xl text-lg text-white/70">Gerencie os dados do diretor em uma pagina dedicada, com mais conforto para revisar os pontos de ensino vinculados.</p>
                     </div>
                     <Button as-child variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10">
-                        <a href="/director/teachers"><ArrowLeft class="size-4" />Voltar para Professores</a>
+                        <a href="/owner/directors"><ArrowLeft class="size-4" />Voltar para Diretores</a>
                     </Button>
                 </div>
             </AppReveal>
@@ -96,25 +96,25 @@ watch(
                 <AppReveal class-name="rounded-[2rem] border border-border bg-card p-6 shadow-[0_20px_45px_rgba(0,0,0,0.25)]" :delay="0.06">
                     <div class="space-y-5">
                         <div>
-                            <h2 class="text-2xl font-semibold text-white">Dados do Professor</h2>
+                            <h2 class="text-2xl font-semibold text-white">Dados do Diretor</h2>
                             <p class="mt-1 text-sm text-white/60">Defina os dados principais e o status de acesso da conta.</p>
                         </div>
 
                         <div class="grid gap-4">
                             <div class="grid gap-2">
-                                <Label for="teacher-name">Nome</Label>
-                                <Input id="teacher-name" v-model="form.name" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Ex.: Ana Souza" />
+                                <Label for="director-name">Nome</Label>
+                                <Input id="director-name" v-model="form.name" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Ex.: Camila Santos" />
                             </div>
 
                             <div class="grid gap-2">
-                                <Label for="teacher-email">E-mail</Label>
-                                <Input id="teacher-email" v-model="form.email" type="email" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="professor@escola.com" />
+                                <Label for="director-email">E-mail</Label>
+                                <Input id="director-email" v-model="form.email" type="email" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="diretor@escola.com" />
                             </div>
 
                             <div class="grid gap-2">
-                                <Label for="teacher-status">Status</Label>
+                                <Label for="director-status">Status</Label>
                                 <Select v-model="form.status">
-                                    <SelectTrigger id="teacher-status" class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                                    <SelectTrigger id="director-status" class="border-white/10 bg-[var(--surface-elevated)] text-white">
                                         <SelectValue placeholder="Selecione o status" />
                                     </SelectTrigger>
                                     <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
@@ -132,7 +132,7 @@ watch(
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div>
                                 <h2 class="text-2xl font-semibold text-white">Pontos de Ensino</h2>
-                                <p class="mt-1 text-sm text-white/60">Professores podem atuar em um ou mais pontos de ensino da diretoria.</p>
+                                <p class="mt-1 text-sm text-white/60">Diretores podem atuar em um ou mais pontos de ensino vinculados ao owner.</p>
                             </div>
                             <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
                                 {{ form.point_of_school_ids.length }} selecionado(s)
@@ -152,17 +152,17 @@ watch(
                                 />
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate text-base font-semibold text-white">{{ point.name }}</p>
-                                    <p class="mt-1 text-sm text-white/50">Disponivel para vinculacao do professor.</p>
+                                    <p class="mt-1 text-sm text-white/50">Disponivel para vinculacao do diretor.</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex flex-wrap justify-end gap-3">
                             <Button as-child type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]">
-                                <a href="/director/teachers">Cancelar</a>
+                                <a href="/owner/directors">Cancelar</a>
                             </Button>
                             <Button type="submit" :disabled="form.processing">
-                                {{ props.teacher ? 'Salvar alteracoes' : 'Criar professor' }}
+                                {{ props.director ? 'Salvar alteracoes' : 'Criar diretor' }}
                             </Button>
                         </div>
                     </div>
