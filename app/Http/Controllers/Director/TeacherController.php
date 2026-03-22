@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -43,6 +44,8 @@ class TeacherController extends Controller
                 'id' => $teacher->id,
                 'name' => $teacher->name,
                 'email' => $teacher->email,
+                'email_verified_at' => optional($teacher->email_verified_at)?->toISOString(),
+                'has_verified_email' => ! is_null($teacher->email_verified_at),
                 'status' => $teacher->status,
                 'point_of_school_ids' => $teacher->pointOfSchools->pluck('id')->values()->all(),
                 'point_of_schools' => $teacher->pointOfSchools->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name])->values()->all(),
@@ -112,6 +115,37 @@ class TeacherController extends Controller
         $teacher->delete();
 
         return to_route('director.teachers.index')->with('success', 'Professor removido com sucesso.');
+    }
+
+    public function updateAccess(Request $request, User $teacher): RedirectResponse
+    {
+        abort_unless($this->canManageTeacher($request->user(), $teacher), 404);
+
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:active,inactive'],
+        ], [
+            'status.required' => 'O status do professor e obrigatorio.',
+            'status.in' => 'O status informado e invalido.',
+        ]);
+
+        $teacher->update([
+            'status' => $data['status'],
+        ]);
+
+        return back()->with('success', 'Acesso do professor atualizado com sucesso.');
+    }
+
+    public function resendInvitation(Request $request, User $teacher, UserInvitationService $invitationService): RedirectResponse
+    {
+        abort_unless($this->canManageTeacher($request->user(), $teacher), 404);
+
+        if (! is_null($teacher->email_verified_at)) {
+            return back()->with('info', 'Este professor ja ativou a conta e nao precisa de um novo convite.');
+        }
+
+        $invitationService->send($teacher);
+
+        return back()->with('success', 'Convite de primeiro acesso reenviado para o professor.');
     }
 
     private function syncPoints(User $user, array $pointIds, string $title): void

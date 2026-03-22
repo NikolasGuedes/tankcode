@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -42,6 +43,8 @@ class StudentController extends Controller
                 'id' => $student->id,
                 'name' => $student->name,
                 'email' => $student->email,
+                'email_verified_at' => optional($student->email_verified_at)?->toISOString(),
+                'has_verified_email' => ! is_null($student->email_verified_at),
                 'status' => $student->status,
                 'point_of_school_id' => $student->pointOfSchools->first()?->id,
                 'point_of_school' => $student->pointOfSchools->first()?->name,
@@ -127,6 +130,37 @@ class StudentController extends Controller
         $student->delete();
 
         return to_route('director.students.index')->with('success', 'Aluno removido com sucesso.');
+    }
+
+    public function updateAccess(Request $request, User $student): RedirectResponse
+    {
+        abort_unless($this->canManageStudent($request->user(), $student), 404);
+
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:active,inactive'],
+        ], [
+            'status.required' => 'O status do aluno e obrigatorio.',
+            'status.in' => 'O status informado e invalido.',
+        ]);
+
+        $student->update([
+            'status' => $data['status'],
+        ]);
+
+        return back()->with('success', 'Acesso do aluno atualizado com sucesso.');
+    }
+
+    public function resendInvitation(Request $request, User $student, UserInvitationService $invitationService): RedirectResponse
+    {
+        abort_unless($this->canManageStudent($request->user(), $student), 404);
+
+        if (! is_null($student->email_verified_at)) {
+            return back()->with('info', 'Este aluno ja ativou a conta e nao precisa de um novo convite.');
+        }
+
+        $invitationService->send($student);
+
+        return back()->with('success', 'Convite de primeiro acesso reenviado para o aluno.');
     }
 
     private function canManageStudent(?User $director, User $student): bool

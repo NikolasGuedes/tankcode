@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
     destroy as destroyUser,
+    resendInvitation as resendUserInvitation,
     store as storeUser,
     update as updateUser,
+    updateAccess as updateUserAccess,
 } from '@/actions/App/Http/Controllers/Admin/UserController';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
@@ -21,8 +23,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 type RoleOption = {
@@ -48,6 +50,8 @@ type UserRow = {
     school_id: number | null;
     name: string;
     email: string;
+    email_verified_at: string | null;
+    has_verified_email: boolean;
     role: string | null;
     role_name: string | null;
     school: string;
@@ -56,11 +60,6 @@ type UserRow = {
     point_of_school_ids: number[];
     point_of_schools: PointOption[];
     last_login_at: string;
-};
-
-const statusLabel: Record<string, string> = {
-    active: 'Ativo',
-    inactive: 'Inativo',
 };
 
 const props = defineProps<{
@@ -85,6 +84,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const userDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedUser = ref<UserRow | null>(null);
+const accessUpdatingId = ref<number | null>(null);
+const resendingInvitationId = ref<number | null>(null);
 
 const userForm = useForm({
     name: '',
@@ -96,6 +97,11 @@ const userForm = useForm({
 });
 
 const deleteForm = useForm({});
+
+const accessLabel: Record<string, string> = {
+    active: 'Habilitado',
+    inactive: 'Desabilitado',
+};
 
 const selectedRole = computed(() => props.roles.find((role) => String(role.id) === userForm.role_id) ?? null);
 const isTankAdminRole = computed(() => selectedRole.value?.name === 'tank_admin');
@@ -213,6 +219,46 @@ const submitDelete = () => {
     });
 };
 
+const updateAccess = (user: UserRow, value: unknown) => {
+    const nextStatus = ['string', 'number', 'bigint'].includes(typeof value) ? String(value) : '';
+
+    if (!['active', 'inactive'].includes(nextStatus) || nextStatus === user.status) {
+        return;
+    }
+
+    accessUpdatingId.value = user.id;
+
+    router.patch(
+        updateUserAccess(user.id).url,
+        { status: nextStatus },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                accessUpdatingId.value = null;
+            },
+        },
+    );
+};
+
+const resendInvitation = (user: UserRow) => {
+    if (user.has_verified_email) {
+        return;
+    }
+
+    resendingInvitationId.value = user.id;
+
+    router.post(
+        resendUserInvitation(user.id).url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                resendingInvitationId.value = null;
+            },
+        },
+    );
+};
+
 watch(
     () => userForm.school_id,
     (schoolId) => {
@@ -270,7 +316,9 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-semibold text-white">Usuarios cadastrados</h1>
-                        <p class="text-sm text-white/60">Gerencie acessos, perfis e vinculacao por escola dentro da plataforma.</p>
+                        <p class="text-sm text-white/60">
+                            Gerencie validacao de e-mail, acesso a plataforma e vinculacao por escola dentro da plataforma.
+                        </p>
                     </div>
                     <Button class="rounded-2xl" @click="openCreateDialog">
                         <Plus class="size-4" />
@@ -286,7 +334,8 @@ watch(
                                 <th class="pb-4 font-medium">Perfil</th>
                                 <th class="pb-4 font-medium">Escola</th>
                                 <th class="pb-4 font-medium">Unidades</th>
-                                <th class="pb-4 font-medium">Status</th>
+                                <th class="pb-4 font-medium">E-mail validado</th>
+                                <th class="pb-4 font-medium">Acesso a plataforma</th>
                                 <th class="pb-4 font-medium">Ultimo acesso</th>
                                 <th class="pb-4 text-right font-medium">Ações</th>
                             </tr>
@@ -301,13 +350,43 @@ watch(
                                 <td class="py-4">{{ user.school }}</td>
                                 <td class="py-4">{{ user.point_of_schools_count }}</td>
                                 <td class="py-4">
-                                    <span class="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-white">
-                                        {{ statusLabel[user.status] ?? user.status }}
+                                    <span
+                                        class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                                        :class="
+                                            user.has_verified_email
+                                                ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30'
+                                                : 'bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30'
+                                        "
+                                    >
+                                        <CheckCircle2 v-if="user.has_verified_email" class="size-3.5" />
+                                        <XCircle v-else class="size-3.5" />
+                                        {{ user.has_verified_email ? 'Validado' : 'Pendente' }}
                                     </span>
+                                </td>
+                                <td class="py-4">
+                                    <Select :model-value="user.status" :disabled="accessUpdatingId === user.id" @update:model-value="(value) => updateAccess(user, value)">
+                                        <SelectTrigger class="h-10 w-[170px] border-white/10 bg-[var(--surface-elevated)] text-white">
+                                            <SelectValue :placeholder="accessLabel[user.status] ?? user.status" />
+                                        </SelectTrigger>
+                                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                                            <SelectItem value="active">{{ accessLabel.active }}</SelectItem>
+                                            <SelectItem value="inactive">{{ accessLabel.inactive }}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </td>
                                 <td class="py-4">{{ user.last_login_at }}</td>
                                 <td class="py-4">
                                     <div class="flex justify-end gap-2">
+                                        <Button
+                                            v-if="!user.has_verified_email"
+                                            variant="outline"
+                                            size="icon-sm"
+                                            class="!border-emerald-500/70 !bg-emerald-500/15 !text-emerald-200 hover:!border-emerald-400 hover:!bg-emerald-500/25 hover:!text-emerald-100"
+                                            :disabled="resendingInvitationId === user.id"
+                                            @click="resendInvitation(user)"
+                                        >
+                                            <Mail class="size-4" />
+                                        </Button>
                                         <Button
                                             variant="outline"
                                             size="icon-sm"
@@ -415,22 +494,23 @@ watch(
                     <div
                         class="max-h-64 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-[var(--surface-elevated)] p-3"
                     >
-                        <div
-                            v-if="availablePoints.length"
-                            v-for="point in availablePoints"
-                            :key="point.id"
-                            class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
-                        >
-                            <Checkbox
-                                :model-value="userForm.point_of_school_ids.includes(String(point.id))"
-                                class="border-white/20 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
-                                @update:model-value="(checked) => togglePoint(String(point.id), checked)"
-                            />
-                            <div class="min-w-0 flex-1">
-                                <p class="truncate font-medium text-white">{{ point.name }}</p>
-                                <p class="text-xs text-white/50">Vinculado a escola selecionada</p>
+                        <template v-if="availablePoints.length">
+                            <div
+                                v-for="point in availablePoints"
+                                :key="point.id"
+                                class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
+                            >
+                                <Checkbox
+                                    :model-value="userForm.point_of_school_ids.includes(String(point.id))"
+                                    class="border-white/20 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+                                    @update:model-value="(checked) => togglePoint(String(point.id), checked)"
+                                />
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-medium text-white">{{ point.name }}</p>
+                                    <p class="text-xs text-white/50">Vinculado a escola selecionada</p>
+                                </div>
                             </div>
-                        </div>
+                        </template>
 
                         <div v-else class="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/50">
                             Selecione uma escola para liberar os Pontos de Ensino disponiveis.

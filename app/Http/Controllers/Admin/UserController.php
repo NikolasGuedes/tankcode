@@ -13,6 +13,7 @@ use App\Models\School;
 use App\Models\User;
 use App\Support\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,6 +45,8 @@ class UserController extends Controller
                 'school_id' => $user->school_id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'email_verified_at' => optional($user->email_verified_at)?->toISOString(),
+                'has_verified_email' => ! is_null($user->email_verified_at),
                 'role' => $user->role?->label,
                 'role_name' => $user->role?->name?->value,
                 'school' => $user->school?->name ?? 'Sistema',
@@ -144,6 +147,33 @@ class UserController extends Controller
         $user->delete();
 
         return to_route('admin.users.index')->with('success', 'Usuario removido com sucesso.');
+    }
+
+    public function updateAccess(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'status' => ['required', 'string', 'in:active,inactive'],
+        ], [
+            'status.required' => 'O status do usuario e obrigatorio.',
+            'status.in' => 'O status informado e invalido.',
+        ]);
+
+        $user->update([
+            'status' => $data['status'],
+        ]);
+
+        return back()->with('success', 'Acesso a plataforma atualizado com sucesso.');
+    }
+
+    public function resendInvitation(User $user, UserInvitationService $userInvitationService): RedirectResponse
+    {
+        if (! is_null($user->email_verified_at)) {
+            return back()->with('info', 'Este usuario ja ativou a conta e nao precisa de um novo convite.');
+        }
+
+        $userInvitationService->send($user);
+
+        return back()->with('success', 'Convite de primeiro acesso reenviado com sucesso.');
     }
 
     protected function syncPointOfSchools(User $user, array $pointIds, string $title): void

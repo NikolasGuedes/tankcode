@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import {
     destroy as destroyStudent,
+    resendInvitation as resendStudentInvitation,
     store as storeStudent,
     update as updateStudent,
+    updateAccess as updateStudentAccess,
 } from '@/actions/App/Http/Controllers/Director/StudentController';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
@@ -12,8 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 type PointOption = { id: number; name: string };
@@ -21,6 +23,8 @@ type StudentRow = {
     id: number;
     name: string;
     email: string;
+    email_verified_at: string | null;
+    has_verified_email: boolean;
     status: string;
     point_of_school_id: number | null;
     point_of_school: string | null;
@@ -39,12 +43,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Alunos', href: '/director/students' },
 ];
 
-const statusLabel: Record<string, string> = { active: 'Ativo', inactive: 'Inativo' };
 const dialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedStudent = ref<StudentRow | null>(null);
+const accessUpdatingId = ref<number | null>(null);
+const resendingInvitationId = ref<number | null>(null);
 const form = useForm({ name: '', email: '', point_of_school_id: '', status: 'active' });
 const deleteForm = useForm({});
+const accessLabel: Record<string, string> = { active: 'Habilitado', inactive: 'Desabilitado' };
 
 const resetForm = () => {
     form.clearErrors();
@@ -105,6 +111,46 @@ const submitDelete = () => {
         onSuccess: () => closeDeleteDialog(),
     });
 };
+
+const updateAccess = (student: StudentRow, value: unknown) => {
+    const nextStatus = ['string', 'number', 'bigint'].includes(typeof value) ? String(value) : '';
+
+    if (!['active', 'inactive'].includes(nextStatus) || nextStatus === student.status) {
+        return;
+    }
+
+    accessUpdatingId.value = student.id;
+
+    router.patch(
+        updateStudentAccess(student.id).url,
+        { status: nextStatus },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                accessUpdatingId.value = null;
+            },
+        },
+    );
+};
+
+const resendInvitation = (student: StudentRow) => {
+    if (student.has_verified_email) {
+        return;
+    }
+
+    resendingInvitationId.value = student.id;
+
+    router.post(
+        resendStudentInvitation(student.id).url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                resendingInvitationId.value = null;
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -126,22 +172,37 @@ const submitDelete = () => {
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-semibold text-white">Alunos cadastrados</h2>
-                        <p class="text-sm text-white/60">Cada aluno fica vinculado a um unico ponto de ensino.</p>
+                        <p class="text-sm text-white/60">Controle validacao de e-mail, acesso a plataforma e vinculacao de cada aluno.</p>
                     </div>
                     <Button class="rounded-2xl" @click="openCreateDialog"><Plus class="size-4" />Novo Aluno</Button>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
-                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">Status</th><th class="pb-4 font-medium">Ultimo acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
+                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Ultimo acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
                             <tr v-for="student in props.students" :key="student.id">
                                 <td class="py-4"><p class="font-semibold text-white">{{ student.name }}</p><p class="text-white/55">{{ student.email }}</p></td>
                                 <td class="py-4">{{ student.point_of_school ?? '-' }}</td>
                                 <td class="py-4">{{ student.classroom }}</td>
-                                <td class="py-4"><span class="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-white">{{ statusLabel[student.status] ?? student.status }}</span></td>
+                                <td class="py-4">
+                                    <span
+                                        class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                                        :class="student.has_verified_email ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30' : 'bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30'"
+                                    >
+                                        <CheckCircle2 v-if="student.has_verified_email" class="size-3.5" />
+                                        <XCircle v-else class="size-3.5" />
+                                        {{ student.has_verified_email ? 'Validado' : 'Pendente' }}
+                                    </span>
+                                </td>
+                                <td class="py-4">
+                                    <Select :model-value="student.status" :disabled="accessUpdatingId === student.id" @update:model-value="(value) => updateAccess(student, value)">
+                                        <SelectTrigger class="h-10 w-[170px] border-white/10 bg-[var(--surface-elevated)] text-white"><SelectValue :placeholder="accessLabel[student.status] ?? student.status" /></SelectTrigger>
+                                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectItem value="active">{{ accessLabel.active }}</SelectItem><SelectItem value="inactive">{{ accessLabel.inactive }}</SelectItem></SelectContent>
+                                    </Select>
+                                </td>
                                 <td class="py-4">{{ student.last_login_at }}</td>
-                                <td class="py-4"><div class="flex justify-end gap-2"><Button variant="outline" size="icon-sm" class="!border-primary !bg-primary !text-white hover:!border-[var(--primary-hover)] hover:!bg-[var(--primary-hover)]" @click="openEditDialog(student)"><Pencil class="size-4" /></Button><Button variant="outline" size="icon-sm" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="openDeleteDialog(student)"><Trash2 class="size-4" /></Button></div></td>
+                                <td class="py-4"><div class="flex justify-end gap-2"><Button v-if="!student.has_verified_email" variant="outline" size="icon-sm" class="!border-emerald-500/70 !bg-emerald-500/15 !text-emerald-200 hover:!border-emerald-400 hover:!bg-emerald-500/25 hover:!text-emerald-100" :disabled="resendingInvitationId === student.id" @click="resendInvitation(student)"><Mail class="size-4" /></Button><Button variant="outline" size="icon-sm" class="!border-primary !bg-primary !text-white hover:!border-[var(--primary-hover)] hover:!bg-[var(--primary-hover)]" @click="openEditDialog(student)"><Pencil class="size-4" /></Button><Button variant="outline" size="icon-sm" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="openDeleteDialog(student)"><Trash2 class="size-4" /></Button></div></td>
                             </tr>
                         </tbody>
                     </table>
