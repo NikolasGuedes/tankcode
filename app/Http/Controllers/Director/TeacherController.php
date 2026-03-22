@@ -25,7 +25,7 @@ class TeacherController extends Controller
         $filters = $request->validated();
         $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
 
-        $teachers = User::query()
+        $teachersQuery = User::query()
             ->with(['pointOfSchools:id,name'])
             ->withCount('classroomsAsTeacher')
             ->where('school_id', $director?->school_id)
@@ -37,10 +37,13 @@ class TeacherController extends Controller
                     ->orWhere('email', 'like', "%{$search}%"));
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->whereHas('pointOfSchools', fn ($pointQuery) => $pointQuery->where('point_of_schools.id', $pointId)))
+            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->whereHas('pointOfSchools', fn ($pointQuery) => $pointQuery->where('point_of_schools.id', $pointId)));
+
+        $teachers = $teachersQuery
             ->latest()
-            ->get()
-            ->map(fn (User $teacher) => [
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (User $teacher) => [
                 'id' => $teacher->id,
                 'name' => $teacher->name,
                 'email' => $teacher->email,
@@ -55,11 +58,26 @@ class TeacherController extends Controller
 
         return Inertia::render('director/Teachers/Index', [
             'stats' => [
-                'total' => $teachers->count(),
-                'active' => $teachers->where('status', 'active')->count(),
+                'total' => User::query()
+                    ->where('school_id', $director?->school_id)
+                    ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::TEACHER->value))
+                    ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
+                    ->count(),
+                'active' => User::query()
+                    ->where('school_id', $director?->school_id)
+                    ->where('status', 'active')
+                    ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::TEACHER->value))
+                    ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
+                    ->count(),
                 'points' => $pointIds->count(),
             ],
             'teachers' => $teachers,
+            'points' => PointOfSchool::query()
+                ->whereIn('id', $pointIds)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
+            'filters' => $filters,
         ]);
     }
 

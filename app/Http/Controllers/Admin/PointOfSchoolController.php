@@ -18,7 +18,7 @@ class PointOfSchoolController extends Controller
     {
         $filters = $request->validated();
 
-        $points = PointOfSchool::query()
+        $pointsQuery = PointOfSchool::query()
             ->with('school:id,name')
             ->withCount('users')
             ->when($filters['search'] ?? null, function ($query, string $search) {
@@ -31,10 +31,13 @@ class PointOfSchoolController extends Controller
                 });
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['school_id'] ?? null, fn ($query, int $schoolId) => $query->where('school_id', $schoolId))
+            ->when($filters['school_id'] ?? null, fn ($query, int $schoolId) => $query->where('school_id', $schoolId));
+
+        $points = $pointsQuery
             ->latest()
-            ->get()
-            ->map(fn (PointOfSchool $point) => [
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (PointOfSchool $point) => [
                 'id' => $point->id,
                 'name' => $point->name,
                 'school' => $point->school?->name,

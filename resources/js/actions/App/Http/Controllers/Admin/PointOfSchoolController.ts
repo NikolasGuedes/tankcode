@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::store
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:68
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:71
 * @route '/admin/point-of-schools'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::store
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:68
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:71
 * @route '/admin/point-of-schools'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::store
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:68
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:71
 * @route '/admin/point-of-schools'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::store
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:68
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:71
 * @route '/admin/point-of-schools'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::store
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:68
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:71
 * @route '/admin/point-of-schools'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::update
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:75
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:78
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 export const update = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -153,7 +153,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::update
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:75
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:78
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 update.url = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -186,7 +186,7 @@ update.url = (args: { pointOfSchool: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::update
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:75
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:78
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 update.put = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -196,7 +196,7 @@ update.put = (args: { pointOfSchool: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::update
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:75
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:78
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 const updateForm = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -211,7 +211,7 @@ const updateForm = (args: { pointOfSchool: string | number | { id: string | numb
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::update
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:75
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:78
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 updateForm.put = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -228,7 +228,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::destroy
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:82
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:85
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 export const destroy = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -243,7 +243,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::destroy
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:82
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:85
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 destroy.url = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -276,7 +276,7 @@ destroy.url = (args: { pointOfSchool: string | number | { id: string | number } 
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::destroy
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:82
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:85
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 destroy.delete = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -286,7 +286,7 @@ destroy.delete = (args: { pointOfSchool: string | number | { id: string | number
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::destroy
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:82
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:85
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 const destroyForm = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -301,7 +301,7 @@ const destroyForm = (args: { pointOfSchool: string | number | { id: string | num
 
 /**
 * @see \App\Http\Controllers\Admin\PointOfSchoolController::destroy
-* @see app/Http/Controllers/Admin/PointOfSchoolController.php:82
+* @see app/Http/Controllers/Admin/PointOfSchoolController.php:85
 * @route '/admin/point-of-schools/{pointOfSchool}'
 */
 destroyForm.delete = (args: { pointOfSchool: string | number | { id: string | number } } | [pointOfSchool: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

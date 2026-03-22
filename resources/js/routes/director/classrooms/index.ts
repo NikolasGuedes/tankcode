@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::create
-* @see app/Http/Controllers/Director/ClassroomController.php:63
+* @see app/Http/Controllers/Director/ClassroomController.php:84
 * @route '/director/classrooms/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 export const edit = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -178,7 +178,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 edit.url = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ edit.url = (args: { classroom: string | number | { id: string | number } } | [cl
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 edit.get = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -221,7 +221,7 @@ edit.get = (args: { classroom: string | number | { id: string | number } } | [cl
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 edit.head = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -231,7 +231,7 @@ edit.head = (args: { classroom: string | number | { id: string | number } } | [c
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 const editForm = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -241,7 +241,7 @@ const editForm = (args: { classroom: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 editForm.get = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -251,7 +251,7 @@ editForm.get = (args: { classroom: string | number | { id: string | number } } |
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::edit
-* @see app/Http/Controllers/Director/ClassroomController.php:71
+* @see app/Http/Controllers/Director/ClassroomController.php:92
 * @route '/director/classrooms/{classroom}/edit'
 */
 editForm.head = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -268,7 +268,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::store
-* @see app/Http/Controllers/Director/ClassroomController.php:89
+* @see app/Http/Controllers/Director/ClassroomController.php:110
 * @route '/director/classrooms'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -283,7 +283,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::store
-* @see app/Http/Controllers/Director/ClassroomController.php:89
+* @see app/Http/Controllers/Director/ClassroomController.php:110
 * @route '/director/classrooms'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -292,7 +292,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::store
-* @see app/Http/Controllers/Director/ClassroomController.php:89
+* @see app/Http/Controllers/Director/ClassroomController.php:110
 * @route '/director/classrooms'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -302,7 +302,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::store
-* @see app/Http/Controllers/Director/ClassroomController.php:89
+* @see app/Http/Controllers/Director/ClassroomController.php:110
 * @route '/director/classrooms'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -312,7 +312,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::store
-* @see app/Http/Controllers/Director/ClassroomController.php:89
+* @see app/Http/Controllers/Director/ClassroomController.php:110
 * @route '/director/classrooms'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -324,7 +324,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::update
-* @see app/Http/Controllers/Director/ClassroomController.php:103
+* @see app/Http/Controllers/Director/ClassroomController.php:124
 * @route '/director/classrooms/{classroom}'
 */
 export const update = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -339,7 +339,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::update
-* @see app/Http/Controllers/Director/ClassroomController.php:103
+* @see app/Http/Controllers/Director/ClassroomController.php:124
 * @route '/director/classrooms/{classroom}'
 */
 update.url = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -372,7 +372,7 @@ update.url = (args: { classroom: string | number | { id: string | number } } | [
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::update
-* @see app/Http/Controllers/Director/ClassroomController.php:103
+* @see app/Http/Controllers/Director/ClassroomController.php:124
 * @route '/director/classrooms/{classroom}'
 */
 update.put = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -382,7 +382,7 @@ update.put = (args: { classroom: string | number | { id: string | number } } | [
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::update
-* @see app/Http/Controllers/Director/ClassroomController.php:103
+* @see app/Http/Controllers/Director/ClassroomController.php:124
 * @route '/director/classrooms/{classroom}'
 */
 const updateForm = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -397,7 +397,7 @@ const updateForm = (args: { classroom: string | number | { id: string | number }
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::update
-* @see app/Http/Controllers/Director/ClassroomController.php:103
+* @see app/Http/Controllers/Director/ClassroomController.php:124
 * @route '/director/classrooms/{classroom}'
 */
 updateForm.put = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -414,7 +414,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::destroy
-* @see app/Http/Controllers/Director/ClassroomController.php:117
+* @see app/Http/Controllers/Director/ClassroomController.php:138
 * @route '/director/classrooms/{classroom}'
 */
 export const destroy = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -429,7 +429,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::destroy
-* @see app/Http/Controllers/Director/ClassroomController.php:117
+* @see app/Http/Controllers/Director/ClassroomController.php:138
 * @route '/director/classrooms/{classroom}'
 */
 destroy.url = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -462,7 +462,7 @@ destroy.url = (args: { classroom: string | number | { id: string | number } } | 
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::destroy
-* @see app/Http/Controllers/Director/ClassroomController.php:117
+* @see app/Http/Controllers/Director/ClassroomController.php:138
 * @route '/director/classrooms/{classroom}'
 */
 destroy.delete = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -472,7 +472,7 @@ destroy.delete = (args: { classroom: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::destroy
-* @see app/Http/Controllers/Director/ClassroomController.php:117
+* @see app/Http/Controllers/Director/ClassroomController.php:138
 * @route '/director/classrooms/{classroom}'
 */
 const destroyForm = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -487,7 +487,7 @@ const destroyForm = (args: { classroom: string | number | { id: string | number 
 
 /**
 * @see \App\Http\Controllers\Director\ClassroomController::destroy
-* @see app/Http/Controllers/Director/ClassroomController.php:117
+* @see app/Http/Controllers/Director/ClassroomController.php:138
 * @route '/director/classrooms/{classroom}'
 */
 destroyForm.delete = (args: { classroom: string | number | { id: string | number } } | [classroom: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

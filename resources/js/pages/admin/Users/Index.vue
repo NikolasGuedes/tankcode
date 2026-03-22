@@ -6,6 +6,7 @@ import {
     update as updateUser,
     updateAccess as updateUserAccess,
 } from '@/actions/App/Http/Controllers/Admin/UserController';
+import AppTablePagination from '@/components/AppTablePagination.vue';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -62,6 +63,16 @@ type UserRow = {
     last_login_at: string;
 };
 
+type Paginated<T> = {
+    data: T[];
+    links: { url: string | null; label: string; active: boolean }[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+};
+
 const props = defineProps<{
     stats: {
         total: number;
@@ -73,7 +84,13 @@ const props = defineProps<{
     roles: RoleOption[];
     schools: SchoolOption[];
     points: PointOption[];
-    users: UserRow[];
+    users: Paginated<UserRow>;
+    filters: {
+        search?: string;
+        status?: string;
+        role?: string;
+        school_id?: number;
+    };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -86,6 +103,12 @@ const deleteDialogOpen = ref(false);
 const selectedUser = ref<UserRow | null>(null);
 const accessUpdatingId = ref<number | null>(null);
 const resendingInvitationId = ref<number | null>(null);
+const filtersForm = useForm({
+    search: props.filters.search ?? '',
+    status: props.filters.status ?? 'all',
+    role: props.filters.role ?? 'all',
+    school_id: props.filters.school_id ? String(props.filters.school_id) : 'all',
+});
 
 const userForm = useForm({
     name: '',
@@ -101,6 +124,31 @@ const deleteForm = useForm({});
 const accessLabel: Record<string, string> = {
     active: 'Habilitado',
     inactive: 'Desabilitado',
+};
+
+const applyFilters = () => {
+    router.get(
+        '/admin/users',
+        {
+            search: filtersForm.search || undefined,
+            status: filtersForm.status !== 'all' ? filtersForm.status : undefined,
+            role: filtersForm.role !== 'all' ? filtersForm.role : undefined,
+            school_id: filtersForm.school_id !== 'all' ? filtersForm.school_id : undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const resetFilters = () => {
+    filtersForm.search = '';
+    filtersForm.status = 'all';
+    filtersForm.role = 'all';
+    filtersForm.school_id = 'all';
+    applyFilters();
 };
 
 const selectedRole = computed(() => props.roles.find((role) => String(role.id) === userForm.role_id) ?? null);
@@ -326,6 +374,46 @@ watch(
                     </Button>
                 </div>
 
+                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_220px_220px_220px_auto]" @submit.prevent="applyFilters">
+                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou e-mail" />
+                    <Select v-model="filtersForm.status">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todos os status</SelectItem>
+                            <SelectItem value="active">Ativos</SelectItem>
+                            <SelectItem value="inactive">Inativos</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select v-model="filtersForm.role">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Perfil" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todos os perfis</SelectItem>
+                            <SelectItem v-for="role in props.roles" :key="role.id" :value="role.name ?? ''">
+                                {{ role.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select v-model="filtersForm.school_id">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Escola" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todas as escolas</SelectItem>
+                            <SelectItem v-for="school in props.schools" :key="school.id" :value="String(school.id)">
+                                {{ school.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div class="flex gap-3">
+                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
+                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                    </div>
+                </form>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
                         <thead>
@@ -341,7 +429,7 @@ watch(
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
-                            <tr v-for="user in props.users" :key="user.id">
+                            <tr v-for="user in props.users.data" :key="user.id">
                                 <td class="py-4">
                                     <p class="font-semibold text-white">{{ user.name }}</p>
                                     <p class="text-white/55">{{ user.email }}</p>
@@ -409,6 +497,8 @@ watch(
                         </tbody>
                     </table>
                 </div>
+
+                <AppTablePagination :meta="props.users" :links="props.users.links" />
             </AppReveal>
         </section>
     </AppLayout>

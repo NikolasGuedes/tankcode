@@ -4,6 +4,7 @@ import {
     store as storeSchool,
     update as updateSchool,
 } from '@/actions/App/Http/Controllers/Admin/SchoolController';
+import AppTablePagination from '@/components/AppTablePagination.vue';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCnpj, isValidCnpj } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { computed, ref } from 'vue';
@@ -35,6 +36,16 @@ type SchoolRow = {
     point_of_schools_count: number;
 };
 
+type Paginated<T> = {
+    data: T[];
+    links: { url: string | null; label: string; active: boolean }[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+};
+
 const statusLabel: Record<string, string> = {
     active: 'Ativo',
     inactive: 'Inativo',
@@ -46,7 +57,11 @@ const props = defineProps<{
         active: number;
         pointOfSchools: number;
     };
-    schools: SchoolRow[];
+    schools: Paginated<SchoolRow>;
+    filters: {
+        search?: string;
+        status?: string;
+    };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -57,6 +72,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 const schoolDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedSchool = ref<SchoolRow | null>(null);
+const filtersForm = useForm({
+    search: props.filters.search ?? '',
+    status: props.filters.status ?? 'all',
+});
 
 const schoolForm = useForm({
     name: '',
@@ -66,6 +85,27 @@ const schoolForm = useForm({
 });
 
 const deleteForm = useForm({});
+
+const applyFilters = () => {
+    router.get(
+        '/admin/schools',
+        {
+            search: filtersForm.search || undefined,
+            status: filtersForm.status !== 'all' ? filtersForm.status : undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const resetFilters = () => {
+    filtersForm.search = '';
+    filtersForm.status = 'all';
+    applyFilters();
+};
 
 const resetSchoolForm = () => {
     schoolForm.clearErrors();
@@ -222,6 +262,24 @@ const currentLogoLabel = computed(() => {
                     </Button>
                 </div>
 
+                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_auto]" @submit.prevent="applyFilters">
+                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou CNPJ" />
+                    <Select v-model="filtersForm.status">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todos os status</SelectItem>
+                            <SelectItem value="active">Ativas</SelectItem>
+                            <SelectItem value="inactive">Inativas</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div class="flex gap-3">
+                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
+                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                    </div>
+                </form>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
                         <thead>
@@ -235,7 +293,7 @@ const currentLogoLabel = computed(() => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
-                            <tr v-for="school in props.schools" :key="school.id">
+                            <tr v-for="school in props.schools.data" :key="school.id">
                                 <td class="py-4">
                                     <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white p-2 shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
                                         <img v-if="school.logo_url" :src="school.logo_url" :alt="`Logo ${school.name}`" class="h-full w-full object-contain" />
@@ -274,6 +332,8 @@ const currentLogoLabel = computed(() => {
                         </tbody>
                     </table>
                 </div>
+
+                <AppTablePagination :meta="props.schools" :links="props.schools.links" />
             </AppReveal>
         </section>
     </AppLayout>

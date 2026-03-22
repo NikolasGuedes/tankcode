@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:139
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/access'
 */
 export const update = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:139
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/access'
 */
 update.url = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ update.url = (args: { teacher: string | number | { id: string | number } } | [te
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:139
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/access'
 */
 update.patch = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -59,7 +59,7 @@ update.patch = (args: { teacher: string | number | { id: string | number } } | [
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:139
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/access'
 */
 const updateForm = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -74,7 +74,7 @@ const updateForm = (args: { teacher: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Director\TeacherController::update
-* @see app/Http/Controllers/Director/TeacherController.php:139
+* @see app/Http/Controllers/Director/TeacherController.php:157
 * @route '/director/teachers/{teacher}/access'
 */
 updateForm.patch = (args: { teacher: string | number | { id: string | number } } | [teacher: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

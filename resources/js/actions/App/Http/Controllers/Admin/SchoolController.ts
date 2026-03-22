@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::store
-* @see app/Http/Controllers/Admin/SchoolController.php:55
+* @see app/Http/Controllers/Admin/SchoolController.php:58
 * @route '/admin/schools'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::store
-* @see app/Http/Controllers/Admin/SchoolController.php:55
+* @see app/Http/Controllers/Admin/SchoolController.php:58
 * @route '/admin/schools'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::store
-* @see app/Http/Controllers/Admin/SchoolController.php:55
+* @see app/Http/Controllers/Admin/SchoolController.php:58
 * @route '/admin/schools'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::store
-* @see app/Http/Controllers/Admin/SchoolController.php:55
+* @see app/Http/Controllers/Admin/SchoolController.php:58
 * @route '/admin/schools'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::store
-* @see app/Http/Controllers/Admin/SchoolController.php:55
+* @see app/Http/Controllers/Admin/SchoolController.php:58
 * @route '/admin/schools'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ store.form = storeForm
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::update
-* @see app/Http/Controllers/Admin/SchoolController.php:68
+* @see app/Http/Controllers/Admin/SchoolController.php:71
 * @route '/admin/schools/{school}'
 */
 export const update = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -153,7 +153,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::update
-* @see app/Http/Controllers/Admin/SchoolController.php:68
+* @see app/Http/Controllers/Admin/SchoolController.php:71
 * @route '/admin/schools/{school}'
 */
 update.url = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -186,7 +186,7 @@ update.url = (args: { school: string | number | { id: string | number } } | [sch
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::update
-* @see app/Http/Controllers/Admin/SchoolController.php:68
+* @see app/Http/Controllers/Admin/SchoolController.php:71
 * @route '/admin/schools/{school}'
 */
 update.put = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -196,7 +196,7 @@ update.put = (args: { school: string | number | { id: string | number } } | [sch
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::update
-* @see app/Http/Controllers/Admin/SchoolController.php:68
+* @see app/Http/Controllers/Admin/SchoolController.php:71
 * @route '/admin/schools/{school}'
 */
 const updateForm = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -211,7 +211,7 @@ const updateForm = (args: { school: string | number | { id: string | number } } 
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::update
-* @see app/Http/Controllers/Admin/SchoolController.php:68
+* @see app/Http/Controllers/Admin/SchoolController.php:71
 * @route '/admin/schools/{school}'
 */
 updateForm.put = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -228,7 +228,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::destroy
-* @see app/Http/Controllers/Admin/SchoolController.php:85
+* @see app/Http/Controllers/Admin/SchoolController.php:88
 * @route '/admin/schools/{school}'
 */
 export const destroy = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -243,7 +243,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::destroy
-* @see app/Http/Controllers/Admin/SchoolController.php:85
+* @see app/Http/Controllers/Admin/SchoolController.php:88
 * @route '/admin/schools/{school}'
 */
 destroy.url = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
@@ -276,7 +276,7 @@ destroy.url = (args: { school: string | number | { id: string | number } } | [sc
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::destroy
-* @see app/Http/Controllers/Admin/SchoolController.php:85
+* @see app/Http/Controllers/Admin/SchoolController.php:88
 * @route '/admin/schools/{school}'
 */
 destroy.delete = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -286,7 +286,7 @@ destroy.delete = (args: { school: string | number | { id: string | number } } | 
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::destroy
-* @see app/Http/Controllers/Admin/SchoolController.php:85
+* @see app/Http/Controllers/Admin/SchoolController.php:88
 * @route '/admin/schools/{school}'
 */
 const destroyForm = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -301,7 +301,7 @@ const destroyForm = (args: { school: string | number | { id: string | number } }
 
 /**
 * @see \App\Http\Controllers\Admin\SchoolController::destroy
-* @see app/Http/Controllers/Admin/SchoolController.php:85
+* @see app/Http/Controllers/Admin/SchoolController.php:88
 * @route '/admin/schools/{school}'
 */
 destroyForm.delete = (args: { school: string | number | { id: string | number } } | [school: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

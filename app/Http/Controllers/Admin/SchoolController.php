@@ -20,7 +20,7 @@ class SchoolController extends Controller
     {
         $filters = $request->validated();
 
-        $schools = School::query()
+        $schoolsQuery = School::query()
             ->withCount('pointOfSchools')
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(function ($searchQuery) use ($search) {
@@ -29,10 +29,13 @@ class SchoolController extends Controller
                         ->orWhere('cnpj', 'like', "%{$search}%");
                 });
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status));
+
+        $schools = $schoolsQuery
             ->latest()
-            ->get()
-            ->map(fn (School $school) => [
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (School $school) => [
                 'id' => $school->id,
                 'name' => $school->name,
                 'cnpj' => $school->cnpj,

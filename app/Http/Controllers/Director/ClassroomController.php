@@ -23,7 +23,7 @@ class ClassroomController extends Controller
         $filters = $request->validated();
         $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
 
-        $classrooms = Classroom::query()
+        $classroomsQuery = Classroom::query()
             ->with(['pointOfSchool:id,name', 'teacher:id,name', 'students:id,name'])
             ->withCount('students')
             ->where('school_id', $director?->school_id)
@@ -34,10 +34,13 @@ class ClassroomController extends Controller
                     ->orWhere('code', 'like', "%{$search}%"));
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->where('point_of_school_id', $pointId))
+            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->where('point_of_school_id', $pointId));
+
+        $classrooms = $classroomsQuery
             ->latest()
-            ->get()
-            ->map(fn (Classroom $classroom) => [
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (Classroom $classroom) => [
                 'id' => $classroom->id,
                 'point_of_school_id' => $classroom->point_of_school_id,
                 'teacher_id' => $classroom->teacher_id,
@@ -52,11 +55,29 @@ class ClassroomController extends Controller
 
         return Inertia::render('director/Classrooms/Index', [
             'stats' => [
-                'total' => $classrooms->count(),
-                'active' => $classrooms->where('status', 'active')->count(),
-                'students' => $classrooms->sum('students_count'),
+                'total' => Classroom::query()
+                    ->where('school_id', $director?->school_id)
+                    ->whereIn('point_of_school_id', $pointIds)
+                    ->count(),
+                'active' => Classroom::query()
+                    ->where('school_id', $director?->school_id)
+                    ->where('status', 'active')
+                    ->whereIn('point_of_school_id', $pointIds)
+                    ->count(),
+                'students' => Classroom::query()
+                    ->withCount('students')
+                    ->where('school_id', $director?->school_id)
+                    ->whereIn('point_of_school_id', $pointIds)
+                    ->get()
+                    ->sum('students_count'),
             ],
             'classrooms' => $classrooms,
+            'points' => PointOfSchool::query()
+                ->whereIn('id', $pointIds)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
+            'filters' => $filters,
         ]);
     }
 

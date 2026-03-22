@@ -24,7 +24,7 @@ class UserController extends Controller
     {
         $filters = $request->validated();
 
-        $users = User::query()
+        $usersQuery = User::query()
             ->with(['role:id,name,label', 'school:id,name', 'pointOfSchools:id,name,school_id'])
             ->withCount('pointOfSchools')
             ->when($filters['search'] ?? null, function ($query, string $search) {
@@ -36,10 +36,13 @@ class UserController extends Controller
             })
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->when($filters['role'] ?? null, fn ($query, string $role) => $query->whereHas('role', fn ($roleQuery) => $roleQuery->where('name', $role)))
-            ->when($filters['school_id'] ?? null, fn ($query, int $schoolId) => $query->where('school_id', $schoolId))
+            ->when($filters['school_id'] ?? null, fn ($query, int $schoolId) => $query->where('school_id', $schoolId));
+
+        $users = $usersQuery
             ->latest()
-            ->get()
-            ->map(fn (User $user) => [
+            ->paginate(10)
+            ->withQueryString()
+            ->through(fn (User $user) => [
                 'id' => $user->id,
                 'role_id' => $user->role_id,
                 'school_id' => $user->school_id,

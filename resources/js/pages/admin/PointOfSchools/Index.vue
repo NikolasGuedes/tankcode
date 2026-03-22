@@ -4,6 +4,7 @@ import {
     store as storePointOfSchool,
     update as updatePointOfSchool,
 } from '@/actions/App/Http/Controllers/Admin/PointOfSchoolController';
+import AppTablePagination from '@/components/AppTablePagination.vue';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCep, formatCnpj, isValidCep, isValidCnpj } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { ref } from 'vue';
@@ -43,6 +44,16 @@ type PointRow = {
     address_line: string | null;
 };
 
+type Paginated<T> = {
+    data: T[];
+    links: { url: string | null; label: string; active: boolean }[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+};
+
 const statusLabel: Record<string, string> = {
     active: 'Ativo',
     inactive: 'Inativo',
@@ -56,7 +67,12 @@ const props = defineProps<{
         users: number;
     };
     schools: SchoolOption[];
-    points: PointRow[];
+    points: Paginated<PointRow>;
+    filters: {
+        search?: string;
+        status?: string;
+        school_id?: number;
+    };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -67,6 +83,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 const pointDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const selectedPoint = ref<PointRow | null>(null);
+const filtersForm = useForm({
+    search: props.filters.search ?? '',
+    status: props.filters.status ?? 'all',
+    school_id: props.filters.school_id ? String(props.filters.school_id) : 'all',
+});
 
 const pointForm = useForm({
     school_id: '',
@@ -78,6 +99,29 @@ const pointForm = useForm({
 });
 
 const deleteForm = useForm({});
+
+const applyFilters = () => {
+    router.get(
+        '/admin/point-of-schools',
+        {
+            search: filtersForm.search || undefined,
+            status: filtersForm.status !== 'all' ? filtersForm.status : undefined,
+            school_id: filtersForm.school_id !== 'all' ? filtersForm.school_id : undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+};
+
+const resetFilters = () => {
+    filtersForm.search = '';
+    filtersForm.status = 'all';
+    filtersForm.school_id = 'all';
+    applyFilters();
+};
 
 const resetPointForm = () => {
     pointForm.clearErrors();
@@ -219,6 +263,35 @@ const submitDelete = () => {
                     </Button>
                 </div>
 
+                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_240px_auto]" @submit.prevent="applyFilters">
+                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome, CNPJ, CEP ou endereco" />
+                    <Select v-model="filtersForm.status">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todos os status</SelectItem>
+                            <SelectItem value="active">Ativos</SelectItem>
+                            <SelectItem value="inactive">Inativos</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select v-model="filtersForm.school_id">
+                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectValue placeholder="Escola" />
+                        </SelectTrigger>
+                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
+                            <SelectItem value="all">Todas as escolas</SelectItem>
+                            <SelectItem v-for="school in props.schools" :key="school.id" :value="String(school.id)">
+                                {{ school.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div class="flex gap-3">
+                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
+                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                    </div>
+                </form>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
                         <thead>
@@ -234,7 +307,7 @@ const submitDelete = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
-                            <tr v-for="point in props.points" :key="point.id">
+                            <tr v-for="point in props.points.data" :key="point.id">
                                 <td class="py-4 font-semibold text-white">{{ point.name }}</td>
                                 <td class="py-4">{{ point.school ?? '-' }}</td>
                                 <td class="py-4">{{ point.cnpj ? formatCnpj(point.cnpj) : '-' }}</td>
@@ -270,6 +343,8 @@ const submitDelete = () => {
                         </tbody>
                     </table>
                 </div>
+
+                <AppTablePagination :meta="props.points" :links="props.points.links" />
             </AppReveal>
         </section>
     </AppLayout>
