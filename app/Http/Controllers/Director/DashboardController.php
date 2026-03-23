@@ -6,6 +6,7 @@ use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,8 +14,9 @@ class DashboardController extends Controller
 {
     public function __invoke(): Response
     {
-        $user = request()->user();
-        $pointIds = $user?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+        $request = request();
+        $user = $request->user();
+        $pointIds = PointOfSchoolContext::selectedPointIds($request, $user);
 
         return Inertia::render('director/Dashboard', [
             'stats' => [

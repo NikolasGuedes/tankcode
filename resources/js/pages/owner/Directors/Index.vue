@@ -18,6 +18,7 @@ import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-ne
 import { ref, watch } from 'vue';
 
 type PointOption = { id: number; name: string };
+
 type DirectorRow = {
     id: number;
     name: string;
@@ -43,11 +44,9 @@ type Paginated<T> = {
 const props = defineProps<{
     stats: { total: number; active: number; points: number };
     directors: Paginated<DirectorRow>;
-    points: PointOption[];
     filters: {
         search?: string;
         status?: string;
-        point_of_school_id?: number;
     };
 }>();
 
@@ -63,7 +62,6 @@ const resendingInvitationId = ref<number | null>(null);
 const filtersForm = useForm({
     search: props.filters.search ?? '',
     status: props.filters.status ?? 'all',
-    point_of_school_id: props.filters.point_of_school_id ? String(props.filters.point_of_school_id) : 'all',
 });
 const suspendAutoFilters = ref(false);
 const deleteForm = useForm({});
@@ -75,7 +73,6 @@ const applyFilters = () => {
         {
             search: filtersForm.search || undefined,
             status: filtersForm.status !== 'all' ? filtersForm.status : undefined,
-            point_of_school_id: filtersForm.point_of_school_id !== 'all' ? filtersForm.point_of_school_id : undefined,
         },
         {
             preserveState: true,
@@ -97,7 +94,6 @@ const resetFilters = () => {
     suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
-    filtersForm.point_of_school_id = 'all';
     applyFilters();
     suspendAutoFilters.value = false;
 };
@@ -162,7 +158,7 @@ const resendInvitation = (director: DirectorRow) => {
 };
 
 watch(
-    () => [filtersForm.search, filtersForm.status, filtersForm.point_of_school_id],
+    () => [filtersForm.search, filtersForm.status],
     () => {
         debouncedApplyFilters();
     },
@@ -196,7 +192,7 @@ watch(
                     </Button>
                 </div>
 
-                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_240px_auto]" @submit.prevent="applyFilters">
+                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_auto]" @submit.prevent="applyFilters">
                     <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou e-mail" />
                     <Select v-model="filtersForm.status">
                         <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
@@ -206,17 +202,6 @@ watch(
                             <SelectItem value="all">Todos os status</SelectItem>
                             <SelectItem value="active">Ativos</SelectItem>
                             <SelectItem value="inactive">Inativos</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select v-model="filtersForm.point_of_school_id">
-                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
-                            <SelectValue placeholder="Ponto de Ensino" />
-                        </SelectTrigger>
-                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
-                            <SelectItem value="all">Todos os pontos</SelectItem>
-                            <SelectItem v-for="point in props.points" :key="point.id" :value="String(point.id)">
-                                {{ point.name }}
-                            </SelectItem>
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">

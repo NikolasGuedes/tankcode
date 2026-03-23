@@ -10,6 +10,7 @@ use App\Http\Requests\Owner\UpdateDirectorRequest;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use App\Support\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,12 +24,13 @@ class DirectorController extends Controller
     {
         $owner = $request->user();
         $filters = $request->validated();
-        $pointIds = $owner?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+        $pointIds = PointOfSchoolContext::selectedPointIds($request, $owner);
+        $assignedPointIds = $owner?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
 
         $directorsQuery = User::query()
             ->with([
                 'pointOfSchools' => fn ($query) => $query
-                    ->whereIn('point_of_schools.id', $pointIds)
+                    ->whereIn('point_of_schools.id', $assignedPointIds)
                     ->select('point_of_schools.id', 'point_of_schools.name'),
             ])
             ->where('school_id', $owner?->school_id)
@@ -39,8 +41,7 @@ class DirectorController extends Controller
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%"));
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->whereHas('pointOfSchools', fn ($pointQuery) => $pointQuery->where('point_of_schools.id', $pointId)));
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status));
 
         $directors = $directorsQuery
             ->latest()
@@ -74,11 +75,6 @@ class DirectorController extends Controller
                 'points' => $pointIds->count(),
             ],
             'directors' => $directors,
-            'points' => PointOfSchool::query()
-                ->whereIn('id', $pointIds)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
             'filters' => $filters,
         ]);
     }

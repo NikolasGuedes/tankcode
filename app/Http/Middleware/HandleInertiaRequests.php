@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Enums\RoleEnum;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +43,8 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
         /** @var User|null $user */
         $user = $request->user();
+        $assignedPoints = PointOfSchoolContext::assignedPoints($user);
+        $currentPoint = PointOfSchoolContext::current($request, $user, $assignedPoints);
 
         return [
             ...parent::share($request),
@@ -72,6 +75,11 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'info' => fn () => $request->session()->get('info'),
+            ],
+            'pointContext' => [
+                'enabled' => PointOfSchoolContext::supports($user),
+                'current' => $currentPoint,
+                'available' => $assignedPoints->values()->all(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

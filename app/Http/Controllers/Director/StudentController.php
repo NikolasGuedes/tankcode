@@ -11,6 +11,7 @@ use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use App\Support\UserInvitationService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,7 @@ class StudentController extends Controller
     {
         $director = $request->user();
         $filters = $request->validated();
-        $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+        $pointIds = PointOfSchoolContext::selectedPointIds($request, $director);
 
         $studentsQuery = User::query()
             ->with(['pointOfSchools:id,name', 'classrooms:id,name'])
@@ -40,8 +41,7 @@ class StudentController extends Controller
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%"));
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->whereHas('pointOfSchools', fn ($pointQuery) => $pointQuery->where('point_of_schools.id', $pointId)));
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status));
 
         $students = $studentsQuery
             ->latest()
@@ -76,10 +76,14 @@ class StudentController extends Controller
                 'points' => $pointIds->count(),
             ],
             'points' => PointOfSchool::query()
-                ->whereIn('id', $pointIds)
+                ->where('school_id', $director?->school_id)
+                ->whereIn('id', $director->pointOfSchools()->pluck('point_of_schools.id'))
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
+                ->map(fn (PointOfSchool $point) => [
+                    'id' => $point->id,
+                    'name' => $point->name,
+                ]),
             'classrooms' => Classroom::query()
                 ->where('school_id', $director?->school_id)
                 ->whereIn('point_of_school_id', $pointIds)
