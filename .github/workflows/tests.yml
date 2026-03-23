@@ -24,6 +24,7 @@ jobs:
           php-version: 8.4
           tools: composer:v2
           coverage: xdebug
+          extensions: pdo_sqlite, sqlite3
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -43,8 +44,8 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
-      - name: Publish Ziggy Configuration
-        run: php artisan ziggy:generate
+      - name: Generate Wayfinder Actions
+        run: php artisan wayfinder:generate --with-form
 
       - name: Build Assets
         run: npm run build
