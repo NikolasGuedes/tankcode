@@ -7,9 +7,9 @@
   resolved "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.27.1.tgz"
   integrity sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==
 
-"@babel/helper-validator-identifier@^7.28.5":
+"@babel/helper-validator-identifier@^7.27.1":
   version "7.28.5"
-  resolved "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz"
+  resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz#010b6938fab7cb7df74aa2bbc06aa503b8fe5fb4"
   integrity sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==
 
 "@babel/parser@^7.28.4":
@@ -1637,9 +1637,9 @@ form-data@^4.0.4:
     hasown "^2.0.2"
     mime-types "^2.1.12"
 
-framer-motion@^12.38.0:
+framer-motion@^12.25.0:
   version "12.38.0"
-  resolved "https://registry.npmjs.org/framer-motion/-/framer-motion-12.38.0.tgz"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.38.0.tgz#cf28e072a95942881ca4e33fd33be41192fd146b"
   integrity sha512-rFYkY/pigbcswl1XQSb7q424kSTQ8q6eAC+YUsSKooHQYuLdzdHjrt6uxUC+PRAO++q5IS7+TamgIw1AphxR+g==
   dependencies:
     motion-dom "^12.38.0"
@@ -2023,9 +2023,9 @@ minizlib@^3.1.0:
   dependencies:
     minipass "^7.1.2"
 
-motion-dom@^12.38.0:
+motion-dom@^12.23.23, motion-dom@^12.38.0:
   version "12.38.0"
-  resolved "https://registry.npmjs.org/motion-dom/-/motion-dom-12.38.0.tgz"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.38.0.tgz#9ef3253ea0fb28b6757588327073848d940e9aab"
   integrity sha512-pdkHLD8QYRp8VfiNLb8xIBJis1byQ9gPT3Jnh2jqfFtAsWUA3dEepDlsWe/xMpO8McV+VdpKVcp+E+TGJEtOoA==
   dependencies:
     motion-utils "^12.36.0"
@@ -2035,15 +2035,14 @@ motion-utils@^12.36.0:
   resolved "https://registry.npmjs.org/motion-utils/-/motion-utils-12.36.0.tgz"
   integrity sha512-eHWisygbiwVvf6PZ1vhaHCLamvkSbPIeAYxWUuL3a2PD/TROgE7FvfHWTIH4vMl798QLfMw15nRqIaRDXTlYRg==
 
-motion-v@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/motion-v/-/motion-v-2.1.0.tgz"
-  integrity sha512-ESYNbbyjdpiINjd8vhEKi1snHz2TebVoa18DFl9uS5g/6XsobA6MckUbJE1SB1D13aqgzI9jCkSCnBS68GPPog==
+motion-v@^1.10.2:
+  version "1.10.3"
+  resolved "https://registry.yarnpkg.com/motion-v/-/motion-v-1.10.3.tgz#7025ef02f7746df1e2c30f049c49b3d029f80284"
+  integrity sha512-9Ewo/wwGv7FO3PqYJpllBF/Efc7tbeM1iinVrM73s0RUQrnXHwMZCaRX98u4lu0PQCrZghPPfCsQ14pWKIEbnQ==
   dependencies:
-    framer-motion "^12.38.0"
+    framer-motion "^12.25.0"
     hey-listen "^1.0.8"
-    motion-dom "^12.38.0"
-    motion-utils "^12.36.0"
+    motion-dom "^12.23.23"
 
 ms@^2.1.3:
   version "2.1.3"
