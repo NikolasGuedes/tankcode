@@ -12,9 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 type PointOption = { id: number; name: string };
 type DirectorRow = {
@@ -64,6 +65,7 @@ const filtersForm = useForm({
     status: props.filters.status ?? 'all',
     point_of_school_id: props.filters.point_of_school_id ? String(props.filters.point_of_school_id) : 'all',
 });
+const suspendAutoFilters = ref(false);
 const deleteForm = useForm({});
 const accessLabel: Record<string, string> = { active: 'Habilitado', inactive: 'Desabilitado' };
 
@@ -83,11 +85,21 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
     filtersForm.point_of_school_id = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const openDeleteDialog = (director: DirectorRow) => {
@@ -148,6 +160,13 @@ const resendInvitation = (director: DirectorRow) => {
         },
     );
 };
+
+watch(
+    () => [filtersForm.search, filtersForm.status, filtersForm.point_of_school_id],
+    () => {
+        debouncedApplyFilters();
+    },
+);
 </script>
 
 <template>
@@ -201,8 +220,7 @@ const resendInvitation = (director: DirectorRow) => {
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 

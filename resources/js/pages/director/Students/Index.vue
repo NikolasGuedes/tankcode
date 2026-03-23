@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CheckCircle2, Download, Mail, Pencil, Plus, Trash2, Upload, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -74,6 +75,7 @@ const filtersForm = useForm({
     status: props.filters.status ?? 'all',
     point_of_school_id: props.filters.point_of_school_id ? String(props.filters.point_of_school_id) : 'all',
 });
+const suspendAutoFilters = ref(false);
 const form = useForm({ name: '', email: '', point_of_school_id: '', status: 'active' });
 const importForm = useForm({
     point_of_school_id: props.points[0]?.id ? String(props.points[0].id) : '',
@@ -102,11 +104,21 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
     filtersForm.point_of_school_id = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const resetForm = () => {
@@ -240,6 +252,13 @@ const resendInvitation = (student: StudentRow) => {
 };
 
 watch(
+    () => [filtersForm.search, filtersForm.status, filtersForm.point_of_school_id],
+    () => {
+        debouncedApplyFilters();
+    },
+);
+
+watch(
     () => importForm.point_of_school_id,
     (pointId) => {
         const matchingClassrooms = props.classrooms.filter((classroom) => String(classroom.point_of_school_id) === pointId);
@@ -312,8 +331,7 @@ watch(
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 

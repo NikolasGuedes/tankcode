@@ -22,10 +22,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCnpj, isValidCnpj } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 type SchoolRow = {
     id: number;
@@ -76,6 +77,7 @@ const filtersForm = useForm({
     search: props.filters.search ?? '',
     status: props.filters.status ?? 'all',
 });
+const suspendAutoFilters = ref(false);
 
 const schoolForm = useForm({
     name: '',
@@ -101,10 +103,20 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const resetSchoolForm = () => {
@@ -223,6 +235,13 @@ const currentLogoLabel = computed(() => {
 
     return 'Nenhum arquivo escolhido';
 });
+
+watch(
+    () => [filtersForm.search, filtersForm.status],
+    () => {
+        debouncedApplyFilters();
+    },
+);
 </script>
 
 <template>
@@ -275,8 +294,7 @@ const currentLogoLabel = computed(() => {
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 
