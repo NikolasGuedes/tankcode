@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { create as forgotPassword } from '@/actions/App/Http/Controllers/Auth/PasswordResetLinkController';
+import { store as login } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -23,7 +25,7 @@ defineProps<{
             {{ status }}
         </div>
 
-        <Form method="post" :action="route('login')" :reset-on-success="['password']" v-slot="{ errors, processing }" class="flex flex-col gap-6">
+        <Form method="post" :action="login.url()" :reset-on-success="['password']" v-slot="{ errors, processing }" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Endereço de email</Label>
@@ -43,7 +45,7 @@ defineProps<{
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
                         <Label for="password">Senha</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
+                        <TextLink v-if="canResetPassword" :href="forgotPassword.url()" class="text-sm" :tabindex="5">
                             Esqueceu a senha?
                         </TextLink>
                     </div>
@@ -72,10 +74,6 @@ defineProps<{
                 </Button>
             </div>
 
-            <div class="text-sm text-center text-muted-foreground">
-                Não tem uma conta?
-                <TextLink :href="route('register')" :tabindex="5">Registrar-se</TextLink>
-            </div>
         </Form>
     </AuthBase>
 </template>

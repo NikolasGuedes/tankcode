@@ -17,6 +17,12 @@ const props = defineProps<ToasterProps>()
       '--success-bg': 'var(--green_site)',
       '--success-border': 'var(--green_site)',
       '--success-text': 'black',
+      '--error-bg': 'var(--destructive)',
+      '--error-border': 'var(--destructive)',
+      '--error-text': 'white',
+      '--info-bg': 'var(--secondary)',
+      '--info-border': 'var(--secondary)',
+      '--info-text': 'white',
     }"
   />
 </template>

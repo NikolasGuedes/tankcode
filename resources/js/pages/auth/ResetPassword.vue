@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { store as resetPassword } from '@/actions/App/Http/Controllers/Auth/NewPasswordController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,7 @@ const inputEmail = ref(props.email);
 
         <Form
             method="post"
-            :action="route('password.store')"
+            :action="resetPassword.url()"
             :transform="(data) => ({ ...data, token, email })"
             :reset-on-success="['password', 'password_confirmation']"
             v-slot="{ errors, processing }"

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { create as login } from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
+import { store as sendResetLink } from '@/actions/App/Http/Controllers/Auth/PasswordResetLinkController';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -22,7 +24,7 @@ defineProps<{
         </div>
 
         <div class="space-y-6">
-            <Form method="post" :action="route('password.email')" v-slot="{ errors, processing }">
+            <Form method="post" :action="sendResetLink.url()" v-slot="{ errors, processing }">
                 <div class="grid gap-2">
                     <Label for="email">Endereço de email</Label>
                     <Input id="email" type="email" name="email" autocomplete="off" autofocus placeholder="email@exemplo.com" />
@@ -39,7 +41,7 @@ defineProps<{
 
             <div class="space-x-1 text-center text-sm text-muted-foreground">
                 <span>Ou, retorne para</span>
-                <TextLink :href="route('login')">fazer login</TextLink>
+                <TextLink :href="login.url()">fazer login</TextLink>
             </div>
         </div>
     </AuthLayout>

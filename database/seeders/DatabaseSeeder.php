@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\RoleEnum;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        collect([
+            ['name' => RoleEnum::TANK_ADMIN->value, 'label' => RoleEnum::TANK_ADMIN->label()],
+            ['name' => RoleEnum::OWNER->value, 'label' => RoleEnum::OWNER->label()],
+            ['name' => RoleEnum::DIRECTOR->value, 'label' => RoleEnum::DIRECTOR->label()],
+            ['name' => RoleEnum::TEACHER->value, 'label' => RoleEnum::TEACHER->label()],
+            ['name' => RoleEnum::STUDENT->value, 'label' => RoleEnum::STUDENT->label()],
+        ])->each(fn (array $role) => Role::query()->updateOrCreate(
+            ['name' => $role['name']],
+            ['label' => $role['label']],
+        ));
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            TankAdminUserSeeder::class,
+            SchoolDemoSeeder::class,
         ]);
     }
 }

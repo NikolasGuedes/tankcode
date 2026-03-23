@@ -12,6 +12,7 @@ class StudentResetPassword extends Mailable
     use Queueable, SerializesModels;
 
     public $student;
+
     public $resetUrl;
 
     public function __construct(Student $student, string $resetUrl)
@@ -23,6 +24,6 @@ class StudentResetPassword extends Mailable
     public function build()
     {
         return $this->subject('Redefinir Senha - Tank Code')
-                    ->view('emails.student-reset-password');
+            ->view('emails.student-reset-password');
     }
 }

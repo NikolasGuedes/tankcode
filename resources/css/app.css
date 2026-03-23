@@ -82,7 +82,7 @@
         --font-sans:
             'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     }
-    body{
+    body {
         transition: all 0.3s ease;
     }
 }
@@ -90,39 +90,44 @@
 :root {
     --background: #000000;
     --foreground: #f5f6fa;
-    --green_site: #4BFF6C;
-    --card: #000000;
+    --green_site: #4bff6c;
+    --surface-elevated: #171331;
+    --primary-hover: #4a43ff;
+    --secondary-hover: #9b8aff;
+    --accent-hover: #2f2696;
+    --destructive-hover: #ff3342;
+    --card: #110d2e;
     --card-foreground: #f5f6fa;
-    --popover: #000000;
+    --popover: #110d2e;
     --popover-foreground: #f5f6fa;
-    --primary: #1D15F0;
+    --primary: #1d15f0;
     --primary-foreground: #fff;
-    --secondary: #8471FF;
+    --secondary: #8471ff;
     --secondary-foreground: #f5f6fa;
-    --muted: #1D15F0;
-    --muted-foreground: #a3a3c2;
-    --accent: #8471FF;
+    --muted: #110d2e;
+    --muted-foreground: #b6b1d8;
+    --accent: #8471ff;
     --accent-foreground: #fff;
     --destructive: #ff0011;
     --destructive-foreground: #fff;
-    --border: #23213a;
-    --input: #23213a;
-    --ring: #1D15F0;
-    --chart-1: #1D15F0;
-    --chart-2: #8471FF;
-    --chart-3: #17153B;
-    --chart-4: #ffe066;
-    --chart-5: #ffb366;
+    --border: #110d2e;
+    --input: #110d2e;
+    --ring: #8471ff;
+    --chart-1: #1d15f0;
+    --chart-2: #8471ff;
+    --chart-3: #110d2e;
+    --chart-4: #4bff6c;
+    --chart-5: #ff0011;
     --radius: 0.5rem;
     --sidebar-background: #110d2e;
     --sidebar-foreground: #fff;
-    --sidebar-primary: #fff;
-    --sidebar-primary-foreground: #1D15F0;
-    --sidebar-accent: #8471FF;
+    --sidebar-primary: #8471ff;
+    --sidebar-primary-foreground: #fff;
+    --sidebar-accent: #1d15f0;
     --sidebar-accent-foreground: #fff;
-    --sidebar-border: #23213a;
-    --sidebar-ring: #1D15F0;
-    --sidebar: #8471FF;
+    --sidebar-border: #110d2e;
+    --sidebar-ring: #8471ff;
+    --sidebar: #8471ff;
 }
 
 @layer base {
@@ -133,8 +138,7 @@
         @apply bg-background text-foreground;
     }
 }
-.mask-edges{
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+.mask-edges {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
-

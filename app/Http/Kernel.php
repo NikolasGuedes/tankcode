@@ -14,7 +14,6 @@ class Kernel extends HttpKernel
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
-        // ...existing code...
-        'student.auth' => \App\Http\Middleware\StudentAuth::class,
+        'role' => \App\Http\Middleware\EnsureUserHasRole::class,
     ];
 }

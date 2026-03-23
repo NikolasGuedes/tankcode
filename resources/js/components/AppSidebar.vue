@@ -3,27 +3,34 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { User, Blocks, ClipboardList } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Blocks, LayoutGrid, School, UserRound } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Alunos',
-        href: '/students',
-        icon: User,
-    },
-    {
-        title: 'Salas',
-        href: '/rooms',
-        icon: Blocks,
-    },
-    {
-        title: 'Atividades',
-        href: '/atividades',
-        icon: ClipboardList,
-    },
-];
+const page = usePage();
+
+const icons: Record<string, typeof LayoutGrid> = {
+    'Visao geral': LayoutGrid,
+    Escolas: Blocks,
+    Organizacoes: Blocks,
+    'Pontos de Ensino': School,
+    Usuarios: UserRound,
+    'Minha escola': School,
+    Diretoria: LayoutGrid,
+    Professor: LayoutGrid,
+    Aluno: LayoutGrid,
+    Dashboard: LayoutGrid,
+};
+
+const mainNavItems = computed<NavItem[]>(() =>
+    (page.props.auth.navigation ?? []).map((item) => ({
+        ...item,
+        icon: icons[item.title] ?? LayoutGrid,
+    })),
+);
+
+const homeHref = computed(() => mainNavItems.value[0]?.href ?? '/dashboard');
 
 </script>
 
@@ -33,7 +40,7 @@ const mainNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('students')">
+                        <Link :href="homeHref">
                         <AppLogo />
                         </Link>
                     </SidebarMenuButton>

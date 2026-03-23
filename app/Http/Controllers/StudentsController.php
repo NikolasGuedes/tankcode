@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Student;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Cache;
 use App\Mail\StudentEmailVerification as StudentEmailVerificationMail;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Validation\ValidationException;
+use App\Models\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentsController extends Controller
 {
@@ -26,18 +25,18 @@ class StudentsController extends Controller
 
         return Inertia::render('student/Student', [
             'students' => Student::query()
-            ->with('room')
-            ->when($filters['search'] ?? false, function ($query) use ($filters) {
-                $query->where('name', 'like', '%' . $filters['search'] . '%')
-                ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->withQueryString(),
-            'search' => $filters['search'] ?? ''
+                ->with('room')
+                ->when($filters['search'] ?? false, function ($query) use ($filters) {
+                    $query->where('name', 'like', '%'.$filters['search'].'%')
+                        ->orWhere('email', 'like', '%'.$filters['search'].'%')
+                        ->orWhere('cod', 'like', '%'.$filters['search'].'%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+                ->withQueryString(),
+            'search' => $filters['search'] ?? '',
         ]);
-           
+
     }
 
     public function store(Request $request)
@@ -50,7 +49,7 @@ class StudentsController extends Controller
         // Gerar um código único no formato AAA-123 (AAA aleatório)
         do {
             $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
-            $cod = $prefix . '-' . rand(100, 999);
+            $cod = $prefix.'-'.rand(100, 999);
         } while (Student::where('cod', $cod)->exists());
 
         try {
@@ -68,13 +67,13 @@ class StudentsController extends Controller
                 $this->sendVerificationEmail($student);
             });
         } catch (\Throwable $th) {
-            Log::error('Failed to create student: ' . $th->getMessage(), [
+            Log::error('Failed to create student: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             return redirect()->back()->withErrors([
-                'error' => 'Failed to create student: ' . $th->getMessage()
+                'error' => 'Failed to create student: '.$th->getMessage(),
             ]);
         }
     }
@@ -83,7 +82,7 @@ class StudentsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $id,
+            'email' => 'required|email|unique:students,email,'.$id,
         ]);
 
         try {
@@ -95,14 +94,14 @@ class StudentsController extends Controller
                 $student->save();
             });
         } catch (\Throwable $th) {
-            Log::error('Failed to update student: ' . $th->getMessage(), [
+            Log::error('Failed to update student: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
                 'student_id' => $id,
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             return redirect()->back()->withErrors([
-                'error' => 'Failed to update student: ' . $th->getMessage()
+                'error' => 'Failed to update student: '.$th->getMessage(),
             ]);
         }
     }
@@ -115,18 +114,18 @@ class StudentsController extends Controller
 
             return redirect()->back()->with('success', 'Estudante deletado com sucesso!');
         } catch (\Throwable $th) {
-            Log::error('Failed to delete student: ' . $th->getMessage(), [
+            Log::error('Failed to delete student: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
-                'student_id' => $id
+                'student_id' => $id,
             ]);
 
             return redirect()->back()->withErrors([
-                'error' => 'Failed to delete student: ' . $th->getMessage()
+                'error' => 'Failed to delete student: '.$th->getMessage(),
             ]);
         }
     }
 
-    public function import(Request $request)
+    public function importStudents(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
@@ -144,7 +143,7 @@ class StudentsController extends Controller
             foreach ($rows as $rowIndex => $row) {
                 // Pular linhas completamente vazias
                 if (empty(array_filter($row, function ($value) {
-                    return !is_null($value) && trim($value) !== '';
+                    return ! is_null($value) && trim($value) !== '';
                 }))) {
                     continue;
                 }
@@ -155,29 +154,31 @@ class StudentsController extends Controller
                 // Validar nome
                 if (is_null($name) || $name === '') {
                     $hasErrors = true;
-                    Log::warning('Import error: Missing name on row ' . ($rowIndex + 2), [
+                    Log::warning('Import error: Missing name on row '.($rowIndex + 2), [
                         'file' => $file->getClientOriginalName(),
-                        'row' => $rowIndex + 2
+                        'row' => $rowIndex + 2,
                     ]);
+
                     continue;
                 }
 
                 // Validar email
-                if (is_null($email) || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if (is_null($email) || $email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $hasErrors = true;
-                    Log::warning('Import error: Invalid email on row ' . ($rowIndex + 2), [
+                    Log::warning('Import error: Invalid email on row '.($rowIndex + 2), [
                         'file' => $file->getClientOriginalName(),
                         'name' => $name,
                         'email' => $email,
-                        'row' => $rowIndex + 2
+                        'row' => $rowIndex + 2,
                     ]);
+
                     continue;
                 }
 
                 // Se chegou aqui, os dados são válidos
                 $validStudents[] = [
                     'name' => $name,
-                    'email' => $email
+                    'email' => $email,
                 ];
             }
         }
@@ -202,7 +203,7 @@ class StudentsController extends Controller
 
             foreach ($validStudents as $studentData) {
                 $existingStudent = Student::where('email', $studentData['email'])->first();
-                
+
                 if ($existingStudent) {
                     // Atualizar estudante existente
                     $existingStudent->update([
@@ -213,13 +214,13 @@ class StudentsController extends Controller
                     Log::info('Student updated via import', [
                         'name' => $studentData['name'],
                         'email' => $studentData['email'],
-                        'user' => Auth::user()->name ?? 'System'
+                        'user' => Auth::user()->name ?? 'System',
                     ]);
                 } else {
                     // Criar novo estudante
                     do {
                         $prefix = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 3));
-                        $cod = $prefix . '-' . rand(100, 999);
+                        $cod = $prefix.'-'.rand(100, 999);
                     } while (Student::where('cod', $cod)->exists());
 
                     $student = Student::create([
@@ -238,13 +239,13 @@ class StudentsController extends Controller
                         'name' => $studentData['name'],
                         'email' => $studentData['email'],
                         'cod' => $cod,
-                        'user' => Auth::user()->name ?? 'System'
+                        'user' => Auth::user()->name ?? 'System',
                     ]);
                 }
             }
 
             DB::commit();
-            
+
             $message = [];
             if ($created > 0) {
                 $message[] = "{$created} estudante(s) criado(s)";
@@ -253,15 +254,15 @@ class StudentsController extends Controller
                 $message[] = "{$updated} estudante(s) atualizado(s)";
             }
 
-            return redirect()->route('students')->with('success', implode(' e ', $message) . ' com sucesso!');
+            return redirect()->route('students')->with('success', implode(' e ', $message).' com sucesso!');
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Failed to import students: ' . $th->getMessage(), [
+            Log::error('Failed to import students: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
             ]);
 
             throw ValidationException::withMessages([
-                'msg' => 'Erro ao importar estudantes: ' . $th->getMessage(),
+                'msg' => 'Erro ao importar estudantes: '.$th->getMessage(),
             ]);
         }
     }
@@ -270,25 +271,25 @@ class StudentsController extends Controller
     {
         try {
             $student = Student::findOrFail($id);
-            
-            if (!$student->hasVerifiedEmail()) {
+
+            if (! $student->hasVerifiedEmail()) {
                 return back()->with('error', 'O estudante precisa verificar o email antes de ter acesso à plataforma.');
             }
 
-            $student->platform_access = !$student->platform_access;
+            $student->platform_access = ! $student->platform_access;
             $student->save();
 
             Log::info('Platform access toggled', [
                 'student_id' => $id,
                 'platform_access' => $student->platform_access,
-                'user' => Auth::user()->name ?? 'System'
+                'user' => Auth::user()->name ?? 'System',
             ]);
 
             return back()->with('success', 'Acesso à plataforma atualizado com sucesso!');
         } catch (\Throwable $th) {
-            Log::error('Failed to toggle platform access: ' . $th->getMessage(), [
+            Log::error('Failed to toggle platform access: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
-                'student_id' => $id
+                'student_id' => $id,
             ]);
 
             return back()->with('error', 'Erro ao alterar acesso à plataforma.');
@@ -299,7 +300,7 @@ class StudentsController extends Controller
     {
         // Gerar token único
         $token = Str::random(64);
-        
+
         // Armazenar token no cache por 24 horas
         Cache::put("student_verification_token:{$token}", $student->id, now()->addHours(24));
 
@@ -319,7 +320,7 @@ class StudentsController extends Controller
     {
         $filePath = public_path('templates/TemplateImportarAlunos.xlsx');
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             return response()->json(['error' => 'Template file not found'], 404);
         }
 
@@ -330,7 +331,7 @@ class StudentsController extends Controller
     {
         try {
             $student = Student::findOrFail($id);
-            
+
             if ($student->hasVerifiedEmail()) {
                 return back()->with('error', 'Este estudante já verificou o email.');
             }
@@ -340,14 +341,14 @@ class StudentsController extends Controller
             Log::info('Verification email resent', [
                 'student_id' => $id,
                 'email' => $student->email,
-                'user' => Auth::user()->name ?? 'System'
+                'user' => Auth::user()->name ?? 'System',
             ]);
 
             return back()->with('success', 'Email de verificação reenviado com sucesso!');
         } catch (\Throwable $th) {
-            Log::error('Failed to resend verification email: ' . $th->getMessage(), [
+            Log::error('Failed to resend verification email: '.$th->getMessage(), [
                 'trace' => $th->getTraceAsString(),
-                'student_id' => $id
+                'student_id' => $id,
             ]);
 
             return back()->with('error', 'Erro ao reenviar email de verificação.');

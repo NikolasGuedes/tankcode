@@ -31,7 +31,7 @@ class Student extends Authenticatable
 
     public function hasVerifiedEmail(): bool
     {
-        return !is_null($this->email_verified_at);
+        return ! is_null($this->email_verified_at);
     }
 
     public function hasPlatformAccess(): bool
@@ -43,9 +43,9 @@ class Student extends Authenticatable
     {
         if ($filters['search'] ?? false) {
             $query->where(function ($query) use ($filters) {
-                $query->where('name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('email', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('cod', 'like', '%' . $filters['search'] . '%');
+                $query->where('name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('email', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('cod', 'like', '%'.$filters['search'].'%');
             });
         }
     }
@@ -54,8 +54,4 @@ class Student extends Authenticatable
     {
         return $this->belongsTo(Room::class);
     }
-
-
-
-    
 }

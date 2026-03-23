@@ -1,11 +1,6 @@
 <?php
 
-use App\Http\Controllers\StudentsController;
-use App\Http\Controllers\StudentAuthController;
-use App\Http\Controllers\StudentEmailVerificationController;
-use App\Http\Controllers\StudentPasswordResetController;
-use App\Http\Controllers\RoomsController;
-use App\Http\Controllers\ActivitiesController;
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,54 +8,34 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-// Rotas para área administrativa dos estudantes (admin)
-Route::prefix('students')->middleware('auth')->group(function () {
-   Route::get('/', [StudentsController::class, 'index'])->name('students');
-   Route::post('/store', [StudentsController::class, 'store'])->name('students.store');
-   Route::post('/import', [StudentsController::class, 'import'])->name('students.import');
-   Route::get('/download-template', [StudentsController::class, 'downloadTemplate'])->name('students.download-template');
-   Route::put('/{id}', [StudentsController::class, 'update'])->name('students.update');
-   Route::delete('/{id}', [StudentsController::class, 'destroy'])->name('students.destroy');
-   Route::post('/{id}/toggle-access', [StudentsController::class, 'togglePlatformAccess'])->name('students.toggle-access');
-   Route::post('/{id}/resend-verification', [StudentsController::class, 'resendVerificationEmail'])->name('students.resend-verification');
-});
-
-// Rotas para área do estudante (login próprio)
-Route::prefix('student')->group(function () {
-    Route::get('/login', [StudentAuthController::class, 'showLogin'])->name('student.login');
-    Route::post('/login', [StudentAuthController::class, 'login'])->name('student.login.submit');
-    Route::get('/logout', [StudentAuthController::class, 'logout'])->name('student.logout');
-    
-    // Rotas de reset de senha
-    Route::get('/forgot-password', [StudentPasswordResetController::class, 'showRequestForm'])->name('student.password.request');
-    Route::post('/forgot-password', [StudentPasswordResetController::class, 'sendResetLinkEmail'])->name('student.password.email');
-    Route::get('/reset-password/{token}', [StudentPasswordResetController::class, 'showResetForm'])->name('student.password.reset');
-    Route::post('/reset-password', [StudentPasswordResetController::class, 'reset'])->name('student.password.update');
-    
-    Route::middleware('student.auth')->group(function () {
-        Route::get('/dashboard', [StudentAuthController::class, 'dashboard'])->name('student.dashboard');
-    });
-});
-
-Route::prefix('rooms')->middleware('auth')->group(function () {
-    Route::get('/', [RoomsController::class, 'index'])->name('rooms.index');
-    Route::post('/store', [RoomsController::class, 'store'])->name('rooms.store');
-    Route::put('/{id}', [RoomsController::class, 'update'])->name('rooms.update');
-    Route::delete('/{id}', [RoomsController::class, 'destroy'])->name('rooms.destroy');
-    Route::get('/{id}/edit', [RoomsController::class, 'editrooms'])->name('rooms.editrooms');
-    Route::get('/{id}/edit2', [RoomsController::class, 'editrooms'])->name('rooms.EditRooms');
-    Route::post('/{room}/add-student', [RoomsController::class, 'addStudent'])->name('rooms.addStudent');
-    Route::delete('/{room}/remove-student/{student}', [RoomsController::class, 'removeStudent'])->name('rooms.removeStudent');
-});
-
-// Rotas de verificação de email e criação de senha do estudante
-Route::get('/student/verify-email/{token}', [StudentEmailVerificationController::class, 'verify'])
-    ->name('student.verify-email');
-
-Route::post('/student/create-password', [StudentEmailVerificationController::class, 'createPassword'])
-    ->name('student.create-password');
-
-Route::middleware('auth')->get('/atividades', [ActivitiesController::class, 'index'])->name('activities.index');
-
-require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+Route::middleware('auth')->group(function () {
+    require __DIR__.'/authenticated.php';
+
+    Route::prefix('admin')->name('admin.')->middleware('role:'.RoleEnum::TANK_ADMIN->value)->group(function () {
+        require __DIR__.'/admin/dashboard.php';
+        require __DIR__.'/admin/school.php';
+        require __DIR__.'/admin/point-of-school.php';
+        require __DIR__.'/admin/user.php';
+    });
+
+    Route::prefix('director')->name('director.')->middleware('role:'.RoleEnum::DIRECTOR->value)->group(function () {
+        require __DIR__.'/director/dashboard.php';
+        require __DIR__.'/director/classroom.php';
+        require __DIR__.'/director/teacher.php';
+        require __DIR__.'/director/student.php';
+    });
+
+    Route::prefix('teacher')->name('teacher.')->middleware('role:'.RoleEnum::TEACHER->value)->group(function () {
+        require __DIR__.'/teacher/dashboard.php';
+        require __DIR__.'/teacher/activity.php';
+    });
+
+    Route::prefix('owner')->name('owner.')->middleware('role:'.RoleEnum::OWNER->value)->group(function () {
+        require __DIR__.'/owner/dashboard.php';
+        require __DIR__.'/owner/director.php';
+    });
+
+    require __DIR__.'/settings.php';
+});
