@@ -27,17 +27,7 @@ services:
     networks:
       - networks
 
-  node:
-    image: node:22-alpine
-    container_name: node-app
-    working_dir: /var/www/html
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
-    ports:
-      - '5173:5173'
-    volumes:
-      - .:/var/www/html
-    networks:
-      - networks
+
 
   db:
     image: mariadb

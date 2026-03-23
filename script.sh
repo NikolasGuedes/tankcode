@@ -68,12 +68,24 @@ docker compose exec php php artisan migrate:fresh --seed
 echo "Gerando actions do Wayfinder..."
 docker compose exec php php artisan wayfinder:generate --with-form
 
-echo "Subindo serviço do frontend (Vite)..."
-docker compose up -d node
+if command -v npm >/dev/null 2>&1; then
+  echo "Instalando dependências do frontend no host..."
+  npm install
+
+  echo "Gerando build do frontend..."
+  npm run build
+else
+  echo "npm não encontrado na máquina local."
+  echo "Instale Node.js/npm para rodar os comandos do frontend:"
+  echo "- npm install"
+  echo "- npm run dev    (desenvolvimento)"
+  echo "- npm run build  (produção)"
+fi
 
 echo
 echo "Ambiente disponível em:"
 echo "- App: http://localhost:8000"
-echo "- Vite: http://localhost:5173"
 echo "- Mailpit: http://localhost:8025"
+echo
+echo "Para desenvolvimento frontend, rode localmente: npm run dev"
 echo
