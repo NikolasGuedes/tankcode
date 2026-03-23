@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-type PointOption = { id: number; name: string };
 type ClassroomRow = {
     id: number;
     point_of_school_id: number;
@@ -41,11 +41,9 @@ type Paginated<T> = {
 const props = defineProps<{
     stats: { total: number; active: number; students: number };
     classrooms: Paginated<ClassroomRow>;
-    points: PointOption[];
     filters: {
         search?: string;
         status?: string;
-        point_of_school_id?: number;
     };
 }>();
 
@@ -60,8 +58,8 @@ const selectedClassroom = ref<ClassroomRow | null>(null);
 const filtersForm = useForm({
     search: props.filters.search ?? '',
     status: props.filters.status ?? 'all',
-    point_of_school_id: props.filters.point_of_school_id ? String(props.filters.point_of_school_id) : 'all',
 });
+const suspendAutoFilters = ref(false);
 const deleteForm = useForm({});
 
 const applyFilters = () => {
@@ -70,7 +68,6 @@ const applyFilters = () => {
         {
             search: filtersForm.search || undefined,
             status: filtersForm.status !== 'all' ? filtersForm.status : undefined,
-            point_of_school_id: filtersForm.point_of_school_id !== 'all' ? filtersForm.point_of_school_id : undefined,
         },
         {
             preserveState: true,
@@ -80,11 +77,20 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
-    filtersForm.point_of_school_id = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const openDeleteDialog = (classroom: ClassroomRow) => {
@@ -104,6 +110,13 @@ const submitDelete = () => {
         onSuccess: () => closeDeleteDialog(),
     });
 };
+
+watch(
+    () => [filtersForm.search, filtersForm.status],
+    () => {
+        debouncedApplyFilters();
+    },
+);
 </script>
 
 <template>
@@ -132,7 +145,7 @@ const submitDelete = () => {
                     </Button>
                 </div>
 
-                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_240px_auto]" @submit.prevent="applyFilters">
+                <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_auto]" @submit.prevent="applyFilters">
                     <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou codigo" />
                     <Select v-model="filtersForm.status">
                         <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
@@ -144,20 +157,8 @@ const submitDelete = () => {
                             <SelectItem value="inactive">Inativas</SelectItem>
                         </SelectContent>
                     </Select>
-                    <Select v-model="filtersForm.point_of_school_id">
-                        <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
-                            <SelectValue placeholder="Ponto de Ensino" />
-                        </SelectTrigger>
-                        <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
-                            <SelectItem value="all">Todos os pontos</SelectItem>
-                            <SelectItem v-for="point in props.points" :key="point.id" :value="String(point.id)">
-                                {{ point.name }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 

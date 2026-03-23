@@ -35,7 +35,7 @@ import { motion } from 'motion-v';
 
             <div class="flex items-center justify-end gap-3">
               <Link v-if="$page.props.auth?.user" href="/dashboard"
-                class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15">
+                class="inline-flex items-center gap-2 rounded-full bg-black px-8 py-2.5 text-sm font-semibold text-white shadow-[0_16px_40px_rgba(77,24,255,0.35)] transition hover:bg-[#5e2bff]">
                 Acessar portal
               </Link>
               <Link v-else :href="login.url()"

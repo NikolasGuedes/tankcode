@@ -5,6 +5,18 @@ export interface Auth {
     navigation: NavItem[];
 }
 
+export interface PointContextItem {
+    id: number | 'all';
+    name: string;
+    cnpj: string | null;
+}
+
+export interface PointContext {
+    enabled: boolean;
+    current: PointContextItem | null;
+    available: PointContextItem[];
+}
+
 export interface BreadcrumbItem {
     title: string;
     href: string;
@@ -21,6 +33,7 @@ export type AppPageProps<T extends Record<string, unknown> = Record<string, unkn
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    pointContext: PointContext;
     sidebarOpen: boolean;
 };
 

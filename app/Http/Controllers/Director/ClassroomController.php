@@ -10,6 +10,7 @@ use App\Http\Requests\Director\UpdateClassroomRequest;
 use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class ClassroomController extends Controller
     {
         $director = $request->user();
         $filters = $request->validated();
-        $pointIds = $director?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+        $pointIds = PointOfSchoolContext::selectedPointIds($request, $director);
 
         $classroomsQuery = Classroom::query()
             ->with(['pointOfSchool:id,name', 'teacher:id,name', 'students:id,name'])
@@ -33,8 +34,7 @@ class ClassroomController extends Controller
                     ->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%"));
             })
-            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
-            ->when($filters['point_of_school_id'] ?? null, fn ($query, int $pointId) => $query->where('point_of_school_id', $pointId));
+            ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status));
 
         $classrooms = $classroomsQuery
             ->latest()
@@ -72,11 +72,6 @@ class ClassroomController extends Controller
                     ->sum('students_count'),
             ],
             'classrooms' => $classrooms,
-            'points' => PointOfSchool::query()
-                ->whereIn('id', $pointIds)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (PointOfSchool $point) => ['id' => $point->id, 'name' => $point->name]),
             'filters' => $filters,
         ]);
     }

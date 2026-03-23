@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Owner;
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\PointOfSchoolContext;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,8 +13,9 @@ class DashboardController extends Controller
 {
     public function __invoke(): Response
     {
-        $owner = request()->user();
-        $pointIds = $owner?->pointOfSchools()->pluck('point_of_schools.id') ?? collect();
+        $request = request();
+        $owner = $request->user();
+        $pointIds = PointOfSchoolContext::selectedPointIds($request, $owner);
 
         return Inertia::render('owner/Dashboard', [
             'stats' => [

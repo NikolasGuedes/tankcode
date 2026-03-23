@@ -7,10 +7,12 @@ import { computed } from 'vue';
 interface Props {
     user: User;
     showEmail?: boolean;
+    avatarFallbackClass?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     showEmail: false,
+    avatarFallbackClass: '',
 });
 
 const { getInitials } = useInitials();
@@ -22,7 +24,7 @@ const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '')
 <template>
     <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
         <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="user.name" />
-        <AvatarFallback class="rounded-lg text-black dark:text-white">
+        <AvatarFallback :class="['rounded-lg text-white', props.avatarFallbackClass]">
             {{ getInitials(user.name) }}
         </AvatarFallback>
     </Avatar>

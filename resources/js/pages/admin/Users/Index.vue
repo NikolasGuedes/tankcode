@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -109,6 +110,7 @@ const filtersForm = useForm({
     role: props.filters.role ?? 'all',
     school_id: props.filters.school_id ? String(props.filters.school_id) : 'all',
 });
+const suspendAutoFilters = ref(false);
 
 const userForm = useForm({
     name: '',
@@ -143,12 +145,22 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
     filtersForm.role = 'all';
     filtersForm.school_id = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const selectedRole = computed(() => props.roles.find((role) => String(role.id) === userForm.role_id) ?? null);
@@ -308,6 +320,13 @@ const resendInvitation = (user: UserRow) => {
 };
 
 watch(
+    () => [filtersForm.search, filtersForm.status, filtersForm.role, filtersForm.school_id],
+    () => {
+        debouncedApplyFilters();
+    },
+);
+
+watch(
     () => userForm.school_id,
     (schoolId) => {
         if (!schoolId) {
@@ -409,8 +428,7 @@ watch(
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 

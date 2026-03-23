@@ -107,4 +107,9 @@ class User extends Authenticatable
     {
         return $this->role?->name?->dashboardRoute() ?? 'dashboard';
     }
+
+    public function supportsPointOfSchoolContext(): bool
+    {
+        return $this->hasRole(RoleEnum::OWNER, RoleEnum::DIRECTOR, RoleEnum::TEACHER);
+    }
 }

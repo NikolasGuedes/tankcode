@@ -22,10 +22,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCep, formatCnpj, isValidCep, isValidCnpj } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
+import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 type SchoolOption = {
     id: number;
@@ -88,6 +89,7 @@ const filtersForm = useForm({
     status: props.filters.status ?? 'all',
     school_id: props.filters.school_id ? String(props.filters.school_id) : 'all',
 });
+const suspendAutoFilters = ref(false);
 
 const pointForm = useForm({
     school_id: '',
@@ -116,11 +118,21 @@ const applyFilters = () => {
     );
 };
 
+const debouncedApplyFilters = useDebounceFn(() => {
+    if (suspendAutoFilters.value) {
+        return;
+    }
+
+    applyFilters();
+}, 400);
+
 const resetFilters = () => {
+    suspendAutoFilters.value = true;
     filtersForm.search = '';
     filtersForm.status = 'all';
     filtersForm.school_id = 'all';
     applyFilters();
+    suspendAutoFilters.value = false;
 };
 
 const resetPointForm = () => {
@@ -220,6 +232,13 @@ const submitDelete = () => {
         onSuccess: () => closeDeleteDialog(),
     });
 };
+
+watch(
+    () => [filtersForm.search, filtersForm.status, filtersForm.school_id],
+    () => {
+        debouncedApplyFilters();
+    },
+);
 </script>
 
 <template>
@@ -287,8 +306,7 @@ const submitDelete = () => {
                         </SelectContent>
                     </Select>
                     <div class="flex gap-3">
-                        <Button type="submit" class="rounded-2xl">Filtrar</Button>
-                        <Button type="button" variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10" @click="resetFilters">Limpar</Button>
+                        <Button type="button" class="rounded-2xl" @click="resetFilters">Limpar</Button>
                     </div>
                 </form>
 
