@@ -37,5 +37,9 @@ Route::middleware('auth')->group(function () {
         require __DIR__.'/owner/director.php';
     });
 
+    Route::prefix('student')->name('student.')->middleware('role:'.RoleEnum::STUDENT->value)->group(function () {
+        require __DIR__.'/student/dashboard.php';
+    });
+
     require __DIR__.'/settings.php';
 });
