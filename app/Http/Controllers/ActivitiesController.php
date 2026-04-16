@@ -8,6 +8,6 @@ class ActivitiesController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Activities/Activities');
+        return Inertia::render('teacher/Activities');
     }
 }
