@@ -21,12 +21,22 @@ import {
 type Difficulty = 'Fácil' | 'Médio' | 'Difícil'
 type Status = 'Publicado' | 'Rascunho'
 type OptionKey = 'A' | 'B' | 'C' | 'D'
+type QuestionType = 'multiple_choice' | 'drag_drop' | 'matching'
 
 interface ActivityQuestion {
   id: number
+  type: QuestionType
   statement: string
-  correct: OptionKey
-  options: Record<OptionKey, string>
+  // Para múltipla escolha
+  correct?: OptionKey
+  options?: Record<OptionKey, string>
+  // Para drag and drop (fill in the blanks)
+  keywords?: string[] // Palavras disponíveis para arrastar
+  blankAnswers?: Record<string, number> // blank_1 -> índice em keywords
+  // Para matching
+  leftColumn?: string[]
+  rightColumn?: string[]
+  pairs?: Record<string, string> // left -> right
 }
 
 interface ActivityItem {
@@ -68,6 +78,7 @@ const activityForm = ref({
   questions: [
     {
       id: 1,
+      type: 'multiple_choice' as QuestionType,
       statement: '',
       correct: 'A' as OptionKey,
       options: {
@@ -108,6 +119,7 @@ const resetForm = () => {
     questions: [
       {
         id: 1,
+        type: 'multiple_choice',
         statement: '',
         correct: 'A',
         options: {
@@ -143,10 +155,14 @@ const openEditDialog = (activity: ActivityItem) => {
     difficulty: activity.difficulty,
     status: activity.status,
     questions: activity.questionData && activity.questionData.length > 0
-      ? [...activity.questionData]
+      ? activity.questionData.map(q => ({
+          ...q,
+          type: q.type || 'multiple_choice', // Compatibilidade com dados antigos
+        }))
       : [
           {
             id: 1,
+            type: 'multiple_choice',
             statement: '',
             correct: 'A',
             options: {
@@ -176,6 +192,7 @@ const prevStep = () => {
 const addQuestion = () => {
   activityForm.value.questions.push({
     id: Date.now(),
+    type: 'multiple_choice',
     statement: '',
     correct: 'A',
     options: {
@@ -195,6 +212,43 @@ const selectQuestion = (index: number) => {
 
 const setCorrectOption = (key: OptionKey) => {
   activityForm.value.questions[activeQuestionIndex.value].correct = key
+}
+
+const changeQuestionType = (newType: QuestionType) => {
+  // Atualiza o tipo da questão atual e reseta apenas os campos específicos
+  // para o novo tipo, preservando dados compatíveis.
+  const question = activityForm.value.questions[activeQuestionIndex.value]
+  question.type = newType
+  question.statement = question.statement || '' // Manter enunciado
+
+  // Resetar campos específicos baseado no tipo
+  if (newType === 'multiple_choice') {
+    question.correct = question.correct || 'A'
+    question.options = question.options || { A: '', B: '', C: '', D: '' }
+    delete question.items
+    delete question.zones
+    delete question.mapping
+    delete question.leftColumn
+    delete question.rightColumn
+    delete question.pairs
+  } else if (newType === 'drag_drop') {
+    question.keywords = question.keywords || ['', '']
+    question.blankAnswers = question.blankAnswers || { blank_1: 0 }
+    delete question.correct
+    delete question.options
+    delete question.leftColumn
+    delete question.rightColumn
+    delete question.pairs
+  } else if (newType === 'matching') {
+    question.leftColumn = question.leftColumn || ['', '']
+    question.rightColumn = question.rightColumn || ['', '']
+    question.pairs = question.pairs || {}
+    delete question.correct
+    delete question.options
+    delete question.items
+    delete question.zones
+    delete question.mapping
+  }
 }
 
 const deleteQuestion = (index: number) => {
@@ -218,10 +272,24 @@ const isStep2Valid = () => {
 
   return activityForm.value.questions.every((question) => {
     const hasStatement = question.statement.trim() !== ''
-    const allOptionsHaveText = (['A', 'B', 'C', 'D'] as OptionKey[]).every(
-      (option) => question.options[option]?.trim() !== ''
-    )
-    return hasStatement && allOptionsHaveText
+
+    if (question.type === 'multiple_choice') {
+      const allOptionsHaveText = question.options && (['A', 'B', 'C', 'D'] as OptionKey[]).every(
+        (option) => question.options![option]?.trim() !== ''
+      )
+      return hasStatement && allOptionsHaveText
+    } else if (question.type === 'drag_drop') {
+      const hasKeywords = question.keywords && question.keywords.length > 0 && question.keywords.every(kw => kw.trim() !== '')
+      const hasBlankAnswers = question.blankAnswers && Object.keys(question.blankAnswers).length > 0
+      return hasStatement && hasKeywords && hasBlankAnswers
+    } else if (question.type === 'matching') {
+      const hasLeft = question.leftColumn && question.leftColumn.length > 0 && question.leftColumn.every(item => item.trim() !== '')
+      const hasRight = question.rightColumn && question.rightColumn.length > 0 && question.rightColumn.every(item => item.trim() !== '')
+      const hasPairs = question.pairs && Object.keys(question.pairs).length > 0
+      return hasStatement && hasLeft && hasRight && hasPairs
+    }
+
+    return false
   })
 }
 
@@ -272,6 +340,41 @@ const getInitials = (text: string) => {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+}
+
+const getQuestionTypeLabel = (type: QuestionType) => {
+  switch (type) {
+    case 'multiple_choice':
+      return 'Múltipla escolha'
+    case 'drag_drop':
+      return 'Arrastar e Soltar'
+    case 'matching':
+      return 'Relacionar Colunas'
+    default:
+      return 'Tipo desconhecido'
+  }
+}
+
+// Helper para extrair todos os blanks do enunciado (ex: [blank_1], [blank_2])
+const extractBlanksFromStatement = (statement: string): string[] => {
+  const regex = /\[blank_(\d+)\]/g
+  const blanks: string[] = []
+  let match
+  while ((match = regex.exec(statement)) !== null) {
+    blanks.push(`blank_${match[1]}`)
+  }
+  return [...new Set(blanks)] // Remove duplicatas
+}
+
+// Helper para inicializar blankAnswers quando o statement muda
+const initializeBlanks = (question: ActivityQuestion) => {
+  const blanks = extractBlanksFromStatement(question.statement || '')
+  const newBlankAnswers: Record<string, number> = {}
+  blanks.forEach(blank => {
+    // Preserva resposta anterior se existir, senão define como -1 (não respondido)
+    newBlankAnswers[blank] = question.blankAnswers?.[blank] ?? -1
+  })
+  question.blankAnswers = newBlankAnswers
 }
 
 const getDifficultyClass = (difficulty: Difficulty) => {
@@ -585,9 +688,28 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <div>
                     <h4 class="text-xl font-semibold">Questão {{ activeQuestionIndex + 1 }}</h4>
                     <p class="text-sm text-white/45 mt-1">
-                      Questão de assinalar com alternativas A, B, C e D.
+                      {{ currentQuestion.type === 'multiple_choice'
+                        ? 'Questão de assinalar com alternativas A, B, C e D.'
+                        : currentQuestion.type === 'drag_drop'
+                          ? 'Questão Arrastar e Soltar: defina itens, zonas e mapeamentos.'
+                          : 'Questão Relacionar Colunas: defina pares entre as colunas esquerda e direita.'
+                      }}
                     </p>
                   </div>
+                </div>
+
+                <!-- Novo seletor de tipo de questão -->
+                <div>
+                  <label class="text-sm text-white/70 block mb-2">Tipo de questão</label>
+                  <select
+                    v-model="currentQuestion.type"
+                    @change="changeQuestionType(currentQuestion.type)"
+                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                  >
+                    <option value="multiple_choice">Múltipla Escolha</option>
+                    <option value="drag_drop">Arrastar e Soltar</option>
+                    <option value="matching">Relacionar Colunas</option>
+                  </select>
                 </div>
 
                 <div>
@@ -599,7 +721,8 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   />
                 </div>
 
-                <div class="grid md:grid-cols-2 gap-4">
+                <!-- Múltipla Escolha -->
+                <div v-if="currentQuestion.type === 'multiple_choice'" class="grid md:grid-cols-2 gap-4">
                   <div
                     v-for="option in (['A', 'B', 'C', 'D'] as OptionKey[])"
                     :key="option"
@@ -626,7 +749,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                         </div>
 
                         <input
-                          v-model="currentQuestion.options[option]"
+                          v-model="currentQuestion.options![option]"
                           class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
                           :placeholder="`Digite a alternativa ${option}`"
                         />
@@ -645,6 +768,157 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                               : 'Marcar como correta'
                           }}
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Drag and Drop -->
+                <div v-else-if="currentQuestion.type === 'drag_drop'" class="space-y-4">
+                  <div class="rounded-2xl border border-dashed border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-300">
+                    <p class="font-medium mb-2">💡 Como funciona:</p>
+                    <p>1. No enunciado, use <code class="bg-black/30 px-2 py-1 rounded">[blank_1]</code>, <code class="bg-black/30 px-2 py-1 rounded">[blank_2]</code>, etc para marcar espaços vazios</p>
+                    <p>2. Crie as palavras-chave que estarão disponíveis para arrastar</p>
+                    <p>3. Defina qual palavra vai em cada espaço</p>
+                  </div>
+
+                  <div>
+                    <label class="text-sm text-white/70 block mb-2">Enunciado (use [blank_1], [blank_2], etc)</label>
+                    <textarea
+                      v-model="currentQuestion.statement"
+                      @input="initializeBlanks(currentQuestion)"
+                      class="w-full min-h-[120px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                      placeholder="Ex: A capital do Brasil é [blank_1] e fica no estado de [blank_2]"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="text-sm text-white/70 block mb-2">Palavras-chave (disponíveis para arrastar)</label>
+                    <div class="space-y-2">
+                      <div v-for="(keyword, index) in currentQuestion.keywords" :key="index" class="flex gap-2">
+                        <input
+                          v-model="currentQuestion.keywords![index]"
+                          class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                          :placeholder="`Palavra-chave ${index + 1}`"
+                        />
+                        <button
+                          v-if="currentQuestion.keywords!.length > 1"
+                          type="button"
+                          class="rounded-lg border border-red-500/20 bg-red-500/5 p-2 text-red-300 hover:bg-red-500/10"
+                          @click="currentQuestion.keywords!.splice(index, 1)"
+                        >
+                          <Trash2 class="h-4 w-4" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                        @click="currentQuestion.keywords!.push('')"
+                      >
+                        + Adicionar Palavra-chave
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Mapeamento de blanks para palavras-chave -->
+                  <div v-if="extractBlanksFromStatement(currentQuestion.statement || '').length > 0">
+                    <label class="text-sm text-white/70 block mb-2">Defina qual palavra vai em cada espaço</label>
+                    <div class="space-y-2">
+                      <div v-for="blank in extractBlanksFromStatement(currentQuestion.statement || '')" :key="blank" class="flex gap-2 items-center p-3 rounded-xl bg-white/5 border border-white/10">
+                        <span class="text-sm text-white/85 font-medium">{{ blank }}:</span>
+                        <select
+                          v-model.number="currentQuestion.blankAnswers![blank]"
+                          class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-[#5b4dff]"
+                        >
+                          <option :value="-1">Selecionar palavra-chave</option>
+                          <option v-for="(keyword, idx) in currentQuestion.keywords" :key="idx" :value="idx">
+                            {{ keyword || `Palavra ${idx + 1}` }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-else class="rounded-2xl border border-dashed border-yellow-500/20 bg-yellow-500/5 p-4 text-sm text-yellow-300">
+                    ⚠️ Adicione [blank_1], [blank_2], etc no enunciado para definir os espaços vazios
+                  </div>
+                </div>
+
+                <!-- Matching -->
+                <div v-else-if="currentQuestion.type === 'matching'" class="space-y-4">
+                  <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="text-sm text-white/70 block mb-2">Coluna Esquerda</label>
+                      <div class="space-y-2">
+                        <div v-for="(left, index) in currentQuestion.leftColumn" :key="index" class="flex gap-2">
+                          <input
+                            v-model="currentQuestion.leftColumn![index]"
+                            class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                            :placeholder="`Item ${index + 1}`"
+                          />
+                          <button
+                            v-if="currentQuestion.leftColumn!.length > 1"
+                            type="button"
+                            class="rounded-lg border border-red-500/20 bg-red-500/5 p-2 text-red-300 hover:bg-red-500/10"
+                            @click="currentQuestion.leftColumn!.splice(index, 1)"
+                          >
+                            <Trash2 class="h-4 w-4" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                          @click="currentQuestion.leftColumn!.push('')"
+                        >
+                          + Adicionar Item
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="text-sm text-white/70 block mb-2">Coluna Direita</label>
+                      <div class="space-y-2">
+                        <div v-for="(right, index) in currentQuestion.rightColumn" :key="index" class="flex gap-2">
+                          <input
+                            v-model="currentQuestion.rightColumn![index]"
+                            class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                            :placeholder="`Item ${index + 1}`"
+                          />
+                          <button
+                            v-if="currentQuestion.rightColumn!.length > 1"
+                            type="button"
+                            class="rounded-lg border border-red-500/20 bg-red-500/5 p-2 text-red-300 hover:bg-red-500/10"
+                            @click="currentQuestion.rightColumn!.splice(index, 1)"
+                          >
+                            <Trash2 class="h-4 w-4" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                          @click="currentQuestion.rightColumn!.push('')"
+                        >
+                          + Adicionar Item
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="text-sm text-white/70 block mb-2">Pares Corretos (Esquerda → Direita)</label>
+                    <div class="space-y-2">
+                      <div v-for="(left, leftIndex) in currentQuestion.leftColumn" :key="leftIndex" class="flex gap-2 items-center">
+                        <span class="text-sm text-white/85">{{ left || `Item ${leftIndex + 1}` }}</span>
+                        <span class="text-white/45">→</span>
+                        <select
+                          v-model="currentQuestion.pairs![leftIndex.toString()]"
+                          class="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-[#5b4dff]"
+                        >
+                          <option value="">Selecionar correspondente</option>
+                          <option v-for="(right, rightIndex) in currentQuestion.rightColumn" :key="rightIndex" :value="rightIndex.toString()">
+                            {{ right || `Item ${rightIndex + 1}` }}
+                          </option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -688,7 +962,9 @@ const getDifficultyClass = (difficulty: Difficulty) => {
 
                   <div class="flex justify-between gap-4">
                     <span>Formato</span>
-                    <span class="text-white">Múltipla escolha</span>
+                    <span class="text-white">
+                      {{ getQuestionTypeLabel(activityForm.questions[previewQuestion]?.type || 'multiple_choice') }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -722,7 +998,8 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                     {{ activityForm.questions[previewQuestion]?.statement || 'Sem enunciado' }}
                   </div>
 
-                  <div class="mt-4 space-y-3">
+                  <!-- Preview para múltipla escolha -->
+                  <div v-if="activityForm.questions[previewQuestion]?.type === 'multiple_choice'" class="mt-4 space-y-3">
                     <div
                       v-for="option in (['A', 'B', 'C', 'D'] as OptionKey[])"
                       :key="option"
@@ -733,9 +1010,76 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                     >
                       {{ option }}.
                       {{
-                        activityForm.questions[previewQuestion]?.options[option] ||
+                        activityForm.questions[previewQuestion]?.options?.[option] ||
                         `Alternativa ${option}`
                       }}
+                    </div>
+                  </div>
+
+                  <!-- Preview para drag and drop -->
+                  <div v-else-if="activityForm.questions[previewQuestion]?.type === 'drag_drop'" class="mt-4 space-y-3">
+                    <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <div class="text-xs uppercase tracking-[0.18em] text-white/40 mb-3">Enunciado (com espaços vazios)</div>
+                      <div class="text-sm text-white/80 leading-relaxed">
+                        <template v-if="activityForm.questions[previewQuestion]?.statement">
+                          {{ activityForm.questions[previewQuestion]!.statement.split(/(\[blank_\d+\])/).map((part, idx) => {
+                            const match = part.match(/\[blank_(\d+)\]/)
+                            if (match) {
+                              const blankKey = `blank_${match[1]}`
+                              const answerIdx = activityForm.questions[previewQuestion]?.blankAnswers?.[blankKey] ?? -1
+                              const answerText = answerIdx >= 0 && activityForm.questions[previewQuestion]?.keywords
+                                ? activityForm.questions[previewQuestion]!.keywords[answerIdx]
+                                : '______'
+                              return answerText
+                            }
+                            return part
+                          }).join('') }}
+                        </template>
+                        <span v-else class="text-white/45">Sem enunciado</span>
+                      </div>
+                    </div>
+
+                    <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <div class="text-xs uppercase tracking-[0.18em] text-white/40 mb-3">Palavras-chave disponíveis</div>
+                      <div class="flex flex-wrap gap-2">
+                        <span
+                          v-for="(keyword, index) in activityForm.questions[previewQuestion]?.keywords"
+                          :key="index"
+                          class="rounded-lg bg-[#5b4dff]/20 border border-[#5b4dff]/40 px-3 py-1 text-sm text-white/85"
+                        >
+                          {{ keyword || `Palavra ${index + 1}` }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Preview para matching -->
+                  <div v-else-if="activityForm.questions[previewQuestion]?.type === 'matching'" class="mt-4 space-y-3">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <div class="text-sm text-white/70 mb-2">Coluna Esquerda</div>
+                        <div class="space-y-1">
+                          <div
+                            v-for="(left, index) in activityForm.questions[previewQuestion]?.leftColumn"
+                            :key="index"
+                            class="rounded-lg bg-white/10 px-3 py-1 text-sm text-white/85"
+                          >
+                            {{ left || `Item ${index + 1}` }}
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="text-sm text-white/70 mb-2">Coluna Direita</div>
+                        <div class="space-y-1">
+                          <div
+                            v-for="(right, index) in activityForm.questions[previewQuestion]?.rightColumn"
+                            :key="index"
+                            class="rounded-lg bg-white/10 px-3 py-1 text-sm text-white/85"
+                          >
+                            {{ right || `Item ${index + 1}` }}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -774,7 +1118,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
               >
                 {{ mode === 'edit' ? 'Editar atividade' : 'Finalizar atividade' }}
               </button>
-            </div>
+            </div>dir
           </DialogFooter>
         </DialogContent>
       </Dialog>
