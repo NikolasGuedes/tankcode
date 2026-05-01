@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppReveal from '@/components/AppReveal.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { type BreadcrumbItem } from '@/types'
 import { Head } from '@inertiajs/vue3'
@@ -13,6 +14,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  CircleDashed,
+  ClipboardList,
+  FileQuestion,
+  ListChecks,
+  Pencil,
   Search,
   Plus,
   Trash2,
@@ -54,7 +60,7 @@ interface ActivityItem {
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Atividades',
-    href: '/challenger',
+    href: '/teacher/activities',
   },
 ]
 
@@ -66,6 +72,18 @@ const previewQuestion = ref(0)
 const activeQuestionIndex = ref(0)
 
 const activities = ref<ActivityItem[]>([])
+
+const publishedActivities = computed(() =>
+  activities.value.filter((activity) => activity.status === 'Publicado').length,
+)
+
+const draftActivities = computed(() =>
+  activities.value.filter((activity) => activity.status === 'Rascunho').length,
+)
+
+const totalQuestions = computed(() =>
+  activities.value.reduce((total, activity) => total + activity.questions, 0),
+)
 
 const activityForm = ref({
   id: 0,
@@ -389,145 +407,219 @@ const getDifficultyClass = (difficulty: Difficulty) => {
       return 'bg-zinc-500/15 text-zinc-300 border-zinc-400/20'
   }
 }
+
+const getDifficultyButtonClass = (difficulty: Difficulty) => {
+  return activityForm.value.difficulty === difficulty
+    ? 'border-primary bg-primary text-white shadow-lg shadow-primary/25'
+    : 'border-white/10 bg-white/[0.04] text-white/50 hover:border-secondary/50 hover:bg-secondary/10 hover:text-white'
+}
+
+const getStatusClass = (status: Status) => {
+  return status === 'Publicado'
+    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/20'
+    : 'bg-secondary/15 text-secondary border-secondary/30'
+}
 </script>
 
 <template>
   <Head title="Atividades" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-4 md:p-6">
-      <div class="rounded-3xl border border-white/10 bg-[var(--sidebar-background)] overflow-hidden">
-        <div class="border-b border-white/5 px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
-          <h1 class="text-xl font-semibold text-white">Atividades</h1>
+    <section class="space-y-6 p-6">
+      <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div class="flex gap-4">
+            <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-secondary">
+              <ClipboardList class="size-7" />
+            </div>
+
+            <div>
+              <h1 class="text-4xl font-semibold tracking-tight text-white">Atividades</h1>
+              <p class="mt-2 max-w-3xl text-lg text-white/70">
+                Monte atividades para suas turmas, organize questões por dificuldade e acompanhe o que ainda está em rascunho.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-3xl border border-border bg-black/40 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm text-white/60">Total</p>
+              <ClipboardList class="size-5 text-secondary" />
+            </div>
+            <p class="mt-2 text-4xl font-semibold text-white">{{ activities.length }}</p>
+          </div>
+          <div class="rounded-3xl border border-border bg-black/40 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm text-white/60">Publicadas</p>
+              <ListChecks class="size-5 text-secondary" />
+            </div>
+            <p class="mt-2 text-4xl font-semibold text-white">{{ publishedActivities }}</p>
+          </div>
+          <div class="rounded-3xl border border-border bg-black/40 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm text-white/60">Rascunhos</p>
+              <CircleDashed class="size-5 text-secondary" />
+            </div>
+            <p class="mt-2 text-4xl font-semibold text-white">{{ draftActivities }}</p>
+          </div>
+          <div class="rounded-3xl border border-border bg-black/40 p-5">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm text-white/60">Questões</p>
+              <FileQuestion class="size-5 text-secondary" />
+            </div>
+            <p class="mt-2 text-4xl font-semibold text-white">{{ totalQuestions }}</p>
+          </div>
+        </div>
+      </AppReveal>
+
+      <AppReveal class-name="rounded-[2rem] border border-border bg-card p-6 shadow-[0_20px_45px_rgba(0,0,0,0.25)]" :delay="0.08">
+        <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-2xl font-semibold text-white">Lista de atividades</h2>
+            <p class="text-sm text-white/60">Crie, revise e edite atividades antes de publicar para as turmas.</p>
+          </div>
 
           <Button
             type="button"
-            class="cursor-pointer bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white"
+            class="rounded-2xl !bg-primary !text-white hover:!bg-[var(--primary-hover)]"
             @click="openCreateDialog"
           >
-            <Plus class="h-4 w-4" />
+            <Plus class="size-4" />
             Criar atividade
           </Button>
         </div>
 
-        <div class="p-6 space-y-5">
-          <div class="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-              <span class="text-white font-semibold">Pesquisar atividade:</span>
+        <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_auto]" @submit.prevent>
+          <div class="relative">
+            <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-white/40" />
+            <Input
+              v-model="search"
+              placeholder="Buscar por nome, sala, linguagem ou dificuldade"
+              class="border-white/10 bg-[var(--surface-elevated)] pl-10 text-white placeholder:text-white/35"
+            />
+          </div>
 
-              <Input
-                v-model="search"
-                placeholder="Digite o nome da atividade..."
-                class="w-full sm:w-[360px]"
-              />
+          <Button
+            type="button"
+            variant="outline"
+            class="rounded-2xl border-white/10 bg-[var(--surface-elevated)] text-white hover:border-secondary hover:bg-[var(--accent-hover)]"
+            @click="search = ''"
+          >
+            Limpar
+          </Button>
+        </form>
 
-              <Button
-                type="button"
-                class="cursor-pointer bg-[var(--primary)] hover:bg-[var(--primary)]/90"
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-border">
+            <thead>
+              <tr class="text-left text-sm text-secondary">
+                <th class="pb-4 font-medium">Atividade</th>
+                <th class="pb-4 font-medium">Sala</th>
+                <th class="pb-4 font-medium">Questões</th>
+                <th class="pb-4 font-medium">Dificuldade</th>
+                <th class="pb-4 font-medium">Status</th>
+                <th class="pb-4 font-medium">Linguagem</th>
+                <th class="pb-4 text-right font-medium">Ações</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y divide-white/5 text-sm text-white/75">
+              <tr
+                v-for="activity in filteredActivities"
+                :key="activity.id"
+                class="transition hover:bg-white/[0.03]"
               >
-                <Search class="h-4 w-4" />
-                Pesquisar
-              </Button>
-            </div>
-          </div>
+                <td class="py-4 pr-6">
+                  <div class="flex items-center gap-3">
+                    <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-primary/15 text-sm font-bold text-secondary">
+                      {{ getInitials(activity.title) }}
+                    </div>
 
-          <div class="rounded-3xl bg-[#0d0830] border border-white/5 overflow-hidden">
-            <div class="px-6 py-5 border-b border-white/5 flex items-center justify-between">
-              <h2 class="text-2xl font-semibold text-white">Lista de Atividades</h2>
-              <span class="text-sm text-white/45">{{ filteredActivities.length }} atividades</span>
-            </div>
+                    <div class="min-w-0">
+                      <p class="truncate font-semibold text-white">{{ activity.title }}</p>
+                      <p class="mt-1 truncate text-sm text-white/50">
+                        {{ getQuestionTypeLabel(activity.questionData?.[0]?.type || 'multiple_choice') }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
 
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[980px]">
-                <thead>
-                  <tr class="text-left text-xs text-white/45 uppercase tracking-[0.16em]">
-                    <th class="px-6 py-4 font-medium">Nome</th>
-                    <th class="px-6 py-4 font-medium">Sala</th>
-                    <th class="px-6 py-4 font-medium">Questões</th>
-                    <th class="px-6 py-4 font-medium">Dificuldade</th>
-                    <th class="px-6 py-4 font-medium">Linguagem</th>
-                    <th class="px-6 py-4 font-medium text-center">Ações</th>
-                  </tr>
-                </thead>
+                <td class="py-4 pr-6 font-medium text-white/85">
+                  {{ activity.room }}
+                </td>
 
-                <tbody>
-                  <tr
-                    v-for="activity in filteredActivities"
-                    :key="activity.id"
-                    class="border-t border-white/5 hover:bg-white/[0.03] transition"
+                <td class="py-4 pr-6 text-white/85">
+                  {{ activity.questions }}
+                </td>
+
+                <td class="py-4 pr-6">
+                  <span
+                    class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+                    :class="getDifficultyClass(activity.difficulty)"
                   >
-                    <td class="px-6 py-5">
-                      <div class="flex items-center gap-3">
-                        <div
-                          class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#6f5bff] to-[#383df5] flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-[#4b4dff]/25"
-                        >
-                          {{ getInitials(activity.title) }}
-                        </div>
+                    {{ activity.difficulty }}
+                  </span>
+                </td>
 
-                        <div>
-                          <div class="font-semibold text-white">{{ activity.title }}</div>
-                          <div class="text-sm text-white/50 mt-1">Atividade de múltipla escolha</div>
-                        </div>
-                      </div>
-                    </td>
+                <td class="py-4 pr-6">
+                  <span
+                    class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+                    :class="getStatusClass(activity.status)"
+                  >
+                    {{ activity.status }}
+                  </span>
+                </td>
 
-                    <td class="px-6 py-5 text-white/85 font-medium">
-                      {{ activity.room }}
-                    </td>
+                <td class="py-4 pr-6 font-medium text-white/85">
+                  {{ activity.language || 'Não definida' }}
+                </td>
 
-                    <td class="px-6 py-5 text-white/85">
-                      {{ activity.questions }}
-                    </td>
+                <td class="py-4">
+                  <div class="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      class="!border-primary !bg-primary !text-white hover:!border-[var(--primary-hover)] hover:!bg-[var(--primary-hover)]"
+                      title="Editar atividade"
+                      @click="openEditDialog(activity)"
+                    >
+                      <Pencil class="size-4" />
+                    </Button>
 
-                    <td class="px-6 py-5">
-                      <span
-                        class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
-                        :class="getDifficultyClass(activity.difficulty)"
-                      >
-                        {{ activity.difficulty }}
-                      </span>
-                    </td>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon-sm"
+                      class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]"
+                      title="Excluir atividade"
+                      @click="deleteActivity(activity.id)"
+                    >
+                      <Trash2 class="size-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
 
-                    <td class="px-6 py-5 text-white/85 font-medium">
-                      {{ activity.language || 'Não definida' }}
-                    </td>
-
-                    <td class="px-6 py-5">
-                      <div class="flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          class="rounded-xl bg-[#2d2ff8] px-4 py-2 text-sm font-medium text-white hover:opacity-95"
-                          @click="openEditDialog(activity)"
-                        >
-                          Editar
-                        </button>
-
-                        <button
-                          type="button"
-                          class="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-500/10"
-                          @click="deleteActivity(activity.id)"
-                        >
-                          <Trash2 class="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  <tr v-if="filteredActivities.length === 0">
-                    <td colspan="6" class="px-6 py-14 text-center text-white/45">
-                      Nenhuma atividade encontrada.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+              <tr v-if="filteredActivities.length === 0">
+                <td colspan="7" class="py-14 text-center">
+                  <div class="mx-auto flex max-w-sm flex-col items-center">
+                    <FileQuestion class="size-10 text-secondary" />
+                    <p class="mt-4 font-semibold text-white">Nenhuma atividade encontrada</p>
+                    <p class="mt-1 text-sm text-white/55">Crie uma atividade ou ajuste a busca para visualizar resultados.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
+      </AppReveal>
 
       <Dialog v-model:open="isDialogOpen">
-        <DialogContent class="bg-[#090612] border border-[#2a2169] text-white min-w-[95vw] lg:min-w-[1100px] p-0 flex flex-col max-h-[90vh]">
-          <DialogHeader class="px-6 py-5 border-b border-white/5 flex-shrink-0">
+        <DialogContent class="flex max-h-[94vh] w-[96vw] max-w-[1400px] flex-col overflow-hidden border border-border bg-card p-0 text-white sm:max-h-[94vh] sm:max-w-[1400px]">
+          <DialogHeader class="flex-shrink-0 border-b border-white/5 px-5 py-5 sm:px-6">
             <div class="flex items-center justify-between gap-4">
               <div>
                 <DialogTitle class="text-2xl font-semibold text-white">
@@ -540,12 +632,12 @@ const getDifficultyClass = (difficulty: Difficulty) => {
             </div>
           </DialogHeader>
 
-          <div class="px-6 pt-5 flex-shrink-0">
-            <div class="grid grid-cols-3 gap-3">
+          <div class="flex-shrink-0 px-5 pt-5 sm:px-6">
+            <div class="grid gap-3 md:grid-cols-3">
               <div
                 class="rounded-2xl border px-4 py-3 text-sm font-medium"
                 :class="step === 1
-                  ? 'border-[#5b4dff] bg-[#5b4dff]/15 text-white'
+                  ? 'border-secondary bg-secondary/15 text-white'
                   : step > 1
                     ? 'border-emerald-400/20 bg-emerald-500/10 text-emerald-300'
                     : 'border-white/10 bg-white/[0.03] text-white/45'"
@@ -556,7 +648,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
               <div
                 class="rounded-2xl border px-4 py-3 text-sm font-medium"
                 :class="step === 2
-                  ? 'border-[#5b4dff] bg-[#5b4dff]/15 text-white'
+                  ? 'border-secondary bg-secondary/15 text-white'
                   : step > 2
                     ? 'border-emerald-400/20 bg-emerald-500/10 text-emerald-300'
                     : 'border-white/10 bg-white/[0.03] text-white/45'"
@@ -567,7 +659,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
               <div
                 class="rounded-2xl border px-4 py-3 text-sm font-medium"
                 :class="step === 3
-                   ? 'border-[#5b4dff] bg-[#5b4dff]/15 text-white'
+                   ? 'border-secondary bg-secondary/15 text-white'
                   : step > 2
                     ? 'border-emerald-400/20 bg-emerald-500/10 text-emerald-300'
                     : 'border-white/10 bg-white/[0.03] text-white/45'"
@@ -577,14 +669,14 @@ const getDifficultyClass = (difficulty: Difficulty) => {
             </div>
           </div>
 
-          <div class="flex-1 overflow-auto p-6">
+          <div class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-5 sm:p-6">
             <div v-if="step === 1" class="space-y-5">
-              <div class="grid md:grid-cols-2 gap-4">
+              <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="text-sm text-white/70 block mb-2">Nome da atividade</label>
                   <input
                     v-model="activityForm.title"
-                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                     placeholder="Ex: Avaliação de SQL"
                   />
                 </div>
@@ -593,37 +685,37 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <label class="text-sm text-white/70 block mb-2">Sala</label>
                   <input
                     v-model="activityForm.room"
-                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                     placeholder="Ex: Sala 1A"
                   />
                 </div>
               </div>
 
-              <div>
-                <label class="text-sm text-white/70 block mb-2">Linguagem</label>
-                <input
-                  v-model="activityForm.language"
-                  class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
-                  placeholder="Ex: SQL, Python, C#"
-                />
-              </div>
+              <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px]">
+                <div class="min-w-0">
+                  <label class="text-sm text-white/70 block mb-2">Linguagem</label>
+                  <input
+                    v-model="activityForm.language"
+                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
+                    placeholder="Ex: SQL, Python, C#"
+                  />
+                </div>
 
-              <div>
-                <label class="text-sm text-white/70 block mb-2">Dificuldade da atividade</label>
+                <div class="min-w-0">
+                  <label class="text-sm text-white/70 block mb-2">Dificuldade da atividade</label>
 
-                <div class="grid grid-cols-3 gap-3">
-                  <button
-                    v-for="level in (['Fácil', 'Médio', 'Difícil'] as Difficulty[])"
-                    :key="level"
-                    type="button"
-                    class="rounded-xl border px-4 py-3 text-sm font-medium transition"
-                    :class="activityForm.difficulty === level
-                      ? 'border-[#5b4dff] bg-[#5b4dff]/20 text-white'
-                      : getDifficultyClass(level)"
-                    @click="activityForm.difficulty = level"
-                  >
-                    {{ level }}
-                  </button>
+                  <div class="grid grid-cols-3 gap-3">
+                    <button
+                      v-for="level in (['Fácil', 'Médio', 'Difícil'] as Difficulty[])"
+                      :key="level"
+                      type="button"
+                      class="rounded-xl border px-4 py-3 text-sm font-medium transition"
+                      :class="getDifficultyButtonClass(level)"
+                      @click="activityForm.difficulty = level"
+                    >
+                      {{ level }}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -631,23 +723,24 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                 <label class="text-sm text-white/70 block mb-2">Descrição</label>
                 <textarea
                   v-model="activityForm.description"
-                  class="w-full min-h-[140px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                  class="w-full min-h-[140px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                   placeholder="Descreva rapidamente a proposta da atividade."
                 />
               </div>
             </div>
 
-            <div v-else-if="step === 2" class="grid lg:grid-cols-[280px_1fr] gap-5">
-              <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 h-fit">
+            <div v-else-if="step === 2" class="grid min-w-0 gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
+              <div class="min-w-0 rounded-2xl border border-white/10 bg-black/30 p-4 lg:self-start">
                 <div class="flex items-center justify-between gap-2 mb-4">
                   <h4 class="text-lg font-semibold">Questões</h4>
 
                   <button
                     type="button"
-                    class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-hover)]"
                     @click="addQuestion"
                   >
-                    + Nova
+                    <Plus class="size-3.5" />
+                    Nova
                   </button>
                 </div>
 
@@ -656,13 +749,13 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                     v-for="(question, index) in activityForm.questions"
                     :key="question.id"
                     :class="activeQuestionIndex === index
-                      ? 'rounded-xl border border-[#5b4dff] bg-[#5b4dff]/15 text-white'
+                      ? 'rounded-xl border border-secondary bg-secondary/15 text-white'
                       : 'rounded-xl border border-white/10 bg-black/20 text-white/70 hover:bg-white/[0.04]'"
                     class="cursor-pointer"
                     @click="selectQuestion(index)"
                   >
                     <div class="px-4 py-3 flex items-start justify-between gap-3">
-                      <div class="min-w-0">
+                      <div class="min-w-0 flex-1">
                         <div class="font-medium">Questão {{ index + 1 }}</div>
                         <div class="text-xs text-white/45 truncate mt-1">
                           {{ question.statement || 'Sem enunciado ainda' }}
@@ -683,9 +776,9 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                 </div>
               </div>
 
-              <div v-if="currentQuestion" class="space-y-5">
+              <div v-if="currentQuestion" class="min-w-0 space-y-5 rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-5">
                 <div class="flex items-center justify-between flex-wrap gap-3">
-                  <div>
+                  <div class="min-w-0">
                     <h4 class="text-xl font-semibold">Questão {{ activeQuestionIndex + 1 }}</h4>
                     <p class="text-sm text-white/45 mt-1">
                       {{ currentQuestion.type === 'multiple_choice'
@@ -704,7 +797,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <select
                     v-model="currentQuestion.type"
                     @change="changeQuestionType(currentQuestion.type)"
-                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                    class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                   >
                     <option value="multiple_choice">Múltipla Escolha</option>
                     <option value="drag_drop">Arrastar e Soltar</option>
@@ -716,7 +809,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <label class="text-sm text-white/70 block mb-2">Enunciado</label>
                   <textarea
                     v-model="currentQuestion.statement"
-                    class="w-full min-h-[120px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                    class="w-full min-h-[120px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                     placeholder="Digite o enunciado da questão."
                   />
                 </div>
@@ -726,7 +819,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <div
                     v-for="option in (['A', 'B', 'C', 'D'] as OptionKey[])"
                     :key="option"
-                    class="rounded-2xl border p-4"
+                    class="min-w-0 rounded-2xl border p-4"
                     :class="currentQuestion.correct === option
                       ? 'border-emerald-400/30 bg-emerald-500/10'
                       : 'border-white/10 bg-white/[0.03]'"
@@ -743,14 +836,14 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                         <span v-if="currentQuestion.correct === option">●</span>
                       </button>
 
-                      <div class="flex-1">
+                      <div class="min-w-0 flex-1">
                         <div class="text-sm font-semibold text-white/85 mb-2">
                           Alternativa {{ option }}
                         </div>
 
                         <input
                           v-model="currentQuestion.options![option]"
-                          class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                          class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                           :placeholder="`Digite a alternativa ${option}`"
                         />
 
@@ -775,11 +868,11 @@ const getDifficultyClass = (difficulty: Difficulty) => {
 
                 <!-- Drag and Drop -->
                 <div v-else-if="currentQuestion.type === 'drag_drop'" class="space-y-4">
-                  <div class="rounded-2xl border border-dashed border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-300">
-                    <p class="font-medium mb-2">💡 Como funciona:</p>
-                    <p>1. No enunciado, use <code class="bg-black/30 px-2 py-1 rounded">[blank_1]</code>, <code class="bg-black/30 px-2 py-1 rounded">[blank_2]</code>, etc para marcar espaços vazios</p>
-                    <p>2. Crie as palavras-chave que estarão disponíveis para arrastar</p>
-                    <p>3. Defina qual palavra vai em cada espaço</p>
+                  <div class="rounded-2xl border border-secondary/20 bg-secondary/10 p-4 text-sm text-white/70">
+                    <p class="font-semibold text-white">Formato com lacunas</p>
+                    <p class="mt-2">
+                      Use marcadores como <code class="rounded bg-black/30 px-2 py-1 text-white">[blank_1]</code> no enunciado e relacione cada lacuna a uma palavra-chave.
+                    </p>
                   </div>
 
                   <div>
@@ -787,7 +880,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                     <textarea
                       v-model="currentQuestion.statement"
                       @input="initializeBlanks(currentQuestion)"
-                      class="w-full min-h-[120px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                      class="w-full min-h-[120px] rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                       placeholder="Ex: A capital do Brasil é [blank_1] e fica no estado de [blank_2]"
                     />
                   </div>
@@ -795,10 +888,10 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <div>
                     <label class="text-sm text-white/70 block mb-2">Palavras-chave (disponíveis para arrastar)</label>
                     <div class="space-y-2">
-                      <div v-for="(keyword, index) in currentQuestion.keywords" :key="index" class="flex gap-2">
+                      <div v-for="(keyword, index) in currentQuestion.keywords" :key="index" class="flex min-w-0 gap-2">
                         <input
                           v-model="currentQuestion.keywords![index]"
-                          class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                          class="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                           :placeholder="`Palavra-chave ${index + 1}`"
                         />
                         <button
@@ -812,10 +905,11 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                       </div>
                       <button
                         type="button"
-                        class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                        class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-hover)]"
                         @click="currentQuestion.keywords!.push('')"
                       >
-                        + Adicionar Palavra-chave
+                        <Plus class="size-3.5" />
+                        Adicionar palavra-chave
                       </button>
                     </div>
                   </div>
@@ -824,11 +918,11 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <div v-if="extractBlanksFromStatement(currentQuestion.statement || '').length > 0">
                     <label class="text-sm text-white/70 block mb-2">Defina qual palavra vai em cada espaço</label>
                     <div class="space-y-2">
-                      <div v-for="blank in extractBlanksFromStatement(currentQuestion.statement || '')" :key="blank" class="flex gap-2 items-center p-3 rounded-xl bg-white/5 border border-white/10">
+                      <div v-for="blank in extractBlanksFromStatement(currentQuestion.statement || '')" :key="blank" class="grid min-w-0 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
                         <span class="text-sm text-white/85 font-medium">{{ blank }}:</span>
                         <select
                           v-model.number="currentQuestion.blankAnswers![blank]"
-                          class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-[#5b4dff]"
+                          class="w-full min-w-0 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-secondary"
                         >
                           <option :value="-1">Selecionar palavra-chave</option>
                           <option v-for="(keyword, idx) in currentQuestion.keywords" :key="idx" :value="idx">
@@ -839,21 +933,21 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                     </div>
                   </div>
 
-                  <div v-else class="rounded-2xl border border-dashed border-yellow-500/20 bg-yellow-500/5 p-4 text-sm text-yellow-300">
-                    ⚠️ Adicione [blank_1], [blank_2], etc no enunciado para definir os espaços vazios
+                  <div v-else class="rounded-2xl border border-dashed border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-300">
+                    Adicione [blank_1], [blank_2], etc no enunciado para definir os espaços vazios.
                   </div>
                 </div>
 
                 <!-- Matching -->
                 <div v-else-if="currentQuestion.type === 'matching'" class="space-y-4">
                   <div class="grid md:grid-cols-2 gap-4">
-                    <div>
+                    <div class="min-w-0">
                       <label class="text-sm text-white/70 block mb-2">Coluna Esquerda</label>
                       <div class="space-y-2">
-                        <div v-for="(left, index) in currentQuestion.leftColumn" :key="index" class="flex gap-2">
+                        <div v-for="(left, index) in currentQuestion.leftColumn" :key="index" class="flex min-w-0 gap-2">
                           <input
                             v-model="currentQuestion.leftColumn![index]"
-                            class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                            class="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                             :placeholder="`Item ${index + 1}`"
                           />
                           <button
@@ -867,21 +961,22 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                         </div>
                         <button
                           type="button"
-                          class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                          class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-hover)]"
                           @click="currentQuestion.leftColumn!.push('')"
                         >
-                          + Adicionar Item
+                          <Plus class="size-3.5" />
+                          Adicionar item
                         </button>
                       </div>
                     </div>
 
-                    <div>
+                    <div class="min-w-0">
                       <label class="text-sm text-white/70 block mb-2">Coluna Direita</label>
                       <div class="space-y-2">
-                        <div v-for="(right, index) in currentQuestion.rightColumn" :key="index" class="flex gap-2">
+                        <div v-for="(right, index) in currentQuestion.rightColumn" :key="index" class="flex min-w-0 gap-2">
                           <input
                             v-model="currentQuestion.rightColumn![index]"
-                            class="flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-[#5b4dff]"
+                            class="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-secondary"
                             :placeholder="`Item ${index + 1}`"
                           />
                           <button
@@ -895,10 +990,11 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                         </div>
                         <button
                           type="button"
-                          class="rounded-xl bg-[var(--primary)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary)]/90"
+                          class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--primary-hover)]"
                           @click="currentQuestion.rightColumn!.push('')"
                         >
-                          + Adicionar Item
+                          <Plus class="size-3.5" />
+                          Adicionar item
                         </button>
                       </div>
                     </div>
@@ -907,12 +1003,12 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                   <div>
                     <label class="text-sm text-white/70 block mb-2">Pares Corretos (Esquerda → Direita)</label>
                     <div class="space-y-2">
-                      <div v-for="(left, leftIndex) in currentQuestion.leftColumn" :key="leftIndex" class="flex gap-2 items-center">
-                        <span class="text-sm text-white/85">{{ left || `Item ${leftIndex + 1}` }}</span>
+                      <div v-for="(left, leftIndex) in currentQuestion.leftColumn" :key="leftIndex" class="grid min-w-0 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(220px,1fr)] sm:items-center">
+                        <span class="min-w-0 truncate text-sm text-white/85">{{ left || `Item ${leftIndex + 1}` }}</span>
                         <span class="text-white/45">→</span>
                         <select
                           v-model="currentQuestion.pairs![leftIndex.toString()]"
-                          class="rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-[#5b4dff]"
+                          class="w-full min-w-0 rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm outline-none focus:border-secondary"
                         >
                           <option value="">Selecionar correspondente</option>
                           <option v-for="(right, rightIndex) in currentQuestion.rightColumn" :key="rightIndex" :value="rightIndex.toString()">
@@ -980,7 +1076,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                       type="button"
                       class="h-10 min-w-10 rounded-xl border px-3 text-sm font-semibold transition"
                       :class="previewQuestion === index
-                        ? 'border-[#5b4dff] bg-[#5b4dff] text-white'
+                        ? 'border-secondary bg-secondary text-white'
                         : 'border-white/10 bg-black/20 text-white/65 hover:bg-white/5'"
                       @click="previewQuestion = index"
                     >
@@ -1045,7 +1141,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                         <span
                           v-for="(keyword, index) in activityForm.questions[previewQuestion]?.keywords"
                           :key="index"
-                          class="rounded-lg bg-[#5b4dff]/20 border border-[#5b4dff]/40 px-3 py-1 text-sm text-white/85"
+                          class="rounded-lg border border-secondary/40 bg-secondary/20 px-3 py-1 text-sm text-white/85"
                         >
                           {{ keyword || `Palavra ${index + 1}` }}
                         </span>
@@ -1087,7 +1183,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
             </div>
           </div>
 
-          <DialogFooter class="px-6 py-5 border-t border-white/5 flex items-center justify-between gap-3 flex-shrink-0 bg-[#090612]">
+          <DialogFooter class="flex flex-shrink-0 items-center justify-between gap-3 border-t border-white/5 bg-card px-5 py-5 sm:justify-between sm:px-6">
             <button
               type="button"
               class="rounded-xl border px-5 py-3 text-sm font-medium"
@@ -1104,7 +1200,7 @@ const getDifficultyClass = (difficulty: Difficulty) => {
                 v-if="step < 3"
                 type="button"
                 :disabled="!isStep1Valid() || (step === 2 && !isStep2Valid())"
-                class="rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#4b4dff] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#4b4dff]/25 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                 @click="nextStep"
               >
                 Próximo
@@ -1113,15 +1209,15 @@ const getDifficultyClass = (difficulty: Difficulty) => {
               <button
                 v-else
                 type="button"
-                class="rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#4b4dff] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#4b4dff]/25 hover:opacity-95"
+                class="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 hover:bg-[var(--primary-hover)]"
                 @click="finishActivity"
               >
                 {{ mode === 'edit' ? 'Editar atividade' : 'Finalizar atividade' }}
               </button>
-            </div>dir
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   </AppLayout>
 </template>
