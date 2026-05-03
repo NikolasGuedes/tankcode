@@ -4,7 +4,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Blocks, LayoutGrid, School, UserRound } from 'lucide-vue-next';
+import { BarChart3, Blocks, ClipboardList, LayoutGrid, School, UserRound } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -20,7 +20,8 @@ const icons: Record<string, typeof LayoutGrid> = {
     Diretoria: LayoutGrid,
     Professor: LayoutGrid,
     Aluno: LayoutGrid,
-    Dashboard: LayoutGrid,
+    Dashboard: BarChart3,
+    Atividades: ClipboardList,
 };
 
 const mainNavItems = computed<NavItem[]>(() =>
@@ -31,7 +32,6 @@ const mainNavItems = computed<NavItem[]>(() =>
 );
 
 const homeHref = computed(() => mainNavItems.value[0]?.href ?? '/dashboard');
-
 </script>
 
 <template>
@@ -41,7 +41,7 @@ const homeHref = computed(() => mainNavItems.value[0]?.href ?? '/dashboard');
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="homeHref">
-                        <AppLogo />
+                            <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -53,7 +53,6 @@ const homeHref = computed(() => mainNavItems.value[0]?.href ?? '/dashboard');
         </SidebarContent>
 
         <SidebarFooter>
-
             <NavUser />
         </SidebarFooter>
     </Sidebar>

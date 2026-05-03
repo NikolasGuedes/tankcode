@@ -800,6 +800,11 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
+apexcharts@^5.10.6, apexcharts@>=5.10.0:
+  version "5.10.6"
+  resolved "https://registry.npmjs.org/apexcharts/-/apexcharts-5.10.6.tgz"
+  integrity sha512-FJQGbso3iRuOwUYnj0yUhkWeKeJE6aboVol+ae09lsc+lbLMWZqSRbrAWVa/qishLiaeG2icxdvmVkm+9n6kOQ==
+
 argparse@^2.0.1:
   version "2.0.1"
   resolved "https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz"
@@ -2252,6 +2257,11 @@ vue-sonner@^2.0.8:
     "@vue/runtime-dom" "3.5.22"
     "@vue/server-renderer" "3.5.22"
     "@vue/shared" "3.5.22"
+
+vue3-apexcharts@^1.11.1:
+  version "1.11.1"
+  resolved "https://registry.npmjs.org/vue3-apexcharts/-/vue3-apexcharts-1.11.1.tgz"
+  integrity sha512-MbN3vg8bMG19wc0Lm1HkeQvODgLm56DgpIxtNUO0xpf/JCzYWVGE4jzXp2JISzy2s3Kul1yOxNQUYsLvKQ5L9g==
 
 which@^2.0.1:
   version "2.0.2"
