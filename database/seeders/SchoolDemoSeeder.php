@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -16,6 +17,8 @@ class SchoolDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        $schoolCnpj = $this->normalizeDigits('12.345.678/0001-99');
+
         $roles = Role::query()
             ->whereIn('name', [
                 RoleEnum::OWNER->value,
@@ -27,9 +30,10 @@ class SchoolDemoSeeder extends Seeder
             ->keyBy(fn (Role $role) => $role->name?->value);
 
         $school = School::query()->updateOrCreate(
-            ['cnpj' => '12.345.678/0001-99'],
+            ['cnpj' => $schoolCnpj],
             [
                 'name' => 'Escola Central TankCode',
+                'cnpj' => $schoolCnpj,
                 'logo_path' => null,
                 'status' => 'active',
             ],
@@ -57,10 +61,17 @@ class SchoolDemoSeeder extends Seeder
                 'address_line' => 'Rua das Palmeiras, 120, Setor Sul',
                 'status' => 'active',
             ],
-        ])->map(fn (array $data) => PointOfSchool::query()->updateOrCreate(
-            ['school_id' => $school->id, 'cnpj' => preg_replace('/\D+/', '', $data['cnpj'])],
-            $data + ['school_id' => $school->id],
-        ));
+        ])->map(function (array $data) use ($school) {
+            $normalizedCnpj = $this->normalizeDigits($data['cnpj']);
+
+            return PointOfSchool::query()->updateOrCreate(
+                ['cnpj' => $normalizedCnpj],
+                array_merge($data, [
+                    'school_id' => $school->id,
+                    'cnpj' => $normalizedCnpj,
+                ]),
+            );
+        });
 
         $owner = $this->createUser(
             roleId: $roles[RoleEnum::OWNER->value]->id,
@@ -160,6 +171,11 @@ class SchoolDemoSeeder extends Seeder
                 $classroomData,
             );
 
+            DB::table('classroom_student')
+                ->whereIn('user_id', $studentIds)
+                ->where('classroom_id', '!=', $classroom->id)
+                ->delete();
+
             $classroom->students()->sync($studentIds);
 
             return $classroom;
@@ -209,5 +225,10 @@ class SchoolDemoSeeder extends Seeder
             ->all();
 
         $user->pointOfSchools()->sync($payload);
+    }
+
+    private function normalizeDigits(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?? $value;
     }
 }
