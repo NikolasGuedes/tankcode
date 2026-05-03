@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(Classroom::class, 'teacher_id');
     }
 
+    public function activitiesAsTeacher(): HasMany
+    {
+        return $this->hasMany(Activity::class, 'teacher_id');
+    }
+
     public function classrooms(): BelongsToMany
     {
         return $this->belongsToMany(Classroom::class, 'classroom_student')->withTimestamps();
