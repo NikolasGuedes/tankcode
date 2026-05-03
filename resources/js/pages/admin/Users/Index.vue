@@ -131,6 +131,22 @@ const accessLabel: Record<string, string> = {
     inactive: 'Desabilitado',
 };
 
+const roleNameLabels: Record<string, string> = {
+    tank_admin: 'Administrador TankCode',
+    owner: 'Gestor',
+    director: 'Diretor',
+    teacher: 'Professor',
+    student: 'Aluno',
+};
+
+const displayRoleLabel = (roleName: string | null, fallback?: string | null) => {
+    if (roleName && roleNameLabels[roleName]) {
+        return roleNameLabels[roleName];
+    }
+
+    return fallback ?? '-';
+};
+
 const applyFilters = () => {
     router.get(
         '/admin/users',
@@ -419,7 +435,7 @@ watch(
                         <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
                             <SelectItem value="all">Todos os perfis</SelectItem>
                             <SelectItem v-for="role in props.roles" :key="role.id" :value="role.name ?? ''">
-                                {{ role.label }}
+                                {{ displayRoleLabel(role.name, role.label) }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
@@ -459,7 +475,7 @@ watch(
                                     <p class="font-semibold text-white">{{ user.name }}</p>
                                     <p class="text-white/55">{{ user.email }}</p>
                                 </td>
-                                <td class="py-4">{{ user.role ?? '-' }}</td>
+                                <td class="py-4">{{ displayRoleLabel(user.role_name, user.role) }}</td>
                                 <td class="py-4">{{ user.school }}</td>
                                 <td class="py-4">{{ user.point_of_schools_count }}</td>
                                 <td class="py-4">
@@ -583,7 +599,7 @@ watch(
                             </SelectTrigger>
                             <SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white">
                                 <SelectItem v-for="role in props.roles" :key="role.id" :value="String(role.id)">
-                                    {{ role.label }}
+                                    {{ displayRoleLabel(role.name, role.label) }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
@@ -612,7 +628,7 @@ watch(
                         </span>
                     </div>
                     <p class="text-xs text-white/55">
-                        {{ isStudentRole ? 'Usuários do tipo Student podem ser vinculados a apenas um ponto de ensino.' : 'Selecione ao menos um ponto de ensino para este usuário.' }}
+                        {{ isStudentRole ? 'Usuários do tipo Aluno podem ser vinculados a apenas um ponto de ensino.' : 'Selecione ao menos um ponto de ensino para este usuário.' }}
                     </p>
 
                     <div
