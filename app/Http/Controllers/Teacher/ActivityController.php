@@ -12,6 +12,7 @@ use App\Support\ActivityPointsCalculator;
 use App\Support\PointOfSchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,11 +30,12 @@ class ActivityController extends Controller
         $classroomIds = $this->classroomsForTeacher($teacher, $pointIds)->pluck('id');
 
         $baseActivitiesQuery = Activity::query()
-            ->where('teacher_id', $teacher?->id)
-            ->whereIn('classroom_id', $classroomIds);
+            ->where(fn ($query) => $query
+                ->where('teacher_id', $teacher?->id)
+                ->orWhereIn('classroom_id', $classroomIds));
 
         $activities = (clone $baseActivitiesQuery)
-            ->with(['classroom:id,name,code,point_of_school_id'])
+            ->with(['classroom:id,name,code,point_of_school_id', 'questions'])
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $query->where(fn ($searchQuery) => $searchQuery
                     ->where('title', 'like', "%{$search}%")
@@ -61,6 +63,18 @@ class ActivityController extends Controller
                 'due_date' => optional($activity->due_date)?->format('Y-m-d'),
                 'due_date_label' => optional($activity->due_date)?->format('d/m/Y') ?? '-',
                 'status' => $activity->status,
+                'questions' => $activity->questions->map(fn ($question) => [
+                    'id' => $question->id,
+                    'type' => $question->type,
+                    'statement' => $question->statement,
+                    'correct_option' => $question->correct_option,
+                    'options' => $question->options,
+                    'keywords' => $question->keywords,
+                    'blank_answers' => $question->blank_answers,
+                    'left_column' => $question->left_column,
+                    'right_column' => $question->right_column,
+                    'pairs' => $question->pairs,
+                ])->values(),
             ]);
 
         return Inertia::render('teacher/Activities/Index', [
@@ -86,14 +100,23 @@ class ActivityController extends Controller
     public function store(StoreActivityRequest $request, ActivityPointsCalculator $calculator): RedirectResponse
     {
         $data = $request->validated();
-        $points = $calculator->calculate($data['level'], (int) $data['questions_count']);
+        $questions = $data['questions'];
+        unset($data['questions']);
 
-        Activity::query()->create([
-            ...$data,
-            ...$points,
-            'teacher_id' => $request->user()?->id,
-            'status' => $data['status'] ?? 'draft',
-        ]);
+        DB::transaction(function () use ($request, $calculator, $data, $questions): void {
+            $questionsCount = count($questions);
+            $points = $calculator->calculate($data['level'], $questionsCount);
+
+            $activity = Activity::query()->create([
+                ...$data,
+                ...$points,
+                'teacher_id' => $request->user()?->id,
+                'questions_count' => $questionsCount,
+                'status' => $data['status'] ?? 'draft',
+            ]);
+
+            $this->createQuestions($activity, $questions);
+        });
 
         return to_route('teacher.activities.index')->with('success', 'Atividade criada com sucesso.');
     }
@@ -103,14 +126,24 @@ class ActivityController extends Controller
         abort_unless($this->canManageActivity($request->user(), $activity), 404);
 
         $data = $request->validated();
-        $points = $calculator->calculate($data['level'], (int) $data['questions_count']);
+        $questions = $data['questions'];
+        unset($data['questions']);
 
-        $activity->update([
-            ...$data,
-            ...$points,
-            'teacher_id' => $request->user()?->id,
-            'status' => $data['status'] ?? 'draft',
-        ]);
+        DB::transaction(function () use ($request, $activity, $calculator, $data, $questions): void {
+            $questionsCount = count($questions);
+            $points = $calculator->calculate($data['level'], $questionsCount);
+
+            $activity->update([
+                ...$data,
+                ...$points,
+                'teacher_id' => $request->user()?->id,
+                'questions_count' => $questionsCount,
+                'status' => $data['status'] ?? 'draft',
+            ]);
+
+            $activity->questions()->delete();
+            $this->createQuestions($activity, $questions);
+        });
 
         return to_route('teacher.activities.index')->with('success', 'Atividade atualizada com sucesso.');
     }
@@ -149,5 +182,28 @@ class ActivityController extends Controller
             ->whereIn('point_of_school_id', $pointIds)
             ->orderBy('name')
             ->get(['id', 'point_of_school_id', 'name', 'code']);
+    }
+
+    private function createQuestions(Activity $activity, array $questions): void
+    {
+        collect($questions)
+            ->values()
+            ->each(fn (array $question, int $index) => $activity->questions()->create($this->questionPayload($question, $index)));
+    }
+
+    private function questionPayload(array $question, int $index): array
+    {
+        return [
+            'type' => $question['type'],
+            'statement' => $question['statement'],
+            'order' => $index + 1,
+            'correct_option' => $question['type'] === 'multiple_choice' ? ($question['correct_option'] ?? null) : null,
+            'options' => $question['type'] === 'multiple_choice' ? ($question['options'] ?? null) : null,
+            'keywords' => $question['type'] === 'drag_drop' ? array_values($question['keywords'] ?? []) : null,
+            'blank_answers' => $question['type'] === 'drag_drop' ? ($question['blank_answers'] ?? null) : null,
+            'left_column' => $question['type'] === 'matching' ? array_values($question['left_column'] ?? []) : null,
+            'right_column' => $question['type'] === 'matching' ? array_values($question['right_column'] ?? []) : null,
+            'pairs' => $question['type'] === 'matching' ? ($question['pairs'] ?? null) : null,
+        ];
     }
 }
