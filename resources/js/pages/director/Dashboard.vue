@@ -14,13 +14,13 @@ defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
+    { title: 'Visão geral', href: '/director' },
 ];
 
 const modules = [
     { title: 'Turmas', description: 'Gerencie as turmas da escola e acompanhe os alunos vinculados.', href: '/director/classrooms', icon: BookOpen },
     { title: 'Professores', description: 'Cadastre professores e distribua o acesso por ponto de ensino.', href: '/director/teachers', icon: Users },
-    { title: 'Alunos', description: 'Cadastre alunos, acompanhe a vinculacao e organize por unidade.', href: '/director/students', icon: GraduationCap },
+    { title: 'Alunos', description: 'Cadastre alunos, acompanhe a vinculação e organize por unidade.', href: '/director/students', icon: GraduationCap },
 ];
 </script>
 

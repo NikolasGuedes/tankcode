@@ -51,7 +51,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/owner' },
+    { title: 'Visão geral', href: '/owner' },
     { title: 'Diretores', href: '/owner/directors' },
 ];
 
@@ -172,7 +172,7 @@ watch(
         <section class="space-y-6 p-6">
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <h1 class="text-4xl font-semibold tracking-tight text-white">Diretores</h1>
-                <p class="mt-2 text-lg text-white/70">Gerencie diretores e distribua a atuacao deles entre os pontos de ensino da sua escola.</p>
+                <p class="mt-2 text-lg text-white/70">Gerencie diretores e distribua a atuação deles entre os pontos de ensino da sua escola.</p>
 
                 <div class="mt-8 grid gap-4 md:grid-cols-3">
                     <div class="rounded-3xl border border-border bg-black/40 p-5"><p class="text-sm text-white/60">Total</p><p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.total }}</p></div>
@@ -185,7 +185,7 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-semibold text-white">Diretores cadastrados</h2>
-                        <p class="text-sm text-white/60">Cadastre e edite diretores em pagina dedicada, mantendo o controle de acesso e vinculacao.</p>
+                        <p class="text-sm text-white/60">Cadastre e edite diretores em página dedicada, mantendo o controle de acesso e vinculação.</p>
                     </div>
                     <Button as-child class="rounded-2xl">
                         <a href="/owner/directors/create"><Plus class="size-4" />Novo Diretor</a>
@@ -217,7 +217,7 @@ watch(
                                 <th class="pb-4 font-medium">Pontos de Ensino</th>
                                 <th class="pb-4 font-medium">E-mail validado</th>
                                 <th class="pb-4 font-medium">Acesso a plataforma</th>
-                                <th class="pb-4 font-medium">Ultimo acesso</th>
+                                <th class="pb-4 font-medium">Último acesso</th>
                                 <th class="pb-4 text-right font-medium">Ações</th>
                             </tr>
                         </thead>
@@ -275,7 +275,7 @@ watch(
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
-                <DialogDescription class="text-white/60">Esta operacao nao pode ser desfeita e removera o diretor <span class="font-semibold text-white">{{ selectedDirector?.name }}</span>.</DialogDescription>
+                <DialogDescription class="text-white/60">Esta operação não pode ser desfeita e removerá o diretor <span class="font-semibold text-white">{{ selectedDirector?.name }}</span>.</DialogDescription>
             </DialogHeader>
             <DialogFooter class="gap-2">
                 <DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDeleteDialog">Cancelar</Button></DialogClose>

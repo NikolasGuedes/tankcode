@@ -19,6 +19,6 @@ class DashboardController extends Controller
             return to_route($user->homeRouteName());
         }
 
-        return to_route('settings.profile.edit')->with('info', 'Esta area ainda nao possui um painel dedicado.');
+        return to_route('settings.profile.edit')->with('info', 'Esta área ainda não possui um painel dedicado.');
     }
 }

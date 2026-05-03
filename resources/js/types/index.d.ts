@@ -3,6 +3,14 @@ import type { LucideIcon } from 'lucide-vue-next';
 export interface Auth {
     user: User | null;
     navigation: NavItem[];
+    impersonating: boolean;
+    original_user: OriginalUser | null;
+}
+
+export interface OriginalUser {
+    id: number;
+    name: string;
+    email: string;
 }
 
 export interface PointContextItem {

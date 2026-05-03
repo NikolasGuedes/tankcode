@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
+    { title: 'Visão geral', href: '/director' },
     { title: 'Turmas', href: '/director/classrooms' },
     { title: props.classroom ? 'Editar Turma' : 'Nova Turma', href: props.classroom ? `/director/classrooms/${props.classroom.id}/edit` : '/director/classrooms/create' },
 ];
@@ -150,7 +150,7 @@ watch(() => form.point_of_school_id, () => {
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 class="text-4xl font-semibold tracking-tight text-white">{{ props.classroom ? 'Editar Turma' : 'Nova Turma' }}</h1>
-                        <p class="mt-2 max-w-3xl text-lg text-white/70">Preencha os dados da turma com mais espaco para revisar os alunos, identificando quem ja esta sem sala, nesta turma ou vinculado a outra.</p>
+                        <p class="mt-2 max-w-3xl text-lg text-white/70">Preencha os dados da turma com mais espaço para revisar os alunos, identificando quem já está sem sala, nesta turma ou vinculado a outra.</p>
                     </div>
                     <Button as-child variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10">
                         <a href="/director/classrooms"><ArrowLeft class="size-4" />Voltar para Turmas</a>
@@ -163,7 +163,7 @@ watch(() => form.point_of_school_id, () => {
                     <div class="space-y-5">
                         <div>
                             <h2 class="text-2xl font-semibold text-white">Dados da Turma</h2>
-                            <p class="mt-1 text-sm text-white/60">Defina o ponto de ensino, professor responsavel, identificacao e status.</p>
+                            <p class="mt-1 text-sm text-white/60">Defina o ponto de ensino, professor responsável, identificação e status.</p>
                         </div>
 
                         <div class="grid gap-4">
@@ -182,7 +182,7 @@ watch(() => form.point_of_school_id, () => {
                             </div>
 
                             <div class="grid gap-2">
-                                <Label for="classroom-teacher">Professor responsavel</Label>
+                                <Label for="classroom-teacher">Professor responsável</Label>
                                 <Select v-model="form.teacher_id">
                                     <SelectTrigger id="classroom-teacher" class="border-white/10 bg-[var(--surface-elevated)] text-white">
                                         <SelectValue placeholder="Selecione um professor" />
@@ -221,7 +221,7 @@ watch(() => form.point_of_school_id, () => {
 
                         <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
                             <p class="font-medium text-white">Regra importante</p>
-                            <p class="mt-1">Cada aluno pode estar vinculado a apenas uma sala. Alunos ja alocados aparecem identificados e ficam bloqueados para selecao.</p>
+                            <p class="mt-1">Cada aluno pode estar vinculado a apenas uma sala. Alunos já alocados aparecem identificados e ficam bloqueados para seleção.</p>
                         </div>
                     </div>
                 </AppReveal>
@@ -272,7 +272,7 @@ watch(() => form.point_of_school_id, () => {
                                     <p class="mt-1 text-sm text-white/50">
                                         {{
                                             student.point_of_school_ids.includes(Number(form.point_of_school_id))
-                                                ? 'Disponivel no ponto de ensino selecionado.'
+                                                ? 'Disponível no ponto de ensino selecionado.'
                                                 : 'Fora do ponto de ensino selecionado.'
                                         }}
                                     </p>
@@ -289,7 +289,7 @@ watch(() => form.point_of_school_id, () => {
                                 <a href="/director/classrooms">Cancelar</a>
                             </Button>
                             <Button type="submit" :disabled="form.processing">
-                                {{ props.classroom ? 'Salvar alteracoes' : 'Criar turma' }}
+                                {{ props.classroom ? 'Salvar alterações' : 'Criar turma' }}
                             </Button>
                         </div>
                     </div>

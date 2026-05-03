@@ -28,7 +28,7 @@ defineProps<{
             <p class="font-semibold text-white">{{ user.name }}</p>
             <p>{{ user.email }}</p>
             <p v-if="user.role || user.school" class="mt-2 text-white/60">
-                {{ user.role ?? 'Usuario' }}<span v-if="user.school"> • {{ user.school }}</span>
+                {{ user.role ?? 'Usuário' }}<span v-if="user.school"> • {{ user.school }}</span>
             </p>
         </div>
 
@@ -39,7 +39,7 @@ defineProps<{
             <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="password">Nova senha</Label>
-                    <Input id="password" name="password" type="password" placeholder="Minimo de 8 caracteres" required />
+                    <Input id="password" name="password" type="password" placeholder="Mínimo de 8 caracteres" required />
                     <InputError :message="errors.password" />
                 </div>
 

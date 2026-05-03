@@ -38,14 +38,14 @@ class StorePointOfSchoolRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'school_id.required' => 'A escola e obrigatoria.',
-            'name.required' => 'O nome do ponto de ensino e obrigatorio.',
-            'cnpj.required' => 'O CNPJ do ponto de ensino e obrigatorio.',
-            'cnpj.digits' => 'Informe um CNPJ valido com 14 digitos.',
-            'zip_code.required' => 'O CEP e obrigatorio.',
-            'zip_code.digits' => 'Informe um CEP valido com 8 digitos.',
-            'address_line.required' => 'O endereco e obrigatorio.',
-            'status.required' => 'O status do ponto de ensino e obrigatorio.',
+            'school_id.required' => 'A escola é obrigatória.',
+            'name.required' => 'O nome do ponto de ensino é obrigatório.',
+            'cnpj.required' => 'O CNPJ do ponto de ensino é obrigatório.',
+            'cnpj.digits' => 'Informe um CNPJ válido com 14 dígitos.',
+            'zip_code.required' => 'O CEP é obrigatório.',
+            'zip_code.digits' => 'Informe um CEP válido com 8 dígitos.',
+            'address_line.required' => 'O endereço é obrigatório.',
+            'status.required' => 'O status do ponto de ensino é obrigatório.',
         ];
     }
 }

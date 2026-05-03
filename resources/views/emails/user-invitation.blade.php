@@ -56,23 +56,23 @@
     </div>
 
     <div class="content">
-        <h2>Ola, {{ $user->name }}!</h2>
+        <h2>Olá, {{ $user->name }}!</h2>
 
         <p>Sua conta foi criada na plataforma TankCode.</p>
-        <p>Para ativar o acesso e definir sua senha de primeiro login, clique no botao abaixo:</p>
+        <p>Para ativar o acesso e definir sua senha de primeiro login, clique no botão abaixo:</p>
 
         <p style="text-align: center;">
             <a href="{{ $activationUrl }}" class="button">Ativar conta e criar senha</a>
         </p>
 
         <div class="info-box">
-            <strong>Perfil:</strong> {{ $user->role?->label ?? 'Usuario' }}<br>
+            <strong>Perfil:</strong> {{ $user->role?->label ?? 'Usuário' }}<br>
             <strong>Email:</strong> {{ $user->email }}<br>
             <strong>Escola:</strong> {{ $user->school?->name ?? 'Sistema' }}
         </div>
 
         <p>Este link expira em 24 horas.</p>
-        <p>Se o botao nao abrir, copie e cole o link abaixo no navegador:</p>
+        <p>Se o botão não abrir, copie e cole o link abaixo no navegador:</p>
         <p style="word-break: break-all; color: #1D15F0;">{{ $activationUrl }}</p>
     </div>
 

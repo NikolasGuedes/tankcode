@@ -6,7 +6,7 @@ ENV_FILE=".env"
 FRESH=false
 BUILD=false
 INSTALL_FRONTEND=false
-RUN_SEED=false
+RUN_SEED=true
 
 usage() {
   cat <<'EOF'
@@ -179,7 +179,7 @@ echo "- App: http://localhost:8000"
 echo "- Mailpit: http://localhost:8025"
 echo
 echo "Sugestões:"
-echo "- ./script.sh            -> sobe e atualiza só o essencial"
+echo "- ./script.sh            -> sobe, roda migrations e seeders"
 echo "- ./script.sh --build    -> recompila a imagem PHP"
 echo "- ./script.sh --fresh    -> recria tudo do zero"
 echo "- ./script.sh --frontend -> instala dependências JS e gera build"

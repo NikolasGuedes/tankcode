@@ -118,7 +118,7 @@ const deadlineClass = (status: string) => {
                 </div>
 
                 <div class="mt-6 rounded-[1.5rem] border border-dashed border-white/12 bg-white/4 px-5 py-4 text-sm text-white/60">
-                    Prazo em destaque para ajudar o aluno a priorizar entregas urgentes. Os dados ainda estao mockados nesta etapa.
+                    Prazo em destaque para ajudar o aluno a priorizar entregas urgentes. Os dados ainda estão mockados nesta etapa.
                 </div>
             </AppReveal>
         </section>
@@ -129,7 +129,7 @@ const deadlineClass = (status: string) => {
                     <div>
                         <p class="inline-flex rounded-full bg-[#8f7bff] px-4 py-1 text-sm text-white">Colegas da sala</p>
                         <h2 class="mt-4 text-3xl font-semibold text-white">Ranking da turma</h2>
-                        <p class="mt-2 max-w-2xl text-white/60">Seu score atual e {{ score.student_points }} pts. Hoje ele coloca voce na posicao #{{ score.classroom_rank }} da turma.</p>
+                        <p class="mt-2 max-w-2xl text-white/60">Seu score atual é {{ score.student_points }} pts. Hoje ele coloca você na posição #{{ score.classroom_rank }} da turma.</p>
                     </div>
                     <Users class="size-6 text-[#8f7bff]" />
                 </div>

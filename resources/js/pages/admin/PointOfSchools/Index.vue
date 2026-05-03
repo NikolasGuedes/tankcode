@@ -77,7 +77,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/admin' },
+    { title: 'Visão geral', href: '/admin' },
     { title: 'Pontos de Ensino', href: '/admin/point-of-schools' },
 ];
 
@@ -264,7 +264,7 @@ watch(
                         <p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.schools }}</p>
                     </div>
                     <div class="rounded-3xl border border-border bg-black/40 p-5">
-                        <p class="text-sm text-white/60">Usuarios vinculados</p>
+                        <p class="text-sm text-white/60">Usuários vinculados</p>
                         <p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.users }}</p>
                     </div>
                 </div>
@@ -283,7 +283,7 @@ watch(
                 </div>
 
                 <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_240px_auto]" @submit.prevent="applyFilters">
-                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome, CNPJ, CEP ou endereco" />
+                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome, CNPJ, CEP ou endereço" />
                     <Select v-model="filtersForm.status">
                         <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
                             <SelectValue placeholder="Status" />
@@ -319,7 +319,7 @@ watch(
                                 <th class="pb-4 font-medium">CNPJ</th>
                                 <th class="pb-4 font-medium">CEP</th>
                                 <th class="pb-4 font-medium">Endereco</th>
-                                <th class="pb-4 font-medium">Usuarios</th>
+                                <th class="pb-4 font-medium">Usuários</th>
                                 <th class="pb-4 font-medium">Status</th>
                                 <th class="pb-4 text-right font-medium">Ações</th>
                             </tr>
@@ -471,7 +471,7 @@ watch(
                         </Button>
                     </DialogClose>
                     <Button type="submit" :disabled="pointForm.processing">
-                        {{ selectedPoint ? 'Salvar alteracoes' : 'Criar ponto de ensino' }}
+                        {{ selectedPoint ? 'Salvar alterações' : 'Criar ponto de ensino' }}
                     </Button>
                 </DialogFooter>
             </form>
@@ -494,7 +494,7 @@ watch(
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
                 <DialogDescription class="text-white/60">
-                    Esta operacao nao pode ser desfeita e ira remover os vinculos de usuarios associados a
+                    Esta operação não pode ser desfeita e irá remover os vínculos de usuários associados a
                     <span class="font-semibold text-white">{{ selectedPoint?.name }}</span>.
                 </DialogDescription>
             </DialogHeader>

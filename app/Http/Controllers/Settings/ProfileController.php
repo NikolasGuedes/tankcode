@@ -69,7 +69,7 @@ class ProfileController extends Controller
 
         if (! $user || ! Hash::check($request->string('password')->value(), $user->password)) {
             throw ValidationException::withMessages([
-                'password' => 'A senha informada esta incorreta.',
+                'password' => 'A senha informada está incorreta.',
             ]);
         }
 

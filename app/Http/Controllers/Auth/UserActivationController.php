@@ -20,7 +20,7 @@ class UserActivationController extends Controller
 
         if (! $userId) {
             return Inertia::render('auth/ActivationError', [
-                'message' => 'O link de ativacao e invalido ou expirou. Solicite um novo convite ao administrador.',
+                'message' => 'O link de ativação é inválido ou expirou. Solicite um novo convite ao administrador.',
             ]);
         }
 
@@ -28,7 +28,7 @@ class UserActivationController extends Controller
 
         if (! $user) {
             return Inertia::render('auth/ActivationError', [
-                'message' => 'Nao foi possivel localizar a conta vinculada a este convite.',
+                'message' => 'Não foi possível localizar a conta vinculada a este convite.',
             ]);
         }
 
@@ -58,7 +58,7 @@ class UserActivationController extends Controller
 
         if (! $userId || (int) $userId !== (int) $data['user_id']) {
             return back()->withErrors([
-                'password' => 'O link de ativacao e invalido ou expirou. Solicite um novo convite.',
+                'password' => 'O link de ativação é inválido ou expirou. Solicite um novo convite.',
             ]);
         }
 
@@ -66,7 +66,7 @@ class UserActivationController extends Controller
 
         if (! $user) {
             return back()->withErrors([
-                'password' => 'Nao foi possivel localizar a conta vinculada a este convite.',
+                'password' => 'Não foi possível localizar a conta vinculada a este convite.',
             ]);
         }
 
@@ -77,6 +77,6 @@ class UserActivationController extends Controller
 
         Cache::forget($invitationService->cacheKey($data['token']));
 
-        return to_route('login')->with('status', 'Senha criada com sucesso. Agora voce ja pode fazer login.');
+        return to_route('login')->with('status', 'Senha criada com sucesso. Agora você já pode fazer login.');
     }
 }

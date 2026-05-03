@@ -139,9 +139,9 @@ class UserController extends Controller
         }
 
         $user->update($data);
-        $this->syncPointOfSchools($user, $pointIds->all(), $role?->label ?? 'Usuario');
+        $this->syncPointOfSchools($user, $pointIds->all(), $role?->label ?? 'Usuário');
 
-        return to_route('admin.users.index')->with('success', 'Usuario atualizado com sucesso.');
+        return to_route('admin.users.index')->with('success', 'Usuário atualizado com sucesso.');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -149,7 +149,7 @@ class UserController extends Controller
         $user->pointOfSchools()->detach();
         $user->delete();
 
-        return to_route('admin.users.index')->with('success', 'Usuario removido com sucesso.');
+        return to_route('admin.users.index')->with('success', 'Usuário removido com sucesso.');
     }
 
     public function updateAccess(Request $request, User $user): RedirectResponse
@@ -157,21 +157,21 @@ class UserController extends Controller
         $data = $request->validate([
             'status' => ['required', 'string', 'in:active,inactive'],
         ], [
-            'status.required' => 'O status do usuario e obrigatorio.',
-            'status.in' => 'O status informado e invalido.',
+            'status.required' => 'O status do usuário é obrigatório.',
+            'status.in' => 'O status informado é inválido.',
         ]);
 
         $user->update([
             'status' => $data['status'],
         ]);
 
-        return back()->with('success', 'Acesso a plataforma atualizado com sucesso.');
+        return back()->with('success', 'Acesso à plataforma atualizado com sucesso.');
     }
 
     public function resendInvitation(User $user, UserInvitationService $userInvitationService): RedirectResponse
     {
         if (! is_null($user->email_verified_at)) {
-            return back()->with('info', 'Este usuario ja ativou a conta e nao precisa de um novo convite.');
+            return back()->with('info', 'Este usuário já ativou a conta e não precisa de um novo convite.');
         }
 
         $userInvitationService->send($user);

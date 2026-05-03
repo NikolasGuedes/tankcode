@@ -47,7 +47,7 @@ class UpdateUserRequest extends FormRequest
                 }
 
                 if (! $this->filled('school_id')) {
-                    $validator->errors()->add('school_id', 'A escola e obrigatoria para este perfil.');
+                    $validator->errors()->add('school_id', 'A escola é obrigatória para este perfil.');
                 }
 
                 $pointIds = collect($this->input('point_of_school_ids', []))
@@ -56,13 +56,13 @@ class UpdateUserRequest extends FormRequest
                     ->values();
 
                 if ($pointIds->isEmpty()) {
-                    $validator->errors()->add('point_of_school_ids', 'Selecione pelo menos um ponto de ensino para este usuario.');
+                    $validator->errors()->add('point_of_school_ids', 'Selecione pelo menos um ponto de ensino para este usuário.');
 
                     return;
                 }
 
                 if ($role->name === RoleEnum::STUDENT && $pointIds->count() > 1) {
-                    $validator->errors()->add('point_of_school_ids', 'Usuarios do tipo Student podem ser vinculados a apenas um ponto de ensino.');
+                    $validator->errors()->add('point_of_school_ids', 'Usuários do tipo Student podem ser vinculados a apenas um ponto de ensino.');
                 }
 
                 $validPointsCount = PointOfSchool::query()
@@ -71,7 +71,7 @@ class UpdateUserRequest extends FormRequest
                     ->count();
 
                 if ($validPointsCount !== $pointIds->count()) {
-                    $validator->errors()->add('point_of_school_ids', 'Selecione apenas pontos de ensino vinculados a escola escolhida.');
+                    $validator->errors()->add('point_of_school_ids', 'Selecione apenas pontos de ensino vinculados à escola escolhida.');
                 }
             },
         ];
@@ -80,13 +80,13 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'O nome do usuario e obrigatorio.',
-            'email.required' => 'O e-mail do usuario e obrigatorio.',
-            'email.email' => 'Informe um e-mail valido.',
-            'email.unique' => 'Este e-mail ja esta em uso.',
-            'role_id.required' => 'O perfil do usuario e obrigatorio.',
-            'point_of_school_ids.array' => 'Os pontos de ensino informados sao invalidos.',
-            'status.required' => 'O status do usuario e obrigatorio.',
+            'name.required' => 'O nome do usuário é obrigatório.',
+            'email.required' => 'O e-mail do usuário é obrigatório.',
+            'email.email' => 'Informe um e-mail válido.',
+            'email.unique' => 'Este e-mail já está em uso.',
+            'role_id.required' => 'O perfil do usuário é obrigatório.',
+            'point_of_school_ids.array' => 'Os pontos de ensino informados são inválidos.',
+            'status.required' => 'O status do usuário é obrigatório.',
         ];
     }
 }

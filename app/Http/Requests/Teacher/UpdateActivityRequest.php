@@ -60,17 +60,17 @@ class UpdateActivityRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'O titulo da atividade e obrigatorio.',
-            'title.max' => 'O titulo da atividade deve ter no maximo 255 caracteres.',
-            'level.required' => 'O nivel de dificuldade e obrigatorio.',
-            'level.in' => 'O nivel de dificuldade informado e invalido.',
-            'questions_count.required' => 'A quantidade de questoes e obrigatoria.',
-            'questions_count.integer' => 'A quantidade de questoes deve ser um numero inteiro.',
-            'questions_count.min' => 'A atividade deve ter pelo menos uma questao.',
+            'title.required' => 'O título da atividade é obrigatório.',
+            'title.max' => 'O título da atividade deve ter no máximo 255 caracteres.',
+            'level.required' => 'O nível de dificuldade é obrigatório.',
+            'level.in' => 'O nível de dificuldade informado é inválido.',
+            'questions_count.required' => 'A quantidade de questões é obrigatória.',
+            'questions_count.integer' => 'A quantidade de questões deve ser um número inteiro.',
+            'questions_count.min' => 'A atividade deve ter pelo menos uma questão.',
             'classroom_id.required' => 'Selecione uma turma para a atividade.',
-            'classroom_id.exists' => 'A turma informada nao foi encontrada.',
-            'due_date.date' => 'A data de entrega deve ser uma data valida.',
-            'status.in' => 'O status informado e invalido.',
+            'classroom_id.exists' => 'A turma informada não foi encontrada.',
+            'due_date.date' => 'A data de entrega deve ser uma data válida.',
+            'status.in' => 'O status informado é inválido.',
         ];
     }
 

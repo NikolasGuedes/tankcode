@@ -52,7 +52,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
+    { title: 'Visão geral', href: '/director' },
     { title: 'Professores', href: '/director/teachers' },
 ];
 
@@ -186,7 +186,7 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-semibold text-white">Professores cadastrados</h2>
-                        <p class="text-sm text-white/60">Crie e edite professores em pagina dedicada, mantendo o controle de acesso e vinculacao.</p>
+                        <p class="text-sm text-white/60">Crie e edite professores em página dedicada, mantendo o controle de acesso e vinculação.</p>
                     </div>
                     <Button as-child class="rounded-2xl">
                         <a href="/director/teachers/create"><Plus class="size-4" />Novo Professor</a>
@@ -219,7 +219,7 @@ watch(
                                 <th class="pb-4 font-medium">Turmas</th>
                                 <th class="pb-4 font-medium">E-mail validado</th>
                                 <th class="pb-4 font-medium">Acesso a plataforma</th>
-                                <th class="pb-4 font-medium">Ultimo acesso</th>
+                                <th class="pb-4 font-medium">Último acesso</th>
                                 <th class="pb-4 text-right font-medium">Ações</th>
                             </tr>
                         </thead>
@@ -278,7 +278,7 @@ watch(
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
-                <DialogDescription class="text-white/60">Esta operacao nao pode ser desfeita e removera o professor <span class="font-semibold text-white">{{ selectedTeacher?.name }}</span>.</DialogDescription>
+                <DialogDescription class="text-white/60">Esta operação não pode ser desfeita e removerá o professor <span class="font-semibold text-white">{{ selectedTeacher?.name }}</span>.</DialogDescription>
             </DialogHeader>
             <DialogFooter class="gap-2">
                 <DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDeleteDialog">Cancelar</Button></DialogClose>

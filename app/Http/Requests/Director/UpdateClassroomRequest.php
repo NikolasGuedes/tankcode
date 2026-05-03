@@ -39,7 +39,7 @@ class UpdateClassroomRequest extends FormRequest
                 $pointId = (int) $this->input('point_of_school_id');
 
                 if ($pointId && ! in_array($pointId, $allowedPointIds, true)) {
-                    $validator->errors()->add('point_of_school_id', 'Selecione um ponto de ensino disponivel para a diretoria.');
+                    $validator->errors()->add('point_of_school_id', 'Selecione um ponto de ensino disponível para a diretoria.');
                 }
 
                 $teacherId = $this->integer('teacher_id');
@@ -78,7 +78,7 @@ class UpdateClassroomRequest extends FormRequest
                     ->count();
 
                 if ($alreadyAssignedCount > 0) {
-                    $validator->errors()->add('student_ids', 'Um aluno so pode estar vinculado a uma unica sala.');
+                    $validator->errors()->add('student_ids', 'Um aluno só pode estar vinculado a uma única sala.');
                 }
             },
         ];

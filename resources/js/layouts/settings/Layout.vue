@@ -8,11 +8,11 @@ import { computed } from 'vue';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Perfil',
         href: '/settings/profile',
     },
     {
-        title: 'Password',
+        title: 'Senha',
         href: '/settings/password',
     },
    
@@ -25,7 +25,7 @@ const currentPath = computed(() => page.url.split('?')[0]);
 
 <template>
     <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+        <Heading title="Configurações" description="Gerenciar seu perfil e configurações de conta" />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">

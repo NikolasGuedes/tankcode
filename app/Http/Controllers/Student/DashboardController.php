@@ -24,10 +24,10 @@ class DashboardController extends Controller
 
         return Inertia::render('student/Classroom', [
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
-                'code' => $classroom?->code ?? 'Sem codigo',
-                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino nao definido',
-                'teacher' => $classroom?->teacher?->name ?? 'Professor em definicao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
+                'code' => $classroom?->code ?? 'Sem código',
+                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino não definido',
+                'teacher' => $classroom?->teacher?->name ?? 'Professor em definição',
             ],
             'score' => [
                 'student_points' => $score['student_points'],
@@ -130,7 +130,7 @@ class DashboardController extends Controller
         return Inertia::render('student/Show', [
             'profile' => $this->profileData($student, $studentClassroom),
             'viewer_mode' => true,
-            'viewer_label' => $sharesClassroom ? 'Visualizacao do colega' : 'Visualizacao do ranking global',
+            'viewer_label' => $sharesClassroom ? 'Visualização do colega' : 'Visualização do ranking global',
         ]);
     }
 
@@ -159,13 +159,13 @@ class DashboardController extends Controller
                 'point_rank' => $score['point_rank'],
             ],
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
             ],
             'point' => [
-                'name' => $point?->name ?? 'Ponto de ensino em configuracao',
+                'name' => $point?->name ?? 'Ponto de ensino em configuração',
             ],
             'school' => [
-                'name' => $student->school?->name ?? 'Escola em configuracao',
+                'name' => $student->school?->name ?? 'Escola em configuração',
             ],
             'students' => $ranking,
             'filters' => [
@@ -219,7 +219,7 @@ class DashboardController extends Controller
             'email' => $student->email,
             'avatar' => $student->photo ? asset('storage/'.$student->photo) : null,
             'points' => $score['student_points'],
-            'bio' => $student->bio ?: 'Espaco reservado para a bio do aluno. Quando esse campo estiver disponivel, ele aparecera aqui.',
+            'bio' => $student->bio ?: 'Espaço reservado para a bio do aluno. Quando esse campo estiver disponível, ele aparecerá aqui.',
             'bio_raw' => $student->bio,
             'links' => [
                 'github' => $student->github_url,
@@ -230,10 +230,10 @@ class DashboardController extends Controller
                 'ranking_position' => 155,
             ],
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
-                'code' => $classroom?->code ?? 'Sem codigo',
-                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino nao definido',
-                'teacher' => $classroom?->teacher?->name ?? 'Professor em definicao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
+                'code' => $classroom?->code ?? 'Sem código',
+                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino não definido',
+                'teacher' => $classroom?->teacher?->name ?? 'Professor em definição',
             ],
         ];
     }
@@ -279,18 +279,18 @@ class DashboardController extends Controller
             ],
             [
                 'id' => 'activity-2',
-                'title' => 'Quiz de programacao',
+                'title' => 'Quiz de programação',
                 'description' => 'Responda ao quiz e revise os conceitos vistos nesta semana.',
-                'deadline_label' => 'Entrega ate sexta',
+                'deadline_label' => 'Entrega até sexta',
                 'deadline_group' => 'Essa semana',
                 'status' => 'warning',
             ],
             [
                 'id' => 'activity-3',
                 'title' => 'Mini projeto em dupla',
-                'description' => 'Planeje a entrega do prototipo com sua dupla e registre a evolucao.',
-                'deadline_label' => 'Entrega na proxima semana',
-                'deadline_group' => 'Proximas',
+                'description' => 'Planeje a entrega do protótipo com sua dupla e registre a evolução.',
+                'deadline_label' => 'Entrega na próxima semana',
+                'deadline_group' => 'Próximas',
                 'status' => 'neutral',
             ],
         ];
@@ -429,8 +429,8 @@ class DashboardController extends Controller
             'score' => $score,
             'href' => $href,
             'is_current_user' => $student->is($viewer),
-            'classroom_name' => $classroomName ?? 'Sala em configuracao',
-            'unit_name' => $unitName ?? ($student->pointOfSchools->first()?->name ?? 'Unidade em configuracao'),
+            'classroom_name' => $classroomName ?? 'Sala em configuração',
+            'unit_name' => $unitName ?? ($student->pointOfSchools->first()?->name ?? 'Unidade em configuração'),
         ];
     }
 

@@ -45,6 +45,11 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $assignedPoints = PointOfSchoolContext::assignedPoints($user);
         $currentPoint = PointOfSchoolContext::current($request, $user, $assignedPoints);
+        
+        // Get impersonation info
+        $isImpersonating = session('impersonating', false);
+        $originalUserId = session('original_user_id');
+        $originalUser = $originalUserId ? User::find($originalUserId) : null;
 
         return [
             ...parent::share($request),
@@ -56,7 +61,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'email_verified_at' => optional($user->email_verified_at)?->toIso8601String(),
-                    'avatar' => $user->photo ? Storage::disk('public')->url($user->photo) : null,
+                    'avatar' => $user->photo ? Storage::disk('public')->path($user->photo) : null,
                     'status' => $user->status,
                     'last_login_at' => optional($user->last_login_at)?->toIso8601String(),
                     'role' => $user->role ? [
@@ -70,6 +75,12 @@ class HandleInertiaRequests extends Middleware
                     'home' => route($user->homeRouteName(), absolute: false),
                 ] : null,
                 'navigation' => $user ? $this->navigationFor($user) : [],
+                'impersonating' => $isImpersonating,
+                'original_user' => $originalUser ? [
+                    'id' => $originalUser->id,
+                    'name' => $originalUser->name,
+                    'email' => $originalUser->email,
+                ] : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -92,23 +103,23 @@ class HandleInertiaRequests extends Middleware
     {
         return match ($user->role?->name) {
             RoleEnum::TANK_ADMIN => [
-                ['title' => 'Visao geral', 'href' => route('admin.dashboard', absolute: false)],
+                ['title' => 'Visão geral', 'href' => route('admin.dashboard', absolute: false)],
                 ['title' => 'Escolas', 'href' => route('admin.schools.index', absolute: false)],
                 ['title' => 'Pontos de Ensino', 'href' => route('admin.point-of-schools.index', absolute: false)],
-                ['title' => 'Usuarios', 'href' => route('admin.users.index', absolute: false)],
+                ['title' => 'Usuários', 'href' => route('admin.users.index', absolute: false)],
             ],
             RoleEnum::OWNER => [
-                ['title' => 'Visao geral', 'href' => route('owner.dashboard', absolute: false)],
+                ['title' => 'Visão geral', 'href' => route('owner.dashboard', absolute: false)],
                 ['title' => 'Diretores', 'href' => route('owner.directors.index', absolute: false)],
             ],
             RoleEnum::DIRECTOR => [
-                ['title' => 'Visao geral', 'href' => route('director.dashboard', absolute: false)],
+                ['title' => 'Visão geral', 'href' => route('director.dashboard', absolute: false)],
                 ['title' => 'Turmas', 'href' => route('director.classrooms.index', absolute: false)],
                 ['title' => 'Professores', 'href' => route('director.teachers.index', absolute: false)],
                 ['title' => 'Alunos', 'href' => route('director.students.index', absolute: false)],
             ],
             RoleEnum::TEACHER => [
-                ['title' => 'Visao geral', 'href' => route('teacher.dashboard', absolute: false)],
+                ['title' => 'Visão geral', 'href' => route('teacher.dashboard', absolute: false)],
                 ['title' => 'Atividades', 'href' => route('teacher.activities.index', absolute: false)],
             ],
             RoleEnum::STUDENT => [
@@ -117,7 +128,7 @@ class HandleInertiaRequests extends Middleware
                 ['title' => 'Score Global', 'href' => route('student.score-global', absolute: false)],
             ],
             default => [
-                ['title' => 'Dashboard', 'href' => route('dashboard', absolute: false)],
+                ['title' => 'Visão geral', 'href' => route('dashboard', absolute: false)],
             ],
         };
     }

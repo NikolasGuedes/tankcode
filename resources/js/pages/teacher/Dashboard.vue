@@ -14,7 +14,7 @@ defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/teacher' },
+    { title: 'Visão geral', href: '/teacher' },
 ];
 
 const modules = [

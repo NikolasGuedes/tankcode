@@ -6,6 +6,9 @@ import {
     update as updateUser,
     updateAccess as updateUserAccess,
 } from '@/actions/App/Http/Controllers/Admin/UserController';
+import {
+    impersonate as impersonateUser,
+} from '@/actions/App/Http/Controllers/Admin/ImpersonationController';
 import AppTablePagination from '@/components/AppTablePagination.vue';
 import AppReveal from '@/components/AppReveal.vue';
 import { Button } from '@/components/ui/button';
@@ -26,7 +29,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle } from 'lucide-vue-next';
+import { CheckCircle2, Mail, Pencil, Plus, Trash2, XCircle, LogIn } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 type RoleOption = {
@@ -95,8 +98,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/admin' },
-    { title: 'Usuarios', href: '/admin/users' },
+    { title: 'Visão geral', href: '/admin' },
+    { title: 'Usuários', href: '/admin/users' },
 ];
 
 const userDialogOpen = ref(false);
@@ -319,6 +322,10 @@ const resendInvitation = (user: UserRow) => {
     );
 };
 
+const impersonate = (user: UserRow) => {
+    router.post(impersonateUser(user.id).url, {});
+};
+
 watch(
     () => [filtersForm.search, filtersForm.status, filtersForm.role, filtersForm.school_id],
     () => {
@@ -347,17 +354,17 @@ watch(
 </script>
 
 <template>
-    <Head title="Usuarios" />
+    <Head title="Usuários" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <section class="space-y-6 p-6">
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-                <h1 class="text-4xl font-semibold tracking-tight text-white">Usuarios</h1>
-                <p class="mt-2 text-lg text-white/70">Centralize acessos, papeis e distribuicao dos usuarios entre escolas e pontos de ensino.</p>
+                <h1 class="text-4xl font-semibold tracking-tight text-white">Usuários</h1>
+                <p class="mt-2 text-lg text-white/70">Centralize acessos, papéis e distribuição dos usuários entre escolas e pontos de ensino.</p>
 
                 <div class="mt-8 grid gap-4 md:grid-cols-5">
                     <div class="rounded-3xl border border-border bg-black/40 p-5">
-                        <p class="text-sm text-white/60">Usuarios</p>
+                        <p class="text-sm text-white/60">Usuários</p>
                         <p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.total }}</p>
                     </div>
                     <div class="rounded-3xl border border-border bg-black/40 p-5">
@@ -365,7 +372,7 @@ watch(
                         <p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.active }}</p>
                     </div>
                     <div class="rounded-3xl border border-border bg-black/40 p-5">
-                        <p class="text-sm text-white/60">Liderancas</p>
+                        <p class="text-sm text-white/60">Lideranças</p>
                         <p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.leaders }}</p>
                     </div>
                     <div class="rounded-3xl border border-border bg-black/40 p-5">
@@ -382,14 +389,14 @@ watch(
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-6 shadow-[0_20px_45px_rgba(0,0,0,0.25)]" :delay="0.08">
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-2xl font-semibold text-white">Usuarios cadastrados</h1>
+                        <h1 class="text-2xl font-semibold text-white">Usuários cadastrados</h1>
                         <p class="text-sm text-white/60">
-                            Gerencie validacao de e-mail, acesso a plataforma e vinculacao por escola dentro da plataforma.
+                            Gerencie validação de e-mail, acesso a plataforma e vinculação por escola dentro da plataforma.
                         </p>
                     </div>
                     <Button class="rounded-2xl" @click="openCreateDialog">
                         <Plus class="size-4" />
-                        Novo Usuario
+                        Novo Usuário
                     </Button>
                 </div>
 
@@ -436,13 +443,13 @@ watch(
                     <table class="min-w-full divide-y divide-border">
                         <thead>
                             <tr class="text-left text-sm text-secondary">
-                                <th class="pb-4 font-medium">Usuario</th>
+                                <th class="pb-4 font-medium">Usuário</th>
                                 <th class="pb-4 font-medium">Perfil</th>
                                 <th class="pb-4 font-medium">Escola</th>
                                 <th class="pb-4 font-medium">Unidades</th>
                                 <th class="pb-4 font-medium">E-mail validado</th>
                                 <th class="pb-4 font-medium">Acesso a plataforma</th>
-                                <th class="pb-4 font-medium">Ultimo acesso</th>
+                                <th class="pb-4 font-medium">Último acesso</th>
                                 <th class="pb-4 text-right font-medium">Ações</th>
                             </tr>
                         </thead>
@@ -496,6 +503,15 @@ watch(
                                         <Button
                                             variant="outline"
                                             size="icon-sm"
+                                            class="!border-blue-500/70 !bg-blue-500/15 !text-blue-200 hover:!border-blue-400 hover:!bg-blue-500/25 hover:!text-blue-100"
+                                            @click="impersonate(user)"
+                                            title="Entrar como este usuário"
+                                        >
+                                            <LogIn class="size-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon-sm"
                                             class="!border-primary !bg-primary !text-white hover:!border-[var(--primary-hover)] hover:!bg-[var(--primary-hover)] hover:!text-white"
                                             @click="openEditDialog(user)"
                                         >
@@ -535,9 +551,9 @@ watch(
     >
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader>
-                <DialogTitle>{{ selectedUser ? 'Editar Usuario' : 'Novo Usuario' }}</DialogTitle>
+                <DialogTitle>{{ selectedUser ? 'Editar Usuário' : 'Novo Usuário' }}</DialogTitle>
                 <DialogDescription class="text-white/60">
-                    Preencha os dados de acesso do usuario para manter o controle de perfis da plataforma.
+                    Preencha os dados de acesso do usuário para manter o controle de perfis da plataforma.
                 </DialogDescription>
             </DialogHeader>
 
@@ -596,7 +612,7 @@ watch(
                         </span>
                     </div>
                     <p class="text-xs text-white/55">
-                        {{ isStudentRole ? 'Usuarios do tipo Student podem ser vinculados a apenas um ponto de ensino.' : 'Selecione ao menos um ponto de ensino para este usuario.' }}
+                        {{ isStudentRole ? 'Usuários do tipo Student podem ser vinculados a apenas um ponto de ensino.' : 'Selecione ao menos um ponto de ensino para este usuário.' }}
                     </p>
 
                     <div
@@ -621,7 +637,7 @@ watch(
                         </template>
 
                         <div v-else class="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/50">
-                            Selecione uma escola para liberar os Pontos de Ensino disponiveis.
+                            Selecione uma escola para liberar os Pontos de Ensino disponíveis.
                         </div>
                     </div>
                 </div>
@@ -653,7 +669,7 @@ watch(
                         </Button>
                     </DialogClose>
                     <Button type="submit" :disabled="userForm.processing">
-                        {{ selectedUser ? 'Salvar alteracoes' : 'Criar usuario' }}
+                        {{ selectedUser ? 'Salvar alterações' : 'Criar usuário' }}
                     </Button>
                 </DialogFooter>
             </form>
@@ -676,7 +692,7 @@ watch(
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
                 <DialogDescription class="text-white/60">
-                    Esta operacao nao pode ser desfeita e ira remover os vinculos de unidades associados a
+                    Esta operação não pode ser desfeita e irá remover os vínculos de unidades associados a
                     <span class="font-semibold text-white">{{ selectedUser?.name }}</span>.
                 </DialogDescription>
             </DialogHeader>
@@ -693,7 +709,7 @@ watch(
                     </Button>
                 </DialogClose>
                 <Button type="button" variant="destructive" :disabled="deleteForm.processing" @click="submitDelete">
-                    Excluir usuario
+                    Excluir usuário
                 </Button>
             </DialogFooter>
         </DialogContent>

@@ -30,7 +30,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/owner' },
+    { title: 'Visão geral', href: '/owner' },
     { title: 'Diretores', href: '/owner/directors' },
     { title: props.director ? 'Editar Diretor' : 'Novo Diretor', href: props.director ? `/owner/directors/${props.director.id}/edit` : '/owner/directors/create' },
 ];
@@ -84,7 +84,7 @@ watch(
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h1 class="text-4xl font-semibold tracking-tight text-white">{{ props.director ? 'Editar Diretor' : 'Novo Diretor' }}</h1>
-                        <p class="mt-2 max-w-3xl text-lg text-white/70">Gerencie os dados do diretor em uma pagina dedicada, com mais conforto para revisar os pontos de ensino vinculados.</p>
+                        <p class="mt-2 max-w-3xl text-lg text-white/70">Gerencie os dados do diretor em uma página dedicada, com mais conforto para revisar os pontos de ensino vinculados.</p>
                     </div>
                     <Button as-child variant="outline" class="rounded-2xl border-white/10 bg-white/5 text-white hover:bg-white/10">
                         <a href="/owner/directors"><ArrowLeft class="size-4" />Voltar para Diretores</a>
@@ -152,7 +152,7 @@ watch(
                                 />
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate text-base font-semibold text-white">{{ point.name }}</p>
-                                    <p class="mt-1 text-sm text-white/50">Disponivel para vinculacao do diretor.</p>
+                                    <p class="mt-1 text-sm text-white/50">Disponível para vinculação do diretor.</p>
                                 </div>
                             </div>
                         </div>
@@ -162,7 +162,7 @@ watch(
                                 <a href="/owner/directors">Cancelar</a>
                             </Button>
                             <Button type="submit" :disabled="form.processing">
-                                {{ props.director ? 'Salvar alteracoes' : 'Criar diretor' }}
+                                {{ props.director ? 'Salvar alterações' : 'Criar diretor' }}
                             </Button>
                         </div>
                     </div>

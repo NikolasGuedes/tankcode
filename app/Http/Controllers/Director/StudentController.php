@@ -169,8 +169,8 @@ class StudentController extends Controller
         $data = $request->validate([
             'status' => ['required', 'string', 'in:active,inactive'],
         ], [
-            'status.required' => 'O status do aluno e obrigatorio.',
-            'status.in' => 'O status informado e invalido.',
+            'status.required' => 'O status do aluno é obrigatório.',
+            'status.in' => 'O status informado é inválido.',
         ]);
 
         $student->update([
@@ -185,7 +185,7 @@ class StudentController extends Controller
         abort_unless($this->canManageStudent($request->user(), $student), 404);
 
         if (! is_null($student->email_verified_at)) {
-            return back()->with('info', 'Este aluno ja ativou a conta e nao precisa de um novo convite.');
+            return back()->with('info', 'Este aluno já ativou a conta e não precisa de um novo convite.');
         }
 
         $invitationService->send($student);
@@ -210,7 +210,7 @@ class StudentController extends Controller
 
         if (! $this->pointBelongsToDirector($director, (int) $data['point_of_school_id'])) {
             return back()->withErrors([
-                'point_of_school_id' => 'Selecione um ponto de ensino disponivel para a diretoria.',
+                'point_of_school_id' => 'Selecione um ponto de ensino disponível para a diretoria.',
             ]);
         }
 
@@ -226,7 +226,7 @@ class StudentController extends Controller
 
         if (! $importPayload['valid_template']) {
             return back()->withErrors([
-                'file' => 'Use o template padrao com as colunas NOME e EMAIL.',
+                'file' => 'Use o template padrão com as colunas NOME e EMAIL.',
             ]);
         }
 
@@ -374,18 +374,18 @@ class StudentController extends Controller
 
         foreach ($rows as $row) {
             if ($row['name'] === '') {
-                $errors[] = "A linha {$row['line']} esta sem o nome do aluno.";
+                $errors[] = "A linha {$row['line']} está sem o nome do aluno.";
             }
 
             if ($row['email'] === '' || ! filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
-                $errors[] = "A linha {$row['line']} possui um e-mail invalido.";
+                $errors[] = "A linha {$row['line']} possui um e-mail inválido.";
                 continue;
             }
 
             $emailKey = Str::lower($row['email']);
 
             if (isset($seenEmails[$emailKey])) {
-                $errors[] = "O e-mail {$row['email']} esta duplicado no arquivo.";
+                $errors[] = "O e-mail {$row['email']} está duplicado no arquivo.";
                 continue;
             }
 
@@ -401,12 +401,12 @@ class StudentController extends Controller
             }
 
             if (! $existingUser->hasRole(RoleEnum::STUDENT) || $existingUser->school_id !== $director?->school_id) {
-                $errors[] = "O e-mail {$row['email']} ja esta em uso por outra conta do sistema.";
+                $errors[] = "O e-mail {$row['email']} já está em uso por outra conta do sistema.";
                 continue;
             }
 
             if (! $this->canManageStudent($director, $existingUser)) {
-                $errors[] = "O aluno com e-mail {$row['email']} nao pertence ao escopo desta diretoria.";
+                $errors[] = "O aluno com e-mail {$row['email']} não pertence ao escopo desta diretoria.";
             }
         }
 

@@ -11,16 +11,16 @@ import AppLogo from './AppLogo.vue';
 const page = usePage();
 
 const icons: Record<string, typeof LayoutGrid> = {
-    'Visao geral': LayoutGrid,
+    'Visão geral': LayoutGrid,
     Escolas: Blocks,
-    Organizacoes: Blocks,
+    Organizações: Blocks,
     'Pontos de Ensino': School,
-    Usuarios: UserRound,
+    Usuários: UserRound,
     'Minha escola': School,
     Diretoria: LayoutGrid,
     Professor: LayoutGrid,
     Aluno: LayoutGrid,
-    Dashboard: LayoutGrid,
+    Dashboard: LayoutGrid
 };
 
 const mainNavItems = computed<NavItem[]>(() =>
