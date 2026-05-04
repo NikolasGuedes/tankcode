@@ -14,6 +14,7 @@ const props = defineProps<{
         student_points: number;
         classroom_rank: number;
         point_rank: number;
+        school_rank: number;
     };
     classroom: {
         name: string;
@@ -77,6 +78,12 @@ const cards = computed(() => [
         description: props.point.name,
         icon: School,
     },
+    {
+        title: 'Escola',
+        value: `#${props.score.school_rank}`,
+        description: props.school.name,
+        icon: Medal,
+    },
 ]);
 
 const applyFilters = () => {
@@ -131,7 +138,7 @@ watch(
                     <School class="size-6 text-[#8f7bff]" />
                 </div>
 
-                <div class="mt-6 grid gap-3 md:grid-cols-3">
+                <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <div
                         v-for="card in cards"
                         :key="card.title"

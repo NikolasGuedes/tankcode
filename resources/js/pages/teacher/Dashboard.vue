@@ -35,19 +35,19 @@ type MonthlyActivityDatum = {
     value: number;
 };
 
-type MockMonthlySubmission = {
+type MonthlySubmissionMetric = {
     label: string;
     submitted: number;
     pending: number;
 };
 
-type MockStudent = {
+type RankedStudent = {
     name: string;
     points: number;
     performance: number;
 };
 
-type MockClassroomPerformance = {
+type ClassroomPerformanceMetric = {
     name: string;
     performance: number;
     completed: number;
@@ -61,6 +61,10 @@ type ClassroomSummary = {
     students: number;
     activities: number;
     availablePoints: number;
+    submitted: number;
+    pending: number;
+    completionRate: number;
+    performanceRate: number;
     status: string;
 };
 
@@ -87,18 +91,17 @@ const props = defineProps<{
         availablePoints: number;
         averagePointsPerActivity: number;
     };
-    mockMetrics: {
+    performanceMetrics: {
         averageCompletionRate: number;
         averagePerformance: number;
         submittedActivities: number;
         pendingSubmissions: number;
         completedSubmissions: number;
-        topStudent: string;
-        topClassroom: string;
-        topStudents: MockStudent[];
-        classroomPerformance: MockClassroomPerformance[];
-        monthlySubmissions: MockMonthlySubmission[];
-        monthlyPerformance: MonthlyActivityDatum[];
+        topStudent: string | null;
+        topClassroom: string | null;
+        topStudents: RankedStudent[];
+        classroomPerformance: ClassroomPerformanceMetric[];
+        monthlySubmissions: MonthlySubmissionMetric[];
         performanceDistribution: ChartDatum[];
     };
     charts: {
@@ -111,11 +114,6 @@ const props = defineProps<{
     classroomSummary: ClassroomSummary[];
     upcomingActivities: UpcomingActivity[];
     insights: string[];
-    futureMetrics: {
-        title: string;
-        description: string;
-        status: string;
-    }[];
 }>();
 
 const chartReady = ref(false);
@@ -151,22 +149,22 @@ const statusLabels: Record<ActivityStatus, string> = {
     published: 'Publicado',
 };
 
-const mockCards = computed(() => [
-    { label: 'Aproveitamento', value: `${props.mockMetrics.averagePerformance}%`, description: 'Media simulada', icon: Sparkles },
+const performanceCards = computed(() => [
+    { label: 'Aproveitamento', value: `${props.performanceMetrics.averagePerformance}%`, description: 'Media atual', icon: Sparkles },
     {
         label: 'Conclusao',
-        value: `${props.mockMetrics.averageCompletionRate}%`,
-        description: 'Taxa simulada',
+        value: `${props.performanceMetrics.averageCompletionRate}%`,
+        description: 'Taxa real',
         icon: CheckCircle2,
     },
-    { label: 'Entregas', value: props.mockMetrics.submittedActivities, description: 'Realizadas', icon: ClipboardList },
-    { label: 'Pendentes', value: props.mockMetrics.pendingSubmissions, description: 'Aguardando envio', icon: Clock3 },
-    { label: 'Melhor turma', value: props.mockMetrics.topClassroom || '-', description: 'Destaque simulado', icon: Trophy },
-    { label: 'Melhor aluno', value: props.mockMetrics.topStudent || '-', description: 'Pontuacao simulada', icon: Medal },
+    { label: 'Entregas', value: props.performanceMetrics.submittedActivities, description: 'Realizadas', icon: ClipboardList },
+    { label: 'Pendentes', value: props.performanceMetrics.pendingSubmissions, description: 'Aguardando envio', icon: Clock3 },
+    { label: 'Melhor turma', value: props.performanceMetrics.topClassroom || '-', description: 'Destaque atual', icon: Trophy },
+    { label: 'Melhor aluno', value: props.performanceMetrics.topStudent || '-', description: 'Maior score atual', icon: Medal },
 ]);
 
-const topMockCards = computed(() => mockCards.value.slice(0, 4));
-const highlightMockCards = computed(() => mockCards.value.slice(4));
+const topPerformanceCards = computed(() => performanceCards.value.slice(0, 4));
+const highlightPerformanceCards = computed(() => performanceCards.value.slice(4));
 
 const hasClassrooms = computed(() => props.realMetrics.classrooms > 0);
 const hasStatusData = computed(() => props.charts.activityStatus.some((item) => item.value > 0));
@@ -200,27 +198,27 @@ const studentsByClassroomSeries = computed(() => [
         data: props.charts.studentsByClassroom.map((item) => item.value),
     },
 ]);
-const performanceDistributionSeries = computed(() => props.mockMetrics.performanceDistribution.map((item) => item.value));
+const performanceDistributionSeries = computed(() => props.performanceMetrics.performanceDistribution.map((item) => item.value));
 const topStudentsSeries = computed(() => [
     {
         name: 'Pontos',
-        data: props.mockMetrics.topStudents.map((student) => student.points),
+        data: props.performanceMetrics.topStudents.map((student) => student.points),
     },
 ]);
 const classroomPerformanceSeries = computed(() => [
     {
         name: 'Desempenho',
-        data: props.mockMetrics.classroomPerformance.map((classroom) => classroom.performance),
+        data: props.performanceMetrics.classroomPerformance.map((classroom) => classroom.performance),
     },
 ]);
 const submissionsSeries = computed(() => [
     {
         name: 'Concluidas',
-        data: props.mockMetrics.monthlySubmissions.map((item) => item.submitted),
+        data: props.performanceMetrics.monthlySubmissions.map((item) => item.submitted),
     },
     {
         name: 'Pendentes',
-        data: props.mockMetrics.monthlySubmissions.map((item) => item.pending),
+        data: props.performanceMetrics.monthlySubmissions.map((item) => item.pending),
     },
 ]);
 const statusOptions = computed<ApexOptions>(() =>
@@ -372,8 +370,8 @@ const studentsByClassroomOptions = computed<ApexOptions>(() =>
 const performanceDistributionOptions = computed<ApexOptions>(() =>
     withBaseOptions({
         chart: { type: 'donut' },
-        labels: props.mockMetrics.performanceDistribution.map((item) => item.label),
-        colors: props.mockMetrics.performanceDistribution.map((item) => item.color ?? palette.purple),
+        labels: props.performanceMetrics.performanceDistribution.map((item) => item.label),
+        colors: props.performanceMetrics.performanceDistribution.map((item) => item.color ?? palette.purple),
         stroke: { width: 2, colors: [palette.panel] },
         dataLabels: {
             enabled: true,
@@ -398,7 +396,7 @@ const performanceDistributionOptions = computed<ApexOptions>(() =>
                             show: true,
                             label: 'Aproveit.',
                             color: palette.muted,
-                            formatter: () => `${props.mockMetrics.averagePerformance}%`,
+                            formatter: () => `${props.performanceMetrics.averagePerformance}%`,
                         },
                     },
                 },
@@ -419,7 +417,7 @@ const topStudentsOptions = computed<ApexOptions>(() =>
         },
         dataLabels: { enabled: false },
         xaxis: {
-            categories: props.mockMetrics.topStudents.map((student) => student.name),
+            categories: props.performanceMetrics.topStudents.map((student) => student.name),
             labels: axisLabelStyle(),
             axisBorder: { show: false },
             axisTicks: { show: false },
@@ -452,7 +450,7 @@ const classroomPerformanceOptions = computed<ApexOptions>(() =>
         xaxis: {
             min: 0,
             max: 100,
-            categories: props.mockMetrics.classroomPerformance.map((classroom) => classroom.name),
+            categories: props.performanceMetrics.classroomPerformance.map((classroom) => classroom.name),
             labels: {
                 ...axisLabelStyle(),
                 formatter: (value: string | number) => `${Math.round(Number(value))}%`,
@@ -476,7 +474,7 @@ const submissionsOptions = computed<ApexOptions>(() =>
         },
         dataLabels: { enabled: false },
         xaxis: {
-            categories: props.mockMetrics.monthlySubmissions.map((item) => item.label),
+            categories: props.performanceMetrics.monthlySubmissions.map((item) => item.label),
             labels: axisLabelStyle(),
             axisBorder: { show: false },
             axisTicks: { show: false },
@@ -572,9 +570,6 @@ function formatNumber(value: string | number): string {
                         <span class="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300"
                             >Dados reais</span
                         >
-                        <span class="rounded-full border border-secondary/30 bg-secondary/10 px-4 py-2 text-sm font-medium text-secondary"
-                            >Metricas simuladas</span
-                        >
                     </div>
                 </div>
             </AppReveal>
@@ -587,10 +582,10 @@ function formatNumber(value: string | number): string {
                     <div class="mb-4 flex items-start justify-between gap-4">
                         <div class="min-w-0">
                             <h2 class="text-xl font-semibold text-white sm:text-2xl">Faixa de desempenho</h2>
-                            <p class="mt-1 text-sm text-white/55">Simulacao de aproveitamento.</p>
+                            <p class="mt-1 text-sm text-white/55">Distribuição real de performance das turmas.</p>
                         </div>
-                        <span class="shrink-0 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary"
-                            >Simulado</span
+                        <span class="shrink-0 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300"
+                            >Real</span
                         >
                     </div>
 
@@ -604,7 +599,7 @@ function formatNumber(value: string | number): string {
                         />
                         <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                             <div
-                                v-for="item in props.mockMetrics.performanceDistribution"
+                                v-for="item in props.performanceMetrics.performanceDistribution"
                                 :key="item.label"
                                 class="rounded-2xl border border-white/10 bg-black/20 p-3"
                             >
@@ -622,14 +617,14 @@ function formatNumber(value: string | number): string {
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <AppReveal
-                        v-for="card in topMockCards"
+                        v-for="card in topPerformanceCards"
                         :key="card.label"
                         class-name="rounded-[1.5rem] border border-secondary/20 bg-card p-5 shadow-[0_18px_38px_rgba(88,28,135,0.16)]"
                         :delay="0.05"
                     >
                         <div class="mb-4 flex items-center justify-between gap-3">
-                            <span class="rounded-full border border-secondary/30 bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-secondary"
-                                >Simulado</span
+                            <span class="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300"
+                                >Real</span
                             >
                             <component :is="card.icon" class="size-9 rounded-2xl bg-primary/15 p-2 text-secondary" />
                         </div>
@@ -647,8 +642,7 @@ function formatNumber(value: string | number): string {
                 <GraduationCap class="mx-auto size-12 text-secondary" />
                 <h2 class="mt-4 text-2xl font-semibold text-white">Voce ainda nao possui turmas vinculadas</h2>
                 <p class="mx-auto mt-2 max-w-2xl text-white/60">
-                    Quando suas turmas forem atribuidas, este dashboard exibira alunos, atividades, questoes, pontos disponiveis e indicadores
-                    simulados das metricas futuras.
+                    Quando suas turmas forem atribuidas, este dashboard exibira alunos, atividades, entregas, score e indicadores de desempenho em tempo real.
                 </p>
             </div>
 
@@ -783,22 +777,19 @@ function formatNumber(value: string | number): string {
             <section class="space-y-5 pt-2">
                 <div>
                     <p class="text-sm font-semibold tracking-[0.22em] text-secondary uppercase">Alunos e desempenho</p>
-                    <h2 class="mt-2 text-2xl font-semibold text-white sm:text-3xl">Rankings simulados e turmas</h2>
+                    <h2 class="mt-2 text-2xl font-semibold text-white sm:text-3xl">Rankings e turmas</h2>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <AppReveal
-                        v-for="card in highlightMockCards"
+                        v-for="card in highlightPerformanceCards"
                         :key="card.label"
                         class-name="rounded-[1.5rem] border border-secondary/20 bg-[linear-gradient(135deg,rgba(139,92,246,0.15),rgba(10,10,16,0.94))] p-5 shadow-[0_18px_38px_rgba(88,28,135,0.16)]"
                         :delay="0.12"
                     >
                         <div class="flex items-start justify-between gap-4">
                             <div class="min-w-0">
-                                <span
-                                    class="rounded-full border border-secondary/30 bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-secondary"
-                                    >Simulado</span
-                                >
+                                <span class="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">Real</span>
                                 <p class="mt-4 text-sm text-white/55">{{ card.label }}</p>
                                 <p class="mt-2 truncate text-2xl font-semibold text-white">{{ card.value }}</p>
                                 <p class="mt-2 text-sm text-white/45">{{ card.description }}</p>
@@ -816,12 +807,9 @@ function formatNumber(value: string | number): string {
                         <div class="mb-5 flex items-start justify-between gap-4">
                             <div class="min-w-0">
                                 <h2 class="text-xl font-semibold text-white sm:text-2xl">Ranking de alunos</h2>
-                                <p class="text-sm text-white/55">Pontuacao simulada.</p>
+                                <p class="text-sm text-white/55">Pontuação acumulada pelas submissões reais.</p>
                             </div>
-                            <span
-                                class="shrink-0 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary"
-                                >Simulado</span
-                            >
+                            <span class="shrink-0 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">Real</span>
                         </div>
                         <VueApexCharts v-if="chartReady" type="bar" height="300" :options="topStudentsOptions" :series="topStudentsSeries" />
                     </AppReveal>
@@ -833,12 +821,9 @@ function formatNumber(value: string | number): string {
                         <div class="mb-5 flex items-start justify-between gap-4">
                             <div class="min-w-0">
                                 <h2 class="text-xl font-semibold text-white sm:text-2xl">Desempenho por turma</h2>
-                                <p class="text-sm text-white/55">Aproveitamento simulado.</p>
+                                <p class="text-sm text-white/55">Aproveitamento médio por turma.</p>
                             </div>
-                            <span
-                                class="shrink-0 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary"
-                                >Simulado</span
-                            >
+                            <span class="shrink-0 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">Real</span>
                         </div>
                         <VueApexCharts
                             v-if="chartReady"
@@ -889,10 +874,7 @@ function formatNumber(value: string | number): string {
                                 <h2 class="text-xl font-semibold text-white sm:text-2xl">Entregas por mes</h2>
                                 <p class="text-sm text-white/55">Concluidas x pendentes.</p>
                             </div>
-                            <span
-                                class="shrink-0 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1 text-xs font-semibold text-secondary"
-                                >Simulado</span
-                            >
+                            <span class="shrink-0 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">Real</span>
                         </div>
                         <VueApexCharts v-if="chartReady" type="bar" height="310" :options="submissionsOptions" :series="submissionsSeries" />
                     </AppReveal>
@@ -910,7 +892,7 @@ function formatNumber(value: string | number): string {
                         <div class="mb-6 flex items-center justify-between gap-4">
                             <div>
                                 <h2 class="text-xl font-semibold text-white sm:text-2xl">Resumo por turma</h2>
-                                <p class="text-sm text-white/55">Alunos, atividades e pontos.</p>
+                                <p class="text-sm text-white/55">Alunos, entregas, pendências e aproveitamento.</p>
                             </div>
                             <span class="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300"
                                 >Real</span
@@ -923,7 +905,9 @@ function formatNumber(value: string | number): string {
                                         <th class="pb-4 font-medium">Turma</th>
                                         <th class="pb-4 font-medium">Alunos</th>
                                         <th class="pb-4 font-medium">Atividades</th>
-                                        <th class="pb-4 font-medium">Pontos</th>
+                                        <th class="pb-4 font-medium">Entregas</th>
+                                        <th class="pb-4 font-medium">Conclusão</th>
+                                        <th class="pb-4 font-medium">Aproveitamento</th>
                                         <th class="pb-4 font-medium">Status</th>
                                     </tr>
                                 </thead>
@@ -935,7 +919,9 @@ function formatNumber(value: string | number): string {
                                         </td>
                                         <td class="py-4 pr-6">{{ classroom.students }}</td>
                                         <td class="py-4 pr-6">{{ classroom.activities }}</td>
-                                        <td class="py-4 pr-6">{{ formatNumber(classroom.availablePoints) }}</td>
+                                        <td class="py-4 pr-6">{{ classroom.submitted }} / {{ classroom.submitted + classroom.pending }}</td>
+                                        <td class="py-4 pr-6">{{ classroom.completionRate }}%</td>
+                                        <td class="py-4 pr-6">{{ classroom.performanceRate }}%</td>
                                         <td class="py-4 pr-6">
                                             <span
                                                 class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70"
@@ -944,7 +930,7 @@ function formatNumber(value: string | number): string {
                                         </td>
                                     </tr>
                                     <tr v-if="props.classroomSummary.length === 0">
-                                        <td colspan="5" class="py-12 text-center text-white/55">Nenhuma turma encontrada para o contexto atual.</td>
+                                        <td colspan="7" class="py-12 text-center text-white/55">Nenhuma turma encontrada para o contexto atual.</td>
                                     </tr>
                                 </tbody>
                             </table>

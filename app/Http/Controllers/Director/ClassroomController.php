@@ -10,6 +10,7 @@ use App\Http\Requests\Director\UpdateClassroomRequest;
 use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\User;
+use App\Support\PerformanceMetricsRebuilder;
 use App\Support\PointOfSchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -102,7 +103,7 @@ class ClassroomController extends Controller
         ]);
     }
 
-    public function store(StoreClassroomRequest $request): RedirectResponse
+    public function store(StoreClassroomRequest $request, PerformanceMetricsRebuilder $metricsRebuilder): RedirectResponse
     {
         $director = $request->user();
         $data = $request->validated();
@@ -113,10 +114,18 @@ class ClassroomController extends Controller
         $classroom = Classroom::query()->create($data);
         $classroom->students()->sync($studentIds);
 
+        if ($director?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $director->school_id);
+        }
+
         return to_route('director.classrooms.index')->with('success', 'Turma criada com sucesso.');
     }
 
-    public function update(UpdateClassroomRequest $request, Classroom $classroom): RedirectResponse
+    public function update(
+        UpdateClassroomRequest $request,
+        Classroom $classroom,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         abort_unless($this->canManageClassroom($request->user(), $classroom), 404);
 
@@ -127,15 +136,24 @@ class ClassroomController extends Controller
         $classroom->update($data);
         $classroom->students()->sync($studentIds);
 
+        if ($request->user()?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $request->user()->school_id);
+        }
+
         return to_route('director.classrooms.index')->with('success', 'Turma atualizada com sucesso.');
     }
 
-    public function destroy(Classroom $classroom): RedirectResponse
+    public function destroy(Classroom $classroom, PerformanceMetricsRebuilder $metricsRebuilder): RedirectResponse
     {
         abort_unless($this->canManageClassroom(request()->user(), $classroom), 404);
 
+        $schoolId = $classroom->school_id;
         $classroom->students()->detach();
         $classroom->delete();
+
+        if ($schoolId) {
+            $metricsRebuilder->rebuildSchool((int) $schoolId);
+        }
 
         return to_route('director.classrooms.index')->with('success', 'Turma removida com sucesso.');
     }

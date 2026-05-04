@@ -18,7 +18,13 @@ const currentPath = computed(() => page.url.split('?')[0]);
 
 const normalizedCurrentPath = computed(() => (currentPath.value === '/student' ? '/student/minha-sala' : currentPath.value));
 
-const isActive = (href: string) => href === normalizedCurrentPath.value || href.startsWith(`${normalizedCurrentPath.value}#`);
+const isActive = (href: string) => {
+    if (href === '/student/minha-sala' && normalizedCurrentPath.value.startsWith('/student/atividades/')) {
+        return true;
+    }
+
+    return href === normalizedCurrentPath.value || href.startsWith(`${normalizedCurrentPath.value}#`);
+};
 </script>
 
 <template>

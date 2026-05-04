@@ -39,4 +39,19 @@ class PointOfSchool extends Model
     {
         return $this->hasMany(Classroom::class);
     }
+
+    public function studentClassroomPerformances(): HasMany
+    {
+        return $this->hasMany(StudentClassroomPerformance::class);
+    }
+
+    public function teacherClassroomMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherClassroomMetric::class);
+    }
+
+    public function teacherMonthlyMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherMonthlyMetric::class);
+    }
 }

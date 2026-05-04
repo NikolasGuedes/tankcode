@@ -11,6 +11,7 @@ use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\PerformanceMetricsRebuilder;
 use App\Support\PointOfSchoolContext;
 use App\Support\UserInvitationService;
 use Illuminate\Http\UploadedFile;
@@ -100,7 +101,11 @@ class StudentController extends Controller
         ]);
     }
 
-    public function store(StoreStudentRequest $request, UserInvitationService $invitationService): RedirectResponse
+    public function store(
+        StoreStudentRequest $request,
+        UserInvitationService $invitationService,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         $director = $request->user();
         $roleId = Role::query()->where('name', RoleEnum::STUDENT->value)->value('id');
@@ -125,10 +130,18 @@ class StudentController extends Controller
 
         $invitationService->send($student);
 
+        if ($director?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $director->school_id);
+        }
+
         return to_route('director.students.index')->with('success', 'Aluno criado com sucesso e convite enviado por e-mail.');
     }
 
-    public function update(UpdateStudentRequest $request, User $student): RedirectResponse
+    public function update(
+        UpdateStudentRequest $request,
+        User $student,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         abort_unless($this->canManageStudent($request->user(), $student), 404);
 
@@ -148,16 +161,25 @@ class StudentController extends Controller
             ],
         ]);
 
+        if ($request->user()?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $request->user()->school_id);
+        }
+
         return to_route('director.students.index')->with('success', 'Aluno atualizado com sucesso.');
     }
 
-    public function destroy(User $student): RedirectResponse
+    public function destroy(User $student, PerformanceMetricsRebuilder $metricsRebuilder): RedirectResponse
     {
         abort_unless($this->canManageStudent(request()->user(), $student), 404);
 
+        $schoolId = $student->school_id;
         $student->pointOfSchools()->detach();
         $student->classrooms()->detach();
         $student->delete();
+
+        if ($schoolId) {
+            $metricsRebuilder->rebuildSchool((int) $schoolId);
+        }
 
         return to_route('director.students.index')->with('success', 'Aluno removido com sucesso.');
     }
@@ -193,7 +215,11 @@ class StudentController extends Controller
         return back()->with('success', 'Convite de primeiro acesso reenviado para o aluno.');
     }
 
-    public function importStudents(Request $request, UserInvitationService $invitationService): RedirectResponse
+    public function importStudents(
+        Request $request,
+        UserInvitationService $invitationService,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         $director = $request->user();
 
@@ -290,6 +316,10 @@ class StudentController extends Controller
                 $student->classrooms()->sync([$classroomId]);
             }
         });
+
+        if ($director?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $director->school_id);
+        }
 
         $parts = [];
 

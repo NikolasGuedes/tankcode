@@ -3,11 +3,15 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
+use App\Models\Activity;
+use App\Models\ActivitySubmission;
+use App\Models\ActivitySubmissionAnswer;
 use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\School;
 use App\Models\User;
+use App\Support\PerformanceMetricsRebuilder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -194,6 +198,9 @@ class SchoolDemoSeeder extends Seeder
         ])->save());
 
         $classrooms->each(fn (Classroom $classroom) => $classroom->touch());
+        $this->seedActivities($classrooms, $students);
+
+        app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
     }
 
     private function createUser(int $roleId, int $schoolId, string $name, string $email): User
@@ -230,5 +237,189 @@ class SchoolDemoSeeder extends Seeder
     private function normalizeDigits(string $value): string
     {
         return preg_replace('/\D+/', '', $value) ?? $value;
+    }
+
+    private function seedActivities($classrooms, $students): void
+    {
+        $classrooms->each(function (Classroom $classroom): void {
+            if ($classroom->code === 'GAMA-01') {
+                $this->upsertActivity($classroom, [
+                    'title' => 'Desafio de logica',
+                    'description' => 'Resolva os exercicios introdutorios enviados para a Turma Gama.',
+                    'level' => 'facil',
+                    'questions_count' => 1,
+                    'points_per_question' => 1,
+                    'total_points' => 1,
+                    'due_date' => today(),
+                    'status' => 'published',
+                ], [
+                    [
+                        'type' => 'multiple_choice',
+                        'statement' => 'Qual estrutura guarda uma sequência de instruções?',
+                        'correct_option' => 'B',
+                        'options' => [
+                            'A' => 'Mouse',
+                            'B' => 'Algoritmo',
+                            'C' => 'Monitor',
+                            'D' => 'Teclado',
+                        ],
+                    ],
+                ]);
+
+                $this->upsertActivity($classroom, [
+                    'title' => 'Quiz de programação',
+                    'description' => 'Responda ao quiz e revise os conceitos vistos nesta semana.',
+                    'level' => 'media',
+                    'questions_count' => 1,
+                    'points_per_question' => 2.5,
+                    'total_points' => 2.5,
+                    'due_date' => today()->addDays(4),
+                    'status' => 'published',
+                ], [
+                    [
+                        'type' => 'drag_drop',
+                        'statement' => 'Complete: HTML define a [blank_1] e CSS define o [blank_2].',
+                        'keywords' => ['estrutura', 'estilo'],
+                        'blank_answers' => [
+                            'blank_1' => 0,
+                            'blank_2' => 1,
+                        ],
+                    ],
+                ]);
+
+                $this->upsertActivity($classroom, [
+                    'title' => 'Mini projeto em dupla',
+                    'description' => 'Planeje a entrega do prototipo com sua dupla e registre a evolução.',
+                    'level' => 'dificil',
+                    'questions_count' => 1,
+                    'points_per_question' => 4,
+                    'total_points' => 4,
+                    'due_date' => today()->addDays(9),
+                    'status' => 'published',
+                ], [
+                    [
+                        'type' => 'matching',
+                        'statement' => 'Relacione os conceitos aos seus significados.',
+                        'left_column' => ['Variavel', 'Loop'],
+                        'right_column' => ['Repetição', 'Armazena um valor'],
+                        'pairs' => [
+                            '0' => '1',
+                            '1' => '0',
+                        ],
+                    ],
+                ]);
+
+                $this->upsertActivity($classroom, [
+                    'title' => 'Rascunho interno da turma',
+                    'description' => 'Esta atividade deve permanecer oculta para os alunos.',
+                    'level' => 'facil',
+                    'questions_count' => 1,
+                    'points_per_question' => 1,
+                    'total_points' => 1,
+                    'due_date' => today()->addDays(2),
+                    'status' => 'draft',
+                ], [
+                    [
+                        'type' => 'multiple_choice',
+                        'statement' => 'Questao em rascunho.',
+                        'correct_option' => 'A',
+                        'options' => [
+                            'A' => 'Resposta correta',
+                            'B' => 'Distrator 1',
+                            'C' => 'Distrator 2',
+                            'D' => 'Distrator 3',
+                        ],
+                    ],
+                ]);
+            }
+        });
+
+        $this->seedExampleSubmission($classrooms, $students);
+    }
+
+    private function upsertActivity(Classroom $classroom, array $activityData, array $questions): void
+    {
+        $activity = Activity::query()->updateOrCreate(
+            [
+                'classroom_id' => $classroom->id,
+                'title' => $activityData['title'],
+            ],
+            [
+                ...$activityData,
+                'teacher_id' => $classroom->teacher_id,
+            ],
+        );
+
+        $activity->questions()->delete();
+
+        collect($questions)->values()->each(function (array $question, int $index) use ($activity): void {
+            $activity->questions()->create([
+                'type' => $question['type'],
+                'statement' => $question['statement'],
+                'order' => $index + 1,
+                'correct_option' => $question['correct_option'] ?? null,
+                'options' => $question['options'] ?? null,
+                'keywords' => $question['keywords'] ?? null,
+                'blank_answers' => $question['blank_answers'] ?? null,
+                'left_column' => $question['left_column'] ?? null,
+                'right_column' => $question['right_column'] ?? null,
+                'pairs' => $question['pairs'] ?? null,
+            ]);
+        });
+    }
+
+    private function seedExampleSubmission($classrooms, $students): void
+    {
+        $classroom = $classrooms->firstWhere('code', 'GAMA-01');
+        $student = $students->firstWhere('email', 'laura.alves@escola.local');
+
+        if (! $classroom || ! $student) {
+            return;
+        }
+
+        $activity = Activity::query()
+            ->where('classroom_id', $classroom->id)
+            ->where('title', 'Desafio de logica')
+            ->with('questions')
+            ->first();
+
+        if (! $activity || $activity->questions->isEmpty()) {
+            return;
+        }
+
+        $submission = ActivitySubmission::query()->updateOrCreate(
+            [
+                'activity_id' => $activity->id,
+                'student_id' => $student->id,
+            ],
+            [
+                'classroom_id' => $classroom->id,
+                'status' => 'submitted',
+                'submitted_at' => now()->subHours(5),
+                'score' => $activity->total_points,
+                'total_points' => $activity->total_points,
+                'correct_answers_count' => $activity->questions->count(),
+            ],
+        );
+
+        $question = $activity->questions->first();
+
+        if (! $question) {
+            return;
+        }
+
+        ActivitySubmissionAnswer::query()->updateOrCreate(
+            [
+                'activity_submission_id' => $submission->id,
+                'activity_question_id' => $question->id,
+            ],
+            [
+                'answer_payload' => [
+                    'selected_option' => $question->correct_option,
+                ],
+                'is_correct' => true,
+                'earned_points' => $activity->points_per_question,
+            ],
+        );
     }
 }

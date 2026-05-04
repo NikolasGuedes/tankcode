@@ -3,11 +3,19 @@
 use App\Enums\RoleEnum;
 use App\Models\Activity;
 use App\Models\ActivityQuestion;
+use App\Models\ActivitySubmission;
+use App\Models\ActivitySubmissionAnswer;
 use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\School;
+use App\Models\StudentClassroomPerformance;
+use App\Models\TeacherClassroomMetric;
+use App\Models\TeacherMonthlyMetric;
 use App\Models\User;
+use App\Support\PerformanceMetricsRebuilder;
+use Illuminate\Support\Facades\Artisan;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function teacherActivityScope(): array
 {
@@ -150,6 +158,31 @@ function createActivityForTeacher(User $teacher, Classroom $classroom, array $qu
     ]));
 
     return $activity;
+}
+
+function attachStudentToTeacherClassroom(School $school, PointOfSchool $point, Classroom $classroom, string $name, string $email): User
+{
+    $studentRole = Role::query()->firstOrCreate(
+        ['name' => RoleEnum::STUDENT->value],
+        ['label' => RoleEnum::STUDENT->label()],
+    );
+
+    $student = User::factory()->create([
+        'role_id' => $studentRole->id,
+        'school_id' => $school->id,
+        'name' => $name,
+        'email' => $email,
+    ]);
+
+    $student->pointOfSchools()->attach($point->id, [
+        'title' => RoleEnum::STUDENT->label(),
+        'is_primary' => true,
+        'status' => 'active',
+    ]);
+
+    $classroom->students()->syncWithoutDetaching([$student->id]);
+
+    return $student;
 }
 
 test('cria atividade com multipla escolha e calcula pontos corretamente', function () {
@@ -300,4 +333,124 @@ test('professor nao consegue editar ou excluir atividade de outro professor fora
     $activity->refresh();
 
     expect($activity->title)->toBe('Atividade antiga');
+});
+
+test('dashboard do professor exibe metricas reais apos submissao de aluno', function () {
+    ['teacher' => $teacher, 'classroom' => $classroom, 'school' => $school, 'point' => $point] = teacherActivityScope();
+
+    $firstStudent = attachStudentToTeacherClassroom($school, $point, $classroom, 'Aluno Um', 'aluno1@escola.local');
+    attachStudentToTeacherClassroom($school, $point, $classroom, 'Aluno Dois', 'aluno2@escola.local');
+
+    $activity = createActivityForTeacher($teacher, $classroom);
+    $activity->update([
+        'status' => 'published',
+        'due_date' => now()->addDays(2)->toDateString(),
+    ]);
+
+    $submission = ActivitySubmission::query()->create([
+        'activity_id' => $activity->id,
+        'student_id' => $firstStudent->id,
+        'classroom_id' => $classroom->id,
+        'status' => 'submitted',
+        'submitted_at' => now(),
+        'score' => 1,
+        'total_points' => 1,
+        'correct_answers_count' => 1,
+    ]);
+
+    ActivitySubmissionAnswer::query()->create([
+        'activity_submission_id' => $submission->id,
+        'activity_question_id' => $activity->questions()->firstOrFail()->id,
+        'answer_payload' => ['selected_option' => 'A'],
+        'is_correct' => true,
+        'earned_points' => 1,
+    ]);
+
+    app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
+
+    $this->actingAs($teacher)
+        ->get(route('teacher.metrics'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('teacher/Dashboard')
+            ->where('performanceMetrics.submittedActivities', 1)
+            ->where('performanceMetrics.pendingSubmissions', 1)
+            ->where('performanceMetrics.averageCompletionRate', 50.0)
+            ->where('performanceMetrics.averagePerformance', 100.0)
+            ->where('performanceMetrics.topStudent', 'Aluno Um')
+            ->where('performanceMetrics.topClassroom', $classroom->name)
+            ->where('classroomSummary.0.submitted', 1)
+            ->where('classroomSummary.0.pending', 1)
+        );
+});
+
+test('criacao de atividade publicada atualiza metricas agregadas do professor', function () {
+    ['teacher' => $teacher, 'classroom' => $classroom, 'school' => $school, 'point' => $point] = teacherActivityScope();
+
+    attachStudentToTeacherClassroom($school, $point, $classroom, 'Aluno Um', 'aluno3@escola.local');
+    attachStudentToTeacherClassroom($school, $point, $classroom, 'Aluno Dois', 'aluno4@escola.local');
+
+    $this->actingAs($teacher)->post(route('teacher.activities.store'), validActivityPayload([
+        'classroom_id' => $classroom->id,
+        'status' => 'published',
+    ]))->assertRedirect(route('teacher.activities.index'));
+
+    $metric = TeacherClassroomMetric::query()
+        ->where('teacher_id', $teacher->id)
+        ->where('classroom_id', $classroom->id)
+        ->firstOrFail();
+
+    expect((int) $metric->published_activities_count)->toBe(1)
+        ->and((int) $metric->expected_submissions_count)->toBe(2)
+        ->and((int) $metric->pending_submissions_count)->toBe(2);
+});
+
+test('comando de recalculo reconstrói scores e metricas derivadas', function () {
+    ['teacher' => $teacher, 'classroom' => $classroom, 'school' => $school, 'point' => $point] = teacherActivityScope();
+
+    $student = attachStudentToTeacherClassroom($school, $point, $classroom, 'Aluno Tres', 'aluno5@escola.local');
+    $activity = createActivityForTeacher($teacher, $classroom);
+    $activity->update([
+        'status' => 'published',
+        'due_date' => now()->addDays(3)->toDateString(),
+    ]);
+
+    $submission = ActivitySubmission::query()->create([
+        'activity_id' => $activity->id,
+        'student_id' => $student->id,
+        'classroom_id' => $classroom->id,
+        'status' => 'submitted',
+        'submitted_at' => now(),
+        'score' => 1,
+        'total_points' => 1,
+        'correct_answers_count' => 1,
+    ]);
+
+    ActivitySubmissionAnswer::query()->create([
+        'activity_submission_id' => $submission->id,
+        'activity_question_id' => $activity->questions()->firstOrFail()->id,
+        'answer_payload' => ['selected_option' => 'A'],
+        'is_correct' => true,
+        'earned_points' => 1,
+    ]);
+
+    expect(StudentClassroomPerformance::query()->count())->toBe(0)
+        ->and(TeacherClassroomMetric::query()->count())->toBe(0)
+        ->and(TeacherMonthlyMetric::query()->count())->toBe(0);
+
+    Artisan::call('metrics:recalculate', ['--school_id' => $school->id]);
+
+    $performance = StudentClassroomPerformance::query()
+        ->where('student_id', $student->id)
+        ->where('classroom_id', $classroom->id)
+        ->firstOrFail();
+    $metric = TeacherClassroomMetric::query()
+        ->where('teacher_id', $teacher->id)
+        ->where('classroom_id', $classroom->id)
+        ->firstOrFail();
+
+    expect((float) $performance->total_score)->toBe(1.0)
+        ->and((int) $performance->submitted_activities_count)->toBe(1)
+        ->and((int) $metric->submitted_submissions_count)->toBe(1)
+        ->and(TeacherMonthlyMetric::query()->where('teacher_id', $teacher->id)->exists())->toBeTrue();
 });

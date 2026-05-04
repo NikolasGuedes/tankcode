@@ -18,12 +18,17 @@ const props = defineProps<{
         classroom_rank: number;
     };
     activities: Array<{
-        id: string;
+        id: number;
         title: string;
         description: string;
+        due_date: string | null;
         deadline_label: string;
         deadline_group: string;
-        status: string;
+        state: 'pendente' | 'vence_hoje' | 'vence_semana' | 'atrasada' | 'respondida';
+        href: string;
+        submitted_at: string | null;
+        score: string | null;
+        total_points: string | number;
     }>;
     classmates: Array<{
         id: number;
@@ -45,12 +50,19 @@ const activityFilters = computed(() => {
     }));
 });
 
-const deadlineClass = (status: string) => {
-    if (status === 'urgent') return 'border-rose-200/70 bg-rose-500/35 text-white shadow-[0_0_0_1px_rgba(251,191,191,0.12)]';
-    if (status === 'warning') return 'border-amber-200/70 bg-amber-400/35 text-white shadow-[0_0_0_1px_rgba(253,230,138,0.12)]';
+const deadlineClass = (state: string) => {
+    if (state === 'atrasada' || state === 'vence_hoje') return 'border-rose-200/70 bg-rose-500/35 text-white shadow-[0_0_0_1px_rgba(251,191,191,0.12)]';
+    if (state === 'vence_semana') return 'border-amber-200/70 bg-amber-400/35 text-white shadow-[0_0_0_1px_rgba(253,230,138,0.12)]';
+    if (state === 'respondida') return 'border-emerald-200/70 bg-emerald-500/35 text-white shadow-[0_0_0_1px_rgba(167,243,208,0.12)]';
 
     return 'border-white/35 bg-[#5a48ff]/45 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)]';
 };
+
+const formatPoints = (value: string | number | null) =>
+    Number(value ?? 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 </script>
 
 <template>
@@ -90,7 +102,7 @@ const deadlineClass = (status: string) => {
                         <div class="flex items-start gap-3">
                             <span
                                 class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.01em]"
-                                :class="deadlineClass(activity.status)"
+                                :class="deadlineClass(activity.state)"
                             >
                                 {{ activity.deadline_label }}
                             </span>
@@ -104,21 +116,30 @@ const deadlineClass = (status: string) => {
                             <span class="font-medium text-[#d9d2ff]">{{ classroom.code }}</span>
                         </div>
 
+                        <div class="mt-4 flex items-center justify-between text-sm">
+                            <span class="text-white/55">Valor total</span>
+                            <span class="font-medium text-[#d9d2ff]">{{ formatPoints(activity.total_points) }} pts</span>
+                        </div>
+
+                        <div v-if="activity.score !== null" class="mt-2 flex items-center justify-between text-sm">
+                            <span class="text-emerald-200/80">Sua nota</span>
+                            <span class="font-medium text-emerald-200">{{ formatPoints(activity.score) }} pts</span>
+                        </div>
+
                         <div class="mt-6 flex items-center justify-between gap-3">
                             <span class="text-sm text-white/50 transition group-hover:text-white/70">Abrir atividade</span>
-                            <Button
-                                type="button"
-                                class="border-[var(--primary)]/40 bg-[var(--secondary)] text-white transition"
-                            >
-                                Ver detalhes
-                                <ArrowUpRight class="size-4" />
+                            <Button as-child class="border-[var(--primary)]/40 bg-[var(--secondary)] text-white transition">
+                                <Link :href="activity.href">
+                                    Ver detalhes
+                                    <ArrowUpRight class="size-4" />
+                                </Link>
                             </Button>
                         </div>
                     </article>
                 </div>
 
-                <div class="mt-6 rounded-[1.5rem] border border-dashed border-white/12 bg-white/4 px-5 py-4 text-sm text-white/60">
-                    Prazo em destaque para ajudar o aluno a priorizar entregas urgentes. Os dados ainda estão mockados nesta etapa.
+                <div v-if="!activities.length" class="mt-6 rounded-[1.5rem] border border-dashed border-white/12 bg-white/4 px-5 py-10 text-center text-sm text-white/60">
+                    Nenhuma atividade publicada foi encontrada para esta turma no momento.
                 </div>
             </AppReveal>
         </section>

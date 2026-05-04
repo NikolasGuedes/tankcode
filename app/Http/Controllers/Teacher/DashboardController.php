@@ -6,6 +6,9 @@ use App\Enums\ActivityLevelEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Classroom;
+use App\Models\StudentClassroomPerformance;
+use App\Models\TeacherClassroomMetric;
+use App\Models\TeacherMonthlyMetric;
 use App\Support\PointOfSchoolContext;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -34,6 +37,21 @@ class DashboardController extends Controller
             ->with('classroom:id,name')
             ->latest()
             ->get();
+        $classroomMetrics = TeacherClassroomMetric::query()
+            ->with(['classroom:id,name,code,status', 'topStudent:id,name'])
+            ->where('teacher_id', $teacher?->id)
+            ->whereIn('classroom_id', $classroomIds)
+            ->whereIn('point_of_school_id', $pointIds)
+            ->get();
+        $studentPerformances = StudentClassroomPerformance::query()
+            ->with(['student:id,name'])
+            ->whereIn('classroom_id', $classroomIds)
+            ->get();
+        $monthlyMetrics = TeacherMonthlyMetric::query()
+            ->where('teacher_id', $teacher?->id)
+            ->whereIn('point_of_school_id', $pointIds)
+            ->orderBy('metric_month')
+            ->get();
         $studentsCount = (int) $classrooms->sum('students_count');
         $availablePoints = (float) $activities->sum('total_points');
 
@@ -56,6 +74,7 @@ class DashboardController extends Controller
                 'points' => round((float) $classroomActivities->sum('total_points'), 2),
             ]);
 
+        $classroomMetricsByClassroom = $classroomMetrics->keyBy('classroom_id');
         $classroomSummary = $classrooms
             ->map(fn (Classroom $classroom) => [
                 'id' => $classroom->id,
@@ -64,6 +83,10 @@ class DashboardController extends Controller
                 'students' => $classroom->students_count,
                 'activities' => $classroomActivityStats->get($classroom->id)['activities'] ?? 0,
                 'availablePoints' => $classroomActivityStats->get($classroom->id)['points'] ?? 0,
+                'submitted' => (int) ($classroomMetricsByClassroom->get($classroom->id)?->submitted_submissions_count ?? 0),
+                'pending' => (int) ($classroomMetricsByClassroom->get($classroom->id)?->pending_submissions_count ?? 0),
+                'completionRate' => round((float) ($classroomMetricsByClassroom->get($classroom->id)?->average_completion_rate ?? 0), 2),
+                'performanceRate' => round((float) ($classroomMetricsByClassroom->get($classroom->id)?->average_performance_rate ?? 0), 2),
                 'status' => $classroom->status,
             ])
             ->values();
@@ -100,12 +123,11 @@ class DashboardController extends Controller
                 ->values(),
             'monthlyActivities' => $this->monthlyActivityEvolution($activities),
         ];
-
-        $mockMetrics = $this->mockFutureMetrics($classrooms, $studentsCount);
+        $performanceMetrics = $this->performanceMetrics($classroomMetrics, $studentPerformances, $monthlyMetrics);
 
         return Inertia::render('teacher/Dashboard', [
             'realMetrics' => $realMetrics,
-            'mockMetrics' => $mockMetrics,
+            'performanceMetrics' => $performanceMetrics,
             'charts' => $charts,
             'classroomSummary' => $classroomSummary,
             'upcomingActivities' => $activities
@@ -123,24 +145,7 @@ class DashboardController extends Controller
                     'totalPoints' => $activity->total_points,
                 ])
                 ->values(),
-            'insights' => $this->realInsights($activities, $classroomSummary),
-            'futureMetrics' => [
-                [
-                    'title' => 'Entregas e respostas',
-                    'description' => 'Sera substituido por consultas reais quando submissions/respostas existirem.',
-                    'status' => 'Metrica futura',
-                ],
-                [
-                    'title' => 'Pontuacao e aproveitamento',
-                    'description' => 'Hoje e simulado porque ainda nao ha tabela real de scores.',
-                    'status' => 'Dados simulados',
-                ],
-                [
-                    'title' => 'Rankings de alunos',
-                    'description' => 'Ranking visual preparado para a futura estrutura de desempenho.',
-                    'status' => 'Dados simulados',
-                ],
-            ],
+            'insights' => $this->realInsights($activities, $classroomSummary, $performanceMetrics),
         ]);
     }
 
@@ -161,7 +166,7 @@ class DashboardController extends Controller
             ->all();
     }
 
-    private function realInsights(Collection $activities, Collection $classroomSummary): array
+    private function realInsights(Collection $activities, Collection $classroomSummary, array $performanceMetrics): array
     {
         if ($activities->isEmpty()) {
             return [
@@ -184,75 +189,121 @@ class DashboardController extends Controller
             $topClassroom && $topClassroom['activities'] > 0
                 ? "A turma com mais atividades e {$topClassroom['name']}."
                 : 'Nenhuma turma possui atividades cadastradas ainda.',
+            $performanceMetrics['submittedActivities'] > 0
+                ? "O aproveitamento médio atual está em {$performanceMetrics['averagePerformance']}%."
+                : 'As métricas de desempenho aparecerão assim que os alunos enviarem respostas.',
             $topLevel && $topLevel['count'] > 0
                 ? "A dificuldade mais usada e {$topLevel['label']}."
                 : 'Ainda nao ha dificuldade predominante.',
         ];
     }
 
-    /**
-     * Dados temporarios para areas que dependem de submissions, respostas e scores.
-     * Substituir por queries reais quando essas tabelas forem implementadas.
-     */
-    private function mockFutureMetrics(Collection $classrooms, int $studentsCount): array
-    {
-        $students = $classrooms
-            ->flatMap(fn (Classroom $classroom) => $classroom->students)
-            ->unique('id')
-            ->values();
-        $studentNames = $students->isNotEmpty()
-            ? $students->pluck('name')->values()
-            : collect(['Aluno simulado 1', 'Aluno simulado 2', 'Aluno simulado 3', 'Aluno simulado 4']);
-        $classroomNames = $classrooms->isNotEmpty()
-            ? $classrooms->pluck('name')->values()
-            : collect(['Turma modelo A', 'Turma modelo B', 'Turma modelo C']);
-        $completionRate = min(92, 68 + ($classrooms->count() * 3));
-        $averagePerformance = min(94, 74 + max(0, $studentsCount));
-        $submittedActivities = max(18, $studentsCount * 4 + $classrooms->count() * 7);
-        $pendingSubmissions = max(8, $classrooms->count() * 5 + 6);
+    private function performanceMetrics(
+        Collection $classroomMetrics,
+        Collection $studentPerformances,
+        Collection $monthlyMetrics,
+    ): array {
+        $expectedSubmissions = (int) $classroomMetrics->sum('expected_submissions_count');
+        $submittedActivities = (int) $classroomMetrics->sum('submitted_submissions_count');
+        $pendingSubmissions = (int) $classroomMetrics->sum('pending_submissions_count');
+        $totalScoreEarned = (float) $classroomMetrics->sum('total_score_earned');
+        $totalScorePossible = (float) $classroomMetrics->sum('total_score_possible');
+        $averageCompletionRate = $expectedSubmissions > 0 ? round(($submittedActivities / $expectedSubmissions) * 100, 2) : 0;
+        $averagePerformance = $totalScorePossible > 0 ? round(($totalScoreEarned / $totalScorePossible) * 100, 2) : 0;
+        $topStudentPerformance = $this->sortStudentPerformances($studentPerformances)->first();
+        $topClassroomMetric = $classroomMetrics
+            ->sort(function (TeacherClassroomMetric $left, TeacherClassroomMetric $right) {
+                $performanceComparison = (float) $right->average_performance_rate <=> (float) $left->average_performance_rate;
+
+                if ($performanceComparison !== 0) {
+                    return $performanceComparison;
+                }
+
+                $completionComparison = (float) $right->average_completion_rate <=> (float) $left->average_completion_rate;
+
+                if ($completionComparison !== 0) {
+                    return $completionComparison;
+                }
+
+                return strcasecmp($left->classroom?->name ?? '', $right->classroom?->name ?? '');
+            })
+            ->first();
 
         return [
-            'averageCompletionRate' => $completionRate,
+            'averageCompletionRate' => $averageCompletionRate,
             'averagePerformance' => $averagePerformance,
             'submittedActivities' => $submittedActivities,
             'pendingSubmissions' => $pendingSubmissions,
-            'completedSubmissions' => max(0, $submittedActivities - $pendingSubmissions),
-            'topStudent' => $studentNames->first(),
-            'topClassroom' => $classroomNames->first(),
-            'topStudents' => $studentNames
+            'completedSubmissions' => $submittedActivities,
+            'topStudent' => $topStudentPerformance?->student?->name,
+            'topClassroom' => $topClassroomMetric?->classroom?->name,
+            'topStudents' => $this->sortStudentPerformances($studentPerformances)
                 ->take(6)
                 ->values()
-                ->map(fn (string $name, int $index) => [
-                    'name' => $name,
-                    'points' => 980 - ($index * 47),
-                    'performance' => max(64, 96 - ($index * 4)),
+                ->map(fn (StudentClassroomPerformance $performance) => [
+                    'name' => $performance->student?->name ?? 'Aluno',
+                    'points' => round((float) $performance->total_score, 2),
+                    'performance' => round((float) $performance->performance_rate, 2),
                 ]),
-            'classroomPerformance' => $classroomNames
+            'classroomPerformance' => $classroomMetrics
+                ->sortByDesc('average_performance_rate')
                 ->take(6)
                 ->values()
-                ->map(fn (string $name, int $index) => [
-                    'name' => $name,
-                    'performance' => max(58, 91 - ($index * 5)),
-                    'completed' => max(8, 34 - ($index * 3)),
-                    'pending' => 6 + $index,
+                ->map(fn (TeacherClassroomMetric $metric) => [
+                    'name' => $metric->classroom?->name ?? 'Turma',
+                    'performance' => round((float) $metric->average_performance_rate, 2),
+                    'completed' => (int) $metric->submitted_submissions_count,
+                    'pending' => (int) $metric->pending_submissions_count,
                 ]),
             'monthlySubmissions' => collect(range(5, 0))
-                ->map(fn (int $monthsAgo, int $index) => [
-                    'label' => ucfirst(now()->subMonths($monthsAgo)->translatedFormat('M')),
-                    'submitted' => 24 + ($index * 8) + $classrooms->count(),
-                    'pending' => max(5, 18 - $index),
-                ]),
-            'monthlyPerformance' => collect(range(5, 0))
-                ->map(fn (int $monthsAgo, int $index) => [
-                    'label' => ucfirst(now()->subMonths($monthsAgo)->translatedFormat('M')),
-                    'value' => min(95, 72 + ($index * 4)),
-                ]),
-            'performanceDistribution' => [
-                ['label' => 'Excelente', 'value' => 34, 'color' => '#34d399'],
-                ['label' => 'Bom', 'value' => 42, 'color' => '#8b5cf6'],
-                ['label' => 'Regular', 'value' => 18, 'color' => '#fbbf24'],
-                ['label' => 'Baixo', 'value' => 6, 'color' => '#fb7185'],
-            ],
+                ->map(function (int $monthsAgo) use ($monthlyMetrics) {
+                    $month = now()->startOfMonth()->subMonths($monthsAgo);
+                    $bucket = $monthlyMetrics->filter(fn (TeacherMonthlyMetric $metric) => $metric->metric_month?->isSameMonth($month));
+
+                    return [
+                        'label' => ucfirst($month->translatedFormat('M')),
+                        'submitted' => (int) $bucket->sum('submitted_submissions_count'),
+                        'pending' => (int) $bucket->sum('pending_submissions_count'),
+                    ];
+                }),
+            'performanceDistribution' => $this->performanceDistribution($studentPerformances),
         ];
+    }
+
+    private function performanceDistribution(Collection $studentPerformances): array
+    {
+        $totalStudents = max(1, $studentPerformances->count());
+
+        return collect([
+            ['label' => 'Excelente', 'count' => $studentPerformances->where('performance_rate', '>=', 90)->count(), 'color' => '#34d399'],
+            ['label' => 'Bom', 'count' => $studentPerformances->filter(fn (StudentClassroomPerformance $performance) => (float) $performance->performance_rate >= 70 && (float) $performance->performance_rate < 90)->count(), 'color' => '#8b5cf6'],
+            ['label' => 'Regular', 'count' => $studentPerformances->filter(fn (StudentClassroomPerformance $performance) => (float) $performance->performance_rate >= 50 && (float) $performance->performance_rate < 70)->count(), 'color' => '#fbbf24'],
+            ['label' => 'Baixo', 'count' => $studentPerformances->where('performance_rate', '<', 50)->count(), 'color' => '#fb7185'],
+        ])
+            ->map(fn (array $bucket) => [
+                'label' => $bucket['label'],
+                'value' => round(($bucket['count'] / $totalStudents) * 100, 2),
+                'color' => $bucket['color'],
+            ])
+            ->all();
+    }
+
+    private function sortStudentPerformances(Collection $performances): Collection
+    {
+        return $performances->sort(function (StudentClassroomPerformance $left, StudentClassroomPerformance $right) {
+            $scoreComparison = (float) $right->total_score <=> (float) $left->total_score;
+
+            if ($scoreComparison !== 0) {
+                return $scoreComparison;
+            }
+
+            $accuracyComparison = (float) $right->accuracy_rate <=> (float) $left->accuracy_rate;
+
+            if ($accuracyComparison !== 0) {
+                return $accuracyComparison;
+            }
+
+            return strcasecmp($left->student?->name ?? '', $right->student?->name ?? '');
+        });
     }
 }
