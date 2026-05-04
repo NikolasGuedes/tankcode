@@ -25,7 +25,7 @@ class EnsureUserHasRole
         if (! $user->hasRole(...$allowedRoles)) {
             return redirect()
                 ->route($user->homeRouteName())
-                ->with('info', 'Sua area foi atualizada conforme o perfil atual do usuario.');
+                ->with('info', 'Sua área foi atualizada conforme o perfil atual do usuário.');
         }
 
         return $next($request);

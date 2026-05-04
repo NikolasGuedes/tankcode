@@ -27,6 +27,8 @@ const visibleLinks = computed(() =>
             .replace(/&raquo;/g, '»')
             .replace(/&amp;/g, '&')
             .replace(/<[^>]+>/g, '')
+            .replace(/\bPrevious\b/gi, 'Anterior')
+            .replace(/\bNext\b/gi, 'Próximo')
             .trim(),
     })),
 );

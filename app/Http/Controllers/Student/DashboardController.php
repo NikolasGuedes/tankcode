@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Student;
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
-use App\Models\PointOfSchool;
+use App\Models\Activity;
+use App\Models\Classroom;
+use App\Models\StudentClassroomPerformance;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,21 +21,21 @@ class DashboardController extends Controller
         $student = $this->resolveStudent($request);
         $classroom = $student->classrooms->first();
         $point = $student->pointOfSchools->first();
-        $score = $this->mockedScore($student, $classroom);
+        $score = $this->scoreSummary($student, $classroom);
         $classmates = $this->classroomRanking($classroom, $student);
 
         return Inertia::render('student/Classroom', [
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
-                'code' => $classroom?->code ?? 'Sem codigo',
-                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino nao definido',
-                'teacher' => $classroom?->teacher?->name ?? 'Professor em definicao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
+                'code' => $classroom?->code ?? 'Sem código',
+                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino não definido',
+                'teacher' => $classroom?->teacher?->name ?? 'Professor em definição',
             ],
             'score' => [
                 'student_points' => $score['student_points'],
                 'classroom_rank' => $score['classroom_rank'],
             ],
-            'activities' => $this->mockedActivities($classroom?->name ?? 'Minha sala'),
+            'activities' => $this->classroomActivities($student, $classroom?->id),
             'classmates' => $classmates,
         ]);
     }
@@ -130,7 +132,7 @@ class DashboardController extends Controller
         return Inertia::render('student/Show', [
             'profile' => $this->profileData($student, $studentClassroom),
             'viewer_mode' => true,
-            'viewer_label' => $sharesClassroom ? 'Visualizacao do colega' : 'Visualizacao do ranking global',
+            'viewer_label' => $sharesClassroom ? 'Visualização do colega' : 'Visualização do ranking global',
         ]);
     }
 
@@ -139,7 +141,7 @@ class DashboardController extends Controller
         $student = $this->resolveStudent($request);
         $classroom = $student->classrooms->first();
         $point = $student->pointOfSchools->first();
-        $score = $this->mockedScore($student, $classroom);
+        $score = $this->scoreSummary($student, $classroom);
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
             'classroom' => ['nullable', 'string', 'max:20'],
@@ -157,15 +159,16 @@ class DashboardController extends Controller
                 'student_points' => $score['student_points'],
                 'classroom_rank' => $score['classroom_rank'],
                 'point_rank' => $score['point_rank'],
+                'school_rank' => $score['school_rank'],
             ],
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
             ],
             'point' => [
-                'name' => $point?->name ?? 'Ponto de ensino em configuracao',
+                'name' => $point?->name ?? 'Ponto de ensino em configuração',
             ],
             'school' => [
-                'name' => $student->school?->name ?? 'Escola em configuracao',
+                'name' => $student->school?->name ?? 'Escola em configuração',
             ],
             'students' => $ranking,
             'filters' => [
@@ -202,7 +205,7 @@ class DashboardController extends Controller
      *     name: string,
      *     email: string,
      *     avatar: string|null,
-     *     points: int,
+     *     points: float,
      *     bio: string,
      *     links: array{github: string|null, linkedin: string|null},
      *     status: array{completed_activities: int, ranking_position: int},
@@ -212,151 +215,109 @@ class DashboardController extends Controller
     private function profileData(User $student, mixed $classroom): array
     {
         $point = $student->pointOfSchools->first();
-        $score = $this->mockedScore($student, $classroom);
+        $score = $this->scoreSummary($student, $classroom);
 
         return [
             'name' => $student->name,
             'email' => $student->email,
             'avatar' => $student->photo ? asset('storage/'.$student->photo) : null,
             'points' => $score['student_points'],
-            'bio' => $student->bio ?: 'Espaco reservado para a bio do aluno. Quando esse campo estiver disponivel, ele aparecera aqui.',
+            'bio' => $student->bio ?: 'Espaço reservado para a bio do aluno. Quando esse campo estiver disponível, ele aparecerá aqui.',
             'bio_raw' => $student->bio,
             'links' => [
                 'github' => $student->github_url,
                 'linkedin' => $student->linkedin_url,
             ],
             'status' => [
-                'completed_activities' => 5,
-                'ranking_position' => 155,
+                'completed_activities' => $score['submitted_activities_count'],
+                'ranking_position' => $score['school_rank'],
             ],
             'classroom' => [
-                'name' => $classroom?->name ?? 'Sala em configuracao',
-                'code' => $classroom?->code ?? 'Sem codigo',
-                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino nao definido',
-                'teacher' => $classroom?->teacher?->name ?? 'Professor em definicao',
+                'name' => $classroom?->name ?? 'Sala em configuração',
+                'code' => $classroom?->code ?? 'Sem código',
+                'point_of_school' => $classroom?->pointOfSchool?->name ?? $point?->name ?? 'Ponto de ensino não definido',
+                'teacher' => $classroom?->teacher?->name ?? 'Professor em definição',
             ],
         ];
     }
 
     /**
      * @return array{
-     *     student_points: int,
+     *     student_points: float,
      *     classroom_rank: int,
-     *     point_rank: int
+     *     point_rank: int,
+     *     school_rank: int,
+     *     submitted_activities_count: int
      * }
      */
-    private function mockedScore(User $student, mixed $classroom): array
+    private function scoreSummary(User $student, mixed $classroom): array
     {
-        $seed = ($student->id * 37) + (($classroom?->id ?? 1) * 19);
+        $performance = $this->performanceForStudent($student, $classroom?->id);
 
         return [
-            'student_points' => 350 + ($seed % 220),
-            'classroom_rank' => 1 + ($seed % 8),
-            'point_rank' => 1 + ($seed % 18),
+            'student_points' => round((float) ($performance?->total_score ?? 0), 2),
+            'classroom_rank' => (int) ($performance?->classroom_rank ?? 0),
+            'point_rank' => (int) ($performance?->point_rank ?? 0),
+            'school_rank' => (int) ($performance?->school_rank ?? 0),
+            'submitted_activities_count' => (int) ($performance?->submitted_activities_count ?? 0),
         ];
     }
 
-    /**
-     * @return array<int, array{
-     *     id: string,
-     *     title: string,
-     *     description: string,
-     *     deadline_label: string,
-     *     deadline_group: string,
-     *     status: string
-     * }>
-     */
-    private function mockedActivities(string $classroomName): array
+    private function classroomActivities(User $student, ?int $classroomId): array
     {
-        return [
-            [
-                'id' => 'activity-1',
-                'title' => 'Desafio de logica',
-                'description' => "Resolva os exercicios introdutorios enviados para {$classroomName}.",
-                'deadline_label' => 'Entrega hoje',
-                'deadline_group' => 'Hoje',
-                'status' => 'urgent',
-            ],
-            [
-                'id' => 'activity-2',
-                'title' => 'Quiz de programacao',
-                'description' => 'Responda ao quiz e revise os conceitos vistos nesta semana.',
-                'deadline_label' => 'Entrega ate sexta',
-                'deadline_group' => 'Essa semana',
-                'status' => 'warning',
-            ],
-            [
-                'id' => 'activity-3',
-                'title' => 'Mini projeto em dupla',
-                'description' => 'Planeje a entrega do prototipo com sua dupla e registre a evolucao.',
-                'deadline_label' => 'Entrega na proxima semana',
-                'deadline_group' => 'Proximas',
-                'status' => 'neutral',
-            ],
-        ];
+        if (! $classroomId) {
+            return [];
+        }
+
+        return Activity::query()
+            ->with([
+                'submissions' => fn ($query) => $query->where('student_id', $student->id),
+            ])
+            ->where('classroom_id', $classroomId)
+            ->where('status', 'published')
+            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('due_date')
+            ->latest('id')
+            ->get()
+            ->map(function (Activity $activity) {
+                $submission = $activity->submissions->first();
+                $state = $this->activityState($activity, $submission !== null);
+
+                return [
+                    'id' => $activity->id,
+                    'title' => $activity->title,
+                    'description' => $activity->description ?? 'Atividade publicada para sua turma.',
+                    'due_date' => optional($activity->due_date)?->format('Y-m-d'),
+                    'deadline_label' => $this->activityDeadlineLabel($activity, $submission !== null),
+                    'deadline_group' => $this->activityDeadlineGroup($activity),
+                    'state' => $state,
+                    'href' => route('student.activities.show', $activity, absolute: false),
+                    'submitted_at' => optional($submission?->submitted_at)?->toIso8601String(),
+                    'score' => $submission?->score,
+                    'total_points' => $activity->total_points,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
-    private function classroomRanking(mixed $classroom, User $viewer): array
+    private function classroomRanking(?Classroom $classroom, User $viewer): array
     {
         if (! $classroom) {
             return [];
         }
 
-        return $classroom->students
-            ->map(function (User $classmate) use ($classroom, $viewer) {
-                $classmateClassroom = $classmate->classrooms->firstWhere('id', $classroom->id) ?? $classroom;
-                $classmateScore = $this->mockedScore($classmate, $classmateClassroom);
-
-                return $this->rankingEntry(
-                    student: $classmate,
-                    score: $classmateScore['student_points'],
-                    href: route('student.classmates.show', $classmate, absolute: false),
-                    viewer: $viewer,
-                    classroomName: $classmateClassroom?->name
-                );
-            })
-            ->sortByDesc('score')
-            ->values()
-            ->map(fn (array $entry, int $index) => [
-                ...$entry,
-                'ranking_position' => $index + 1,
-            ])
-            ->all();
-    }
-
-    private function pointRanking(?PointOfSchool $point, User $viewer): array
-    {
-        if (! $point) {
-            return [];
-        }
-
-        return User::query()
-            ->with([
-                'role:id,name,label',
-                'pointOfSchools:id,name',
-                'classrooms:id,name,code,point_of_school_id,teacher_id',
-            ])
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
-            ->whereHas('pointOfSchools', fn ($query) => $query->where('point_of_schools.id', $point->id))
+        return StudentClassroomPerformance::query()
+            ->with('student:id,name,email')
+            ->where('classroom_id', $classroom->id)
+            ->orderBy('classroom_rank')
             ->get()
-            ->map(function (User $rankedStudent) use ($viewer, $point) {
-                $rankedClassroom = $rankedStudent->classrooms->firstWhere('point_of_school_id', $point->id) ?? $rankedStudent->classrooms->first();
-                $rankedScore = $this->mockedScore($rankedStudent, $rankedClassroom);
-
-                return $this->rankingEntry(
-                    student: $rankedStudent,
-                    score: $rankedScore['student_points'],
-                    href: route('student.classmates.show', $rankedStudent, absolute: false),
-                    viewer: $viewer,
-                    classroomName: $rankedClassroom?->name
-                );
-            })
-            ->sortByDesc('score')
+            ->map(fn (StudentClassroomPerformance $performance) => $this->rankingEntry(
+                performance: $performance,
+                viewer: $viewer,
+                rankingPosition: (int) $performance->classroom_rank,
+            ))
             ->values()
-            ->map(fn (array $entry, int $index) => [
-                ...$entry,
-                'ranking_position' => $index + 1,
-            ])
             ->all();
     }
 
@@ -366,44 +327,28 @@ class DashboardController extends Controller
             return [];
         }
 
-        return User::query()
+        return StudentClassroomPerformance::query()
             ->with([
-                'role:id,name,label',
-                'pointOfSchools:id,name',
-                'classrooms:id,name,code,point_of_school_id,teacher_id',
+                'student:id,name,email',
+                'classroom:id,name',
+                'pointOfSchool:id,name',
             ])
             ->where('school_id', $viewer->school_id)
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
+            ->orderBy('school_rank')
             ->when($search, function ($query, string $term) {
-                $query->where(function ($nested) use ($term) {
-                    $nested
-                        ->where('name', 'like', "%{$term}%")
-                        ->orWhere('email', 'like', "%{$term}%");
-                });
+                $query->whereHas('student', fn ($nested) => $nested
+                    ->where('name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%"));
             })
-            ->when($classroomId, fn ($query, int $id) => $query->whereHas('classrooms', fn ($nested) => $nested->where('classrooms.id', $id)))
-            ->when($unitId, fn ($query, int $id) => $query->whereHas('pointOfSchools', fn ($nested) => $nested->where('point_of_schools.id', $id)))
+            ->when($classroomId, fn ($query, int $id) => $query->where('classroom_id', $id))
+            ->when($unitId, fn ($query, int $id) => $query->where('point_of_school_id', $id))
             ->get()
-            ->map(function (User $rankedStudent) use ($viewer) {
-                $rankedClassroom = $rankedStudent->classrooms->first();
-                $rankedPoint = $rankedStudent->pointOfSchools->first();
-                $rankedScore = $this->mockedScore($rankedStudent, $rankedClassroom);
-
-                return $this->rankingEntry(
-                    student: $rankedStudent,
-                    score: $rankedScore['student_points'],
-                    href: route('student.classmates.show', $rankedStudent, absolute: false),
-                    viewer: $viewer,
-                    classroomName: $rankedClassroom?->name,
-                    unitName: $rankedPoint?->name
-                );
-            })
-            ->sortByDesc('score')
+            ->map(fn (StudentClassroomPerformance $performance) => $this->rankingEntry(
+                performance: $performance,
+                viewer: $viewer,
+                rankingPosition: (int) $performance->school_rank,
+            ))
             ->values()
-            ->map(fn (array $entry, int $index) => [
-                ...$entry,
-                'ranking_position' => $index + 1,
-            ])
             ->all();
     }
 
@@ -412,25 +357,28 @@ class DashboardController extends Controller
      *     id: int,
      *     name: string,
      *     email: string,
-     *     score: int,
-     *     ranking_position?: int,
+     *     score: float,
+     *     ranking_position: int,
      *     href: string,
      *     is_current_user: bool,
      *     classroom_name: string,
      *     unit_name: string
      * }
      */
-    private function rankingEntry(User $student, int $score, string $href, User $viewer, ?string $classroomName, ?string $unitName = null): array
+    private function rankingEntry(StudentClassroomPerformance $performance, User $viewer, int $rankingPosition): array
     {
+        $student = $performance->student;
+
         return [
-            'id' => $student->id,
-            'name' => $student->name,
-            'email' => $student->email,
-            'score' => $score,
-            'href' => $href,
-            'is_current_user' => $student->is($viewer),
-            'classroom_name' => $classroomName ?? 'Sala em configuracao',
-            'unit_name' => $unitName ?? ($student->pointOfSchools->first()?->name ?? 'Unidade em configuracao'),
+            'id' => $student?->id ?? 0,
+            'name' => $student?->name ?? 'Aluno não encontrado',
+            'email' => $student?->email ?? '-',
+            'score' => round((float) $performance->total_score, 2),
+            'ranking_position' => $rankingPosition,
+            'href' => $student ? route('student.classmates.show', $student, absolute: false) : '#',
+            'is_current_user' => $student?->is($viewer) ?? false,
+            'classroom_name' => $performance->classroom?->name ?? 'Sala em configuração',
+            'unit_name' => $performance->pointOfSchool?->name ?? 'Unidade em configuração',
         ];
     }
 
@@ -440,17 +388,14 @@ class DashboardController extends Controller
             return [];
         }
 
-        return User::query()
+        return Classroom::query()
             ->where('school_id', $viewer->school_id)
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
-            ->with('classrooms:id,name')
-            ->get()
-            ->flatMap(fn (User $student) => $student->classrooms->map(fn ($classroom) => [
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (Classroom $classroom) => [
                 'id' => $classroom->id,
                 'name' => $classroom->name,
-            ]))
-            ->unique('id')
-            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ])
             ->values()
             ->all();
     }
@@ -461,19 +406,35 @@ class DashboardController extends Controller
             return [];
         }
 
-        return User::query()
-            ->where('school_id', $viewer->school_id)
-            ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
-            ->with('pointOfSchools:id,name')
-            ->get()
-            ->flatMap(fn (User $student) => $student->pointOfSchools->map(fn ($unit) => [
-                'id' => $unit->id,
-                'name' => $unit->name,
-            ]))
-            ->unique('id')
-            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
-            ->values()
-            ->all();
+        return $viewer->school
+            ? $viewer->school->pointOfSchools()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn ($unit) => [
+                    'id' => $unit->id,
+                    'name' => $unit->name,
+                ])
+                ->values()
+                ->all()
+            : [];
+    }
+
+    private function performanceForStudent(User $student, ?int $classroomId = null): ?StudentClassroomPerformance
+    {
+        $query = StudentClassroomPerformance::query()->where('student_id', $student->id);
+
+        if ($classroomId) {
+            $performance = (clone $query)->where('classroom_id', $classroomId)->first();
+
+            if ($performance) {
+                return $performance;
+            }
+        }
+
+        return $query
+            ->orderByDesc('total_score')
+            ->orderBy('school_rank')
+            ->first();
     }
 
     private function normalizeFilterId(?string $value): ?int
@@ -490,5 +451,72 @@ class DashboardController extends Controller
         $value = $value !== null ? trim($value) : null;
 
         return $value === '' ? null : $value;
+    }
+
+    private function activityState(Activity $activity, bool $submitted): string
+    {
+        if ($submitted) {
+            return 'respondida';
+        }
+
+        if (! $activity->due_date) {
+            return 'pendente';
+        }
+
+        if ($activity->due_date->isPast() && ! $activity->due_date->isToday()) {
+            return 'atrasada';
+        }
+
+        if ($activity->due_date->isToday()) {
+            return 'vence_hoje';
+        }
+
+        if ($activity->due_date->isBetween(today(), today()->copy()->addDays(6))) {
+            return 'vence_semana';
+        }
+
+        return 'pendente';
+    }
+
+    private function activityDeadlineLabel(Activity $activity, bool $submitted): string
+    {
+        if ($submitted) {
+            return 'Respondida';
+        }
+
+        if (! $activity->due_date) {
+            return 'Sem prazo';
+        }
+
+        if ($activity->due_date->isPast() && ! $activity->due_date->isToday()) {
+            return 'Prazo encerrado';
+        }
+
+        if ($activity->due_date->isToday()) {
+            return 'Entrega hoje';
+        }
+
+        if ($activity->due_date->isBetween(today(), today()->copy()->addDays(6))) {
+            return 'Entrega nesta semana';
+        }
+
+        return 'Entrega futura';
+    }
+
+    private function activityDeadlineGroup(Activity $activity): string
+    {
+        if (! $activity->due_date) {
+            return 'Proximas';
+        }
+
+        if ($activity->due_date->isToday()) {
+            return 'Hoje';
+        }
+
+        if ($activity->due_date->isBetween(today(), today()->copy()->addDays(6))) {
+            return 'Essa semana';
+        }
+
+        return 'Proximas';
     }
 }

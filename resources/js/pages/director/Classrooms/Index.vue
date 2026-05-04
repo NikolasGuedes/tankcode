@@ -48,7 +48,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
+    { title: 'Visão geral', href: '/director' },
     { title: 'Turmas', href: '/director/classrooms' },
 ];
 
@@ -126,7 +126,7 @@ watch(
         <section class="space-y-6 p-6">
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <h1 class="text-4xl font-semibold tracking-tight text-white">Turmas</h1>
-                <p class="mt-2 text-lg text-white/70">Estruture turmas com um fluxo dedicado, mais espaco para distribuicao de alunos e visibilidade clara dos vinculos.</p>
+                <p class="mt-2 text-lg text-white/70">Estruture turmas com um fluxo dedicado, mais espaco para distribuição de alunos e visibilidade clara dos vínculos.</p>
                 <div class="mt-8 grid gap-4 md:grid-cols-3">
                     <div class="rounded-3xl border border-border bg-black/40 p-5"><p class="text-sm text-white/60">Total</p><p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.total }}</p></div>
                     <div class="rounded-3xl border border-border bg-black/40 p-5"><p class="text-sm text-white/60">Ativas</p><p class="mt-2 text-4xl font-semibold text-white">{{ props.stats.active }}</p></div>
@@ -138,7 +138,7 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-semibold text-white">Turmas cadastradas</h2>
-                        <p class="text-sm text-white/60">Crie e edite turmas em uma pagina dedicada, com foco maior na selecao dos alunos.</p>
+                        <p class="text-sm text-white/60">Crie e edite turmas em uma página dedicada, com foco maior na seleção dos alunos.</p>
                     </div>
                     <Button as-child class="rounded-2xl">
                         <a href="/director/classrooms/create"><Plus class="size-4" />Nova Turma</a>
@@ -146,7 +146,7 @@ watch(
                 </div>
 
                 <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_220px_auto]" @submit.prevent="applyFilters">
-                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou codigo" />
+                    <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Buscar por nome ou código" />
                     <Select v-model="filtersForm.status">
                         <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white">
                             <SelectValue placeholder="Status" />
@@ -185,7 +185,7 @@ watch(
 
     <Dialog :open="deleteDialogOpen" @update:open="(value) => !value ? closeDeleteDialog() : (deleteDialogOpen = value)">
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
-            <DialogHeader><DialogTitle>Confirmar exclusao</DialogTitle><DialogDescription class="text-white/60">Esta operacao nao pode ser desfeita e removera a turma <span class="font-semibold text-white">{{ selectedClassroom?.name }}</span>.</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle>Confirmar exclusao</DialogTitle><DialogDescription class="text-white/60">Esta operação não pode ser desfeita e removerá a turma <span class="font-semibold text-white">{{ selectedClassroom?.name }}</span>.</DialogDescription></DialogHeader>
             <DialogFooter class="gap-2"><DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDeleteDialog">Cancelar</Button></DialogClose><Button type="button" variant="destructive" :disabled="deleteForm.processing" @click="submitDelete">Excluir turma</Button></DialogFooter>
         </DialogContent>
     </Dialog>

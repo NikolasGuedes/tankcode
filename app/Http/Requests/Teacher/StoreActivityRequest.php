@@ -70,20 +70,20 @@ class StoreActivityRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'O titulo da atividade e obrigatorio.',
-            'title.max' => 'O titulo da atividade deve ter no maximo 255 caracteres.',
-            'level.required' => 'O nivel de dificuldade e obrigatorio.',
-            'level.in' => 'O nivel de dificuldade informado e invalido.',
+            'title.required' => 'O título da atividade é obrigatório.',
+            'title.max' => 'O título da atividade deve ter no máximo 255 caracteres.',
+            'level.required' => 'O nível de dificuldade é obrigatório.',
+            'level.in' => 'O nível de dificuldade informado é inválido.',
             'classroom_id.required' => 'Selecione uma turma para a atividade.',
-            'classroom_id.exists' => 'A turma informada nao foi encontrada.',
-            'due_date.date' => 'A data de entrega deve ser uma data valida.',
-            'status.in' => 'O status informado e invalido.',
-            'questions.required' => 'Adicione pelo menos uma questao para a atividade.',
-            'questions.array' => 'As questoes devem ser enviadas em uma lista valida.',
-            'questions.min' => 'Adicione pelo menos uma questao para a atividade.',
-            'questions.*.type.required' => 'Selecione o tipo de cada questao.',
-            'questions.*.type.in' => 'O tipo de questao informado e invalido.',
-            'questions.*.statement.required' => 'O enunciado de cada questao e obrigatorio.',
+            'classroom_id.exists' => 'A turma informada não foi encontrada.',
+            'due_date.date' => 'A data de entrega deve ser uma data válida.',
+            'status.in' => 'O status informado é inválido.',
+            'questions.required' => 'Adicione pelo menos uma questão para a atividade.',
+            'questions.array' => 'As questões devem ser enviadas em uma lista válida.',
+            'questions.min' => 'Adicione pelo menos uma questão para a atividade.',
+            'questions.*.type.required' => 'Selecione o tipo de cada questão.',
+            'questions.*.type.in' => 'O tipo de questão informado é inválido.',
+            'questions.*.statement.required' => 'O enunciado de cada questão é obrigatório.',
         ];
     }
 

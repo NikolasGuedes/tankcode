@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\Classroom;
 use App\Models\User;
 use App\Support\ActivityPointsCalculator;
+use App\Support\PerformanceMetricsRebuilder;
 use App\Support\PointOfSchoolContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,7 +98,11 @@ class ActivityController extends Controller
         ]);
     }
 
-    public function store(StoreActivityRequest $request, ActivityPointsCalculator $calculator): RedirectResponse
+    public function store(
+        StoreActivityRequest $request,
+        ActivityPointsCalculator $calculator,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         $data = $request->validated();
         $questions = $data['questions'];
@@ -118,10 +123,19 @@ class ActivityController extends Controller
             $this->createQuestions($activity, $questions);
         });
 
+        if ($request->user()?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $request->user()->school_id);
+        }
+
         return to_route('teacher.activities.index')->with('success', 'Atividade criada com sucesso.');
     }
 
-    public function update(UpdateActivityRequest $request, Activity $activity, ActivityPointsCalculator $calculator): RedirectResponse
+    public function update(
+        UpdateActivityRequest $request,
+        Activity $activity,
+        ActivityPointsCalculator $calculator,
+        PerformanceMetricsRebuilder $metricsRebuilder,
+    ): RedirectResponse
     {
         abort_unless($this->canManageActivity($request->user(), $activity), 404);
 
@@ -145,14 +159,23 @@ class ActivityController extends Controller
             $this->createQuestions($activity, $questions);
         });
 
+        if ($request->user()?->school_id) {
+            $metricsRebuilder->rebuildSchool((int) $request->user()->school_id);
+        }
+
         return to_route('teacher.activities.index')->with('success', 'Atividade atualizada com sucesso.');
     }
 
-    public function destroy(Activity $activity): RedirectResponse
+    public function destroy(Activity $activity, PerformanceMetricsRebuilder $metricsRebuilder): RedirectResponse
     {
         abort_unless($this->canManageActivity(request()->user(), $activity), 404);
 
+        $schoolId = $activity->classroom()->value('school_id') ?? request()->user()?->school_id;
         $activity->delete();
+
+        if ($schoolId) {
+            $metricsRebuilder->rebuildSchool((int) $schoolId);
+        }
 
         return to_route('teacher.activities.index')->with('success', 'Atividade removida com sucesso.');
     }

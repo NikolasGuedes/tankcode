@@ -14,6 +14,7 @@ const props = defineProps<{
         student_points: number;
         classroom_rank: number;
         point_rank: number;
+        school_rank: number;
     };
     classroom: {
         name: string;
@@ -62,7 +63,7 @@ const cards = computed(() => [
     {
         title: 'Seu score',
         value: `${props.score.student_points} pts`,
-        description: 'Pontuacao individual.',
+        description: 'Pontuação individual.',
         icon: Trophy,
     },
     {
@@ -76,6 +77,12 @@ const cards = computed(() => [
         value: `#${props.score.point_rank}`,
         description: props.point.name,
         icon: School,
+    },
+    {
+        title: 'Escola',
+        value: `#${props.score.school_rank}`,
+        description: props.school.name,
+        icon: Medal,
     },
 ]);
 
@@ -131,7 +138,7 @@ watch(
                     <School class="size-6 text-[#8f7bff]" />
                 </div>
 
-                <div class="mt-6 grid gap-3 md:grid-cols-3">
+                <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                     <div
                         v-for="card in cards"
                         :key="card.title"
@@ -151,7 +158,7 @@ watch(
                 <div class="mt-8 grid gap-3 md:grid-cols-[minmax(0,1.3fr)_220px_220px_auto] md:items-end">
                     <div class="space-y-2">
                         <label class="text-xs uppercase tracking-[0.18em] text-white/45">Buscar aluno</label>
-                        <Input v-model="filtersForm.search" placeholder="Nome ou email" class="border-white/10 bg-white/6 text-white placeholder:text-white/35" />
+                        <Input v-model="filtersForm.search" placeholder="Nome ou e-mail" class="border-white/10 bg-white/6 text-white placeholder:text-white/35" />
                     </div>
 
                     <div class="space-y-2">
@@ -217,7 +224,7 @@ watch(
                                             v-if="student.is_current_user"
                                             class="rounded-full border border-[#8f7bff]/25 bg-[#8f7bff]/12 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#d8d1ff]"
                                         >
-                                            Voce
+                                            Você
                                         </span>
                                     </div>
                                     <p class="truncate text-sm text-white/50">{{ student.email }}</p>

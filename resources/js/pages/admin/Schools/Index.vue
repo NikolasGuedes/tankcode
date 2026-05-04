@@ -66,7 +66,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/admin' },
+    { title: 'Visão geral', href: '/admin' },
     { title: 'Escolas', href: '/admin/schools' },
 ];
 
@@ -273,7 +273,7 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-semibold text-white">Escolas cadastradas</h1>
-                        <p class="text-sm text-white/60">Cada escola funciona como entidade principal da operacao.</p>
+                        <p class="text-sm text-white/60">Cada escola funciona como entidade principal da operação.</p>
                     </div>
                     <Button class="rounded-2xl" @click="openCreateDialog">
                         <Plus class="size-4" />
@@ -441,7 +441,7 @@ watch(
                         </Button>
                     </DialogClose>
                     <Button type="submit" :disabled="schoolForm.processing">
-                        {{ selectedSchool ? 'Salvar alteracoes' : 'Criar escola' }}
+                        {{ selectedSchool ? 'Salvar alterações' : 'Criar escola' }}
                     </Button>
                 </DialogFooter>
             </form>
@@ -464,7 +464,7 @@ watch(
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
                 <DialogDescription class="text-white/60">
-                    Esta operacao nao pode ser desfeita e ira remover todos os Pontos de ensino e usuarios associados a
+                    Esta operação não pode ser desfeita e irá remover todos os Pontos de ensino e usuários associados a
                     <span class="font-semibold text-white">{{ selectedSchool?.name }}</span>.
                 </DialogDescription>
             </DialogHeader>

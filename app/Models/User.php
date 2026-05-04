@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -85,6 +86,43 @@ class User extends Authenticatable
     public function activitiesAsTeacher(): HasMany
     {
         return $this->hasMany(Activity::class, 'teacher_id');
+    }
+
+    public function activitySubmissions(): HasMany
+    {
+        return $this->hasMany(ActivitySubmission::class, 'student_id');
+    }
+
+    public function activitySubmissionAnswers(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            ActivitySubmissionAnswer::class,
+            ActivitySubmission::class,
+            'student_id',
+            'activity_submission_id',
+            'id',
+            'id',
+        );
+    }
+
+    public function studentClassroomPerformances(): HasMany
+    {
+        return $this->hasMany(StudentClassroomPerformance::class, 'student_id');
+    }
+
+    public function teacherClassroomMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherClassroomMetric::class, 'teacher_id');
+    }
+
+    public function topStudentMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherClassroomMetric::class, 'top_student_id');
+    }
+
+    public function teacherMonthlyMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherMonthlyMetric::class, 'teacher_id');
     }
 
     public function classrooms(): BelongsToMany

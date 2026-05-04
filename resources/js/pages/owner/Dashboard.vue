@@ -15,11 +15,11 @@ defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/owner' },
+    { title: 'Visão geral', href: '/owner' },
 ];
 
 const modules = [
-    { title: 'Diretores', description: 'Cadastre diretores e distribua a atuacao deles entre os pontos de ensino da sua escola.', href: '/owner/directors', icon: Briefcase },
+    { title: 'Diretores', description: 'Cadastre diretores e distribua a atuação deles entre os pontos de ensino da sua escola.', href: '/owner/directors', icon: Briefcase },
 ];
 </script>
 
@@ -30,7 +30,7 @@ const modules = [
         <section class="space-y-6 p-6">
             <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <h1 class="text-4xl font-semibold tracking-tight text-white">Portal do Owner</h1>
-                <p class="mt-2 text-lg text-white/70">Gerencie os diretores e acompanhe a distribuicao operacional da escola sob sua responsabilidade.</p>
+                <p class="mt-2 text-lg text-white/70">Gerencie os diretores e acompanhe a distribuição operacional da escola sob sua responsabilidade.</p>
 
                 <div class="mt-8 grid gap-4 md:grid-cols-4">
                     <div class="rounded-3xl border border-border bg-black/40 p-5">

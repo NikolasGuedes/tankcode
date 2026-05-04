@@ -168,8 +168,8 @@ class TeacherController extends Controller
         $data = $request->validate([
             'status' => ['required', 'string', 'in:active,inactive'],
         ], [
-            'status.required' => 'O status do professor e obrigatorio.',
-            'status.in' => 'O status informado e invalido.',
+            'status.required' => 'O status do professor é obrigatório.',
+            'status.in' => 'O status informado é inválido.',
         ]);
 
         $teacher->update([
@@ -184,7 +184,7 @@ class TeacherController extends Controller
         abort_unless($this->canManageTeacher($request->user(), $teacher), 404);
 
         if (! is_null($teacher->email_verified_at)) {
-            return back()->with('info', 'Este professor ja ativou a conta e nao precisa de um novo convite.');
+            return back()->with('info', 'Este professor já ativou a conta e não precisa de um novo convite.');
         }
 
         $invitationService->send($teacher);

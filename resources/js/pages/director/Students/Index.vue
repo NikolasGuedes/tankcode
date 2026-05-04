@@ -59,7 +59,7 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/director' },
+    { title: 'Visão geral', href: '/director' },
     { title: 'Alunos', href: '/director/students' },
 ];
 
@@ -286,7 +286,7 @@ watch(
                 <div class="mb-6 flex items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-semibold text-white">Alunos cadastrados</h2>
-                        <p class="text-sm text-white/60">Controle validacao de e-mail, acesso a plataforma e vinculacao de cada aluno.</p>
+                        <p class="text-sm text-white/60">Controle validação de e-mail, acesso a plataforma e vinculação de cada aluno.</p>
                     </div>
                     <div class="flex flex-wrap items-center justify-end gap-3">
                         <Button as-child class="rounded-2xl !bg-primary !text-white hover:!bg-[var(--primary-hover)]">
@@ -322,7 +322,7 @@ watch(
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
-                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Ultimo acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
+                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Último acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
                             <tr v-for="student in props.students.data" :key="student.id">
                                 <td class="py-4"><p class="font-semibold text-white">{{ student.name }}</p><p class="text-white/55">{{ student.email }}</p></td>
@@ -360,7 +360,7 @@ watch(
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle>Importar alunos</DialogTitle>
-                <DialogDescription class="text-white/60">Use o template padrao com as colunas NOME e EMAIL e escolha o ponto de ensino que recebera os alunos importados.</DialogDescription>
+                <DialogDescription class="text-white/60">Use o template padrão com as colunas NOME e EMAIL e escolha o ponto de ensino que receberá os alunos importados.</DialogDescription>
             </DialogHeader>
             <form class="space-y-5" @submit.prevent="submitImport">
                 <div class="grid gap-2">
@@ -415,21 +415,21 @@ watch(
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader>
                 <DialogTitle>{{ selectedStudent ? 'Editar Aluno' : 'Novo Aluno' }}</DialogTitle>
-                <DialogDescription class="text-white/60">O aluno recebera um convite por e-mail para definir a senha no primeiro acesso.</DialogDescription>
+                <DialogDescription class="text-white/60">O aluno receberá um convite por e-mail para definir a senha no primeiro acesso.</DialogDescription>
             </DialogHeader>
             <form class="space-y-5" @submit.prevent="submit">
                 <div class="grid gap-2"><Label for="student-name">Nome</Label><Input id="student-name" v-model="form.name" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="Ex.: Julia Lima" /></div>
                 <div class="grid gap-2"><Label for="student-email">E-mail</Label><Input id="student-email" v-model="form.email" type="email" class="border-white/10 bg-[var(--surface-elevated)] text-white" placeholder="aluno@escola.com" /></div>
                 <div class="grid gap-2"><Label for="student-point">Ponto de Ensino</Label><Select v-model="form.point_of_school_id"><SelectTrigger id="student-point" class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectValue placeholder="Selecione o ponto de ensino" /></SelectTrigger><SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectItem v-for="point in props.points" :key="point.id" :value="String(point.id)">{{ point.name }}</SelectItem></SelectContent></Select></div>
                 <div class="grid gap-2"><Label for="student-status">Status</Label><Select v-model="form.status"><SelectTrigger id="student-status" class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectValue placeholder="Selecione o status" /></SelectTrigger><SelectContent class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectItem value="active">Ativo</SelectItem><SelectItem value="inactive">Inativo</SelectItem></SelectContent></Select></div>
-                <DialogFooter class="gap-2"><DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDialog">Cancelar</Button></DialogClose><Button type="submit" :disabled="form.processing">{{ selectedStudent ? 'Salvar alteracoes' : 'Criar aluno' }}</Button></DialogFooter>
+                <DialogFooter class="gap-2"><DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDialog">Cancelar</Button></DialogClose><Button type="submit" :disabled="form.processing">{{ selectedStudent ? 'Salvar alterações' : 'Criar aluno' }}</Button></DialogFooter>
             </form>
         </DialogContent>
     </Dialog>
 
     <Dialog :open="deleteDialogOpen" @update:open="(value) => !value ? closeDeleteDialog() : (deleteDialogOpen = value)">
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
-            <DialogHeader><DialogTitle>Confirmar exclusao</DialogTitle><DialogDescription class="text-white/60">Esta operacao nao pode ser desfeita e removera o aluno <span class="font-semibold text-white">{{ selectedStudent?.name }}</span>.</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle>Confirmar exclusao</DialogTitle><DialogDescription class="text-white/60">Esta operação não pode ser desfeita e removerá o aluno <span class="font-semibold text-white">{{ selectedStudent?.name }}</span>.</DialogDescription></DialogHeader>
             <DialogFooter class="gap-2"><DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDeleteDialog">Cancelar</Button></DialogClose><Button type="button" variant="destructive" :disabled="deleteForm.processing" @click="submitDelete">Excluir aluno</Button></DialogFooter>
         </DialogContent>
     </Dialog>

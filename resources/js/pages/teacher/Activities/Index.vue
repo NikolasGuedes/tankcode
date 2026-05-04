@@ -90,14 +90,14 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Visao geral', href: '/teacher' },
+    { title: 'Visão geral', href: '/teacher' },
     { title: 'Atividades', href: '/teacher/activities' },
 ];
 
 const levelLabels: Record<ActivityLevel, string> = {
-    facil: 'Facil',
-    media: 'Media',
-    dificil: 'Dificil',
+    facil: 'Fácil',
+    media: 'Média',
+    dificil: 'Difícil',
 };
 
 const statusLabels: Record<ActivityStatus, string> = {
@@ -452,7 +452,7 @@ watch(
                         </div>
                         <div>
                             <h1 class="text-4xl font-semibold tracking-tight text-white">Atividades</h1>
-                            <p class="mt-2 max-w-3xl text-lg text-white/70">Crie atividades para suas turmas com questoes e pontuacao calculada automaticamente pelo sistema.</p>
+                            <p class="mt-2 max-w-3xl text-lg text-white/70">Crie atividades para suas turmas com questões e pontuação calculada automaticamente pelo sistema.</p>
                         </div>
                     </div>
                     <Button type="button" class="rounded-2xl !bg-primary !text-white hover:!bg-[var(--primary-hover)]" @click="openCreateDialog">
@@ -496,7 +496,7 @@ watch(
                 <form class="mb-6 grid gap-3 rounded-3xl border border-white/10 bg-black/20 p-4 lg:grid-cols-[minmax(0,1fr)_220px_260px_auto]" @submit.prevent="applyFilters">
                     <div class="relative">
                         <Search class="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-white/40" />
-                        <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] pl-10 text-white placeholder:text-white/35" placeholder="Buscar por titulo ou turma" />
+                        <Input v-model="filtersForm.search" class="border-white/10 bg-[var(--surface-elevated)] pl-10 text-white placeholder:text-white/35" placeholder="Buscar por título ou turma" />
                     </div>
                     <Select v-model="filtersForm.status">
                         <SelectTrigger class="border-white/10 bg-[var(--surface-elevated)] text-white"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -526,7 +526,7 @@ watch(
                                 <th class="pb-4 font-medium">Turma</th>
                                 <th class="pb-4 font-medium">Nivel</th>
                                 <th class="pb-4 font-medium">Questoes</th>
-                                <th class="pb-4 font-medium">Pontos/questao</th>
+                                <th class="pb-4 font-medium">Pontos/questão</th>
                                 <th class="pb-4 font-medium">Total</th>
                                 <th class="pb-4 font-medium">Entrega</th>
                                 <th class="pb-4 font-medium">Status</th>
@@ -538,7 +538,7 @@ watch(
                             <tr v-for="activity in props.activities.data" :key="activity.id" class="transition hover:bg-white/[0.03]">
                                 <td class="py-4 pr-6">
                                     <p class="font-semibold text-white">{{ activity.title }}</p>
-                                    <p class="mt-1 max-w-xs truncate text-white/50">{{ activity.description || 'Sem descricao' }}</p>
+                                    <p class="mt-1 max-w-xs truncate text-white/50">{{ activity.description || 'Sem descrição' }}</p>
                                 </td>
                                 <td class="py-4 pr-6">
                                     <p class="font-medium text-white/85">{{ activity.classroom }}</p>
@@ -941,7 +941,7 @@ watch(
                     <Button v-if="step > 1" type="button" variant="outline" class="border-white/10 bg-white/5 text-white hover:bg-white/10" @click="prevStep">Voltar</Button>
                     <Button v-if="step < 3" type="button" @click="nextStep">Continuar</Button>
                     <Button v-else type="submit" :disabled="form.processing || props.classrooms.length === 0">
-                        {{ mode === 'edit' ? 'Salvar alteracoes' : 'Criar atividade' }}
+                        {{ mode === 'edit' ? 'Salvar alterações' : 'Criar atividade' }}
                     </Button>
                 </DialogFooter>
             </form>
@@ -953,7 +953,7 @@ watch(
             <DialogHeader>
                 <DialogTitle>Confirmar exclusao</DialogTitle>
                 <DialogDescription class="text-white/60">
-                    Esta operacao nao pode ser desfeita e removera a atividade <span class="font-semibold text-white">{{ selectedActivity?.title }}</span>.
+                    Esta operação não pode ser desfeita e removerá a atividade <span class="font-semibold text-white">{{ selectedActivity?.title }}</span>.
                 </DialogDescription>
             </DialogHeader>
             <DialogFooter class="gap-2">

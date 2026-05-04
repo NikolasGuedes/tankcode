@@ -144,7 +144,7 @@ const submitLinks = () => {
                 <DialogContent class="border-white/10 bg-[#120d31] text-white">
                     <DialogHeader>
                         <DialogTitle>Editar foto de perfil</DialogTitle>
-                        <DialogDescription class="text-white/60">Envie uma imagem JPG, PNG ou WEBP com ate 2 MB.</DialogDescription>
+                        <DialogDescription class="text-white/60">Envie uma imagem JPG, PNG ou WEBP com até 2 MB.</DialogDescription>
                     </DialogHeader>
 
                     <form class="space-y-4" @submit.prevent="submitPhoto">
@@ -194,7 +194,7 @@ const submitLinks = () => {
                 <p class="mt-2 text-sm text-white/55">{{ profile.email }}</p>
 
                 <div class="mt-5 inline-flex items-center overflow-hidden rounded-full bg-white text-sm font-medium text-[#120d31]">
-                    <span class="px-4 py-2">Pontuacao:</span>
+                    <span class="px-4 py-2">Pontuação:</span>
                     <span class="bg-[#2f1ef4] px-4 py-2 font-semibold text-white">{{ profile.points }} pts</span>
                 </div>
 
@@ -208,7 +208,7 @@ const submitLinks = () => {
                         :rel="link.href ? 'noreferrer noopener' : undefined"
                         class="flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-[#271D67] transition"
                         :class="link.href ? 'text-white hover:border-[#8f7bff] hover:bg-[#8f7bff]/18' : 'cursor-not-allowed text-white/30'"
-                        :title="link.href ? link.label : `${link.label} indisponivel`"
+                        :title="link.href ? link.label : `${link.label} indisponível`"
                     >
                         <component :is="link.icon" class="size-5" />
                     </component>
@@ -266,9 +266,9 @@ const submitLinks = () => {
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <p class="inline-flex rounded-full bg-[#8f7bff] px-4 py-1 text-sm text-white">
-                            {{ viewerLabel ?? 'Visualizacao' }}
+                            {{ viewerLabel ?? 'Visualização' }}
                         </p>
-                        <p class="mt-3 text-white/65">Este perfil esta em modo somente leitura.</p>
+                        <p class="mt-3 text-white/65">Este perfil está em modo somente leitura.</p>
                     </div>
                     <Link
                         href="/student/minha-sala"
@@ -296,7 +296,7 @@ const submitLinks = () => {
                         <DialogContent class="border-white/10 bg-[#120d31] text-white">
                             <DialogHeader>
                                 <DialogTitle>Editar bio</DialogTitle>
-                                <DialogDescription class="text-white/60">Escreva uma breve apresentacao para o seu perfil.</DialogDescription>
+                                <DialogDescription class="text-white/60">Escreva uma breve apresentação para o seu perfil.</DialogDescription>
                             </DialogHeader>
 
                             <form class="space-y-4" @submit.prevent="submitBio">
@@ -307,7 +307,7 @@ const submitLinks = () => {
                                         v-model="bioForm.bio"
                                         rows="6"
                                         class="min-h-32 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none transition focus:border-[#8f7bff]"
-                                        placeholder="Conte um pouco sobre voce"
+                                        placeholder="Conte um pouco sobre você"
                                     />
                                     <InputError :message="bioForm.errors.bio" />
                                 </div>
@@ -358,7 +358,7 @@ const submitLinks = () => {
                         />
                     </div>
                     <div class="mt-8 rounded-[1.5rem] border border-dashed border-white/15 bg-[#271D67] px-5 py-8 text-center text-sm leading-6 text-white/55">
-                        Suas badges vao aparecer aqui quando a integracao de conquistas estiver pronta.
+                        Suas badges vão aparecer aqui quando a integração de conquistas estiver pronta.
                     </div>
                 </AppReveal>
             </div>

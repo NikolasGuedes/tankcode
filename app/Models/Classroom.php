@@ -46,4 +46,19 @@ class Classroom extends Model
     {
         return $this->hasMany(Activity::class);
     }
+
+    public function activitySubmissions(): HasMany
+    {
+        return $this->hasMany(ActivitySubmission::class);
+    }
+
+    public function studentPerformances(): HasMany
+    {
+        return $this->hasMany(StudentClassroomPerformance::class);
+    }
+
+    public function teacherMetrics(): HasMany
+    {
+        return $this->hasMany(TeacherClassroomMetric::class);
+    }
 }

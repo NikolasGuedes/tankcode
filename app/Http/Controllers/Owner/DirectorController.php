@@ -165,8 +165,8 @@ class DirectorController extends Controller
         $data = $request->validate([
             'status' => ['required', 'string', 'in:active,inactive'],
         ], [
-            'status.required' => 'O status do diretor e obrigatorio.',
-            'status.in' => 'O status informado e invalido.',
+            'status.required' => 'O status do diretor é obrigatório.',
+            'status.in' => 'O status informado é inválido.',
         ]);
 
         $director->update([
@@ -181,7 +181,7 @@ class DirectorController extends Controller
         abort_unless($this->canManageDirector($request->user(), $director), 404);
 
         if (! is_null($director->email_verified_at)) {
-            return back()->with('info', 'Este diretor ja ativou a conta e nao precisa de um novo convite.');
+            return back()->with('info', 'Este diretor já ativou a conta e não precisa de um novo convite.');
         }
 
         $invitationService->send($director);

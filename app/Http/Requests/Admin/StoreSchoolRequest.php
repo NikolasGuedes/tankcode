@@ -35,13 +35,13 @@ class StoreSchoolRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'O nome da escola e obrigatorio.',
-            'cnpj.required' => 'O CNPJ da escola e obrigatorio.',
-            'cnpj.digits' => 'Informe um CNPJ valido com 14 digitos.',
-            'logo.image' => 'Envie um arquivo de imagem valido para a logo.',
+            'name.required' => 'O nome da escola é obrigatório.',
+            'cnpj.required' => 'O CNPJ da escola é obrigatório.',
+            'cnpj.digits' => 'Informe um CNPJ válido com 14 dígitos.',
+            'logo.image' => 'Envie um arquivo de imagem válido para a logo.',
             'logo.mimes' => 'A logo deve estar em JPG, PNG, WEBP ou SVG.',
-            'logo.max' => 'A logo deve ter no maximo 2 MB.',
-            'status.required' => 'O status da escola e obrigatorio.',
+            'logo.max' => 'A logo deve ter no máximo 2 MB.',
+            'status.required' => 'O status da escola é obrigatório.',
         ];
     }
 }

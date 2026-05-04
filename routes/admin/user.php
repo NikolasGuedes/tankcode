@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ImpersonationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -9,3 +10,6 @@ Route::put('/users/{user}', [UserController::class, 'update'])->name('users.upda
 Route::patch('/users/{user}/access', [UserController::class, 'updateAccess'])->name('users.access.update');
 Route::post('/users/{user}/resend-invitation', [UserController::class, 'resendInvitation'])->name('users.resend-invitation');
 Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+// Impersonation routes
+Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'impersonate'])->name('users.impersonate');

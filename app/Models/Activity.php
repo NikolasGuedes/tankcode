@@ -50,4 +50,9 @@ class Activity extends Model
     {
         return $this->hasMany(ActivityQuestion::class)->orderBy('order');
     }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(ActivitySubmission::class);
+    }
 }

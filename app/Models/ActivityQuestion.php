@@ -41,4 +41,9 @@ class ActivityQuestion extends Model
     {
         return $this->belongsTo(Activity::class);
     }
+
+    public function submissionAnswers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ActivitySubmissionAnswer::class);
+    }
 }

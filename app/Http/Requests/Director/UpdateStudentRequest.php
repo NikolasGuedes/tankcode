@@ -34,7 +34,7 @@ class UpdateStudentRequest extends FormRequest
                 $selectedId = (int) $this->input('point_of_school_id');
 
                 if ($selectedId && ! in_array($selectedId, $allowedIds, true)) {
-                    $validator->errors()->add('point_of_school_id', 'Selecione um ponto de ensino disponivel para a diretoria.');
+                    $validator->errors()->add('point_of_school_id', 'Selecione um ponto de ensino disponível para a diretoria.');
                 }
             },
         ];

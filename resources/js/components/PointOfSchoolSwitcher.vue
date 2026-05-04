@@ -48,10 +48,10 @@ const subtitle = (point: PointContextItem | null) => {
         <DropdownMenuTrigger :as-child="true">
             <Button
                 variant="ghost"
-                class="h-auto min-w-0 rounded-2xl border border-white/10 bg-card px-2 py-1.5 text-left text-white hover:bg-[var(--surface-elevated)]"
+                class="h-auto w-full min-w-0 justify-between rounded-2xl border border-white/8 bg-white/5 px-2.5 py-2 text-left text-white hover:bg-white/8 sm:w-auto"
             >
                 <Avatar class="h-9 w-9 rounded-xl">
-                    <AvatarFallback class="rounded-xl bg-secondary text-xs font-semibold text-white">
+                    <AvatarFallback class="rounded-xl bg-secondary/90 text-xs font-semibold text-white">
                         {{ getInitials(currentPoint?.name) || 'PE' }}
                     </AvatarFallback>
                 </Avatar>
@@ -63,7 +63,7 @@ const subtitle = (point: PointContextItem | null) => {
             </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" class="w-72 border-0 bg-[var(--surface-elevated)] p-0 text-white">
+        <DropdownMenuContent align="end" class="w-72 rounded-2xl border border-white/10 bg-[var(--surface-elevated)] p-0 text-white shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
             <DropdownMenuLabel class="px-4 py-3 font-normal">
                 <div class="flex items-center gap-3">
                     <Avatar class="h-10 w-10 rounded-xl">
