@@ -8,12 +8,14 @@ use App\Models\Activity;
 use App\Models\ActivityQuestion;
 use App\Models\ActivitySubmission;
 use App\Models\ActivitySubmissionAnswer;
+use App\Models\StudentAchievement;
 use App\Models\User;
 use App\Support\ActivitySubmissionGrader;
 use App\Support\PerformanceMetricsRebuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,6 +54,9 @@ class ActivityController extends Controller
         PerformanceMetricsRebuilder $metricsRebuilder,
     ): RedirectResponse {
         $student = $this->resolveStudent($request);
+        $existingAchievementIds = $student->studentAchievements()
+            ->pluck('achievement_id')
+            ->all();
 
         $activity->loadMissing([
             'questions',
@@ -92,8 +97,18 @@ class ActivityController extends Controller
             $metricsRebuilder->rebuildSchool((int) $student->school_id);
         }
 
-        return to_route('student.activities.show', $activity)
-            ->with('success', 'Atividade enviada com sucesso. Sua correção já está disponível.');
+        $newlyUnlockedAchievements = $student->fresh()
+            ->studentAchievements()
+            ->with('achievement:id,code,name,description,image_path,sort_order')
+            ->when($existingAchievementIds !== [], fn ($query) => $query->whereNotIn('achievement_id', $existingAchievementIds))
+            ->orderBy('awarded_at')
+            ->get();
+
+        return $this->withAchievementUnlocks(
+            to_route('student.activities.show', $activity)
+                ->with('success', 'Atividade enviada com sucesso. Sua correção já está disponível.'),
+            $newlyUnlockedAchievements,
+        );
     }
 
     private function resolveStudent(Request $request): User
@@ -173,6 +188,29 @@ class ActivityController extends Controller
             'correct_answers_count' => $submission->correct_answers_count,
             'answers_count' => $submission->answers->count(),
         ];
+    }
+
+    /**
+     * @param  Collection<int, StudentAchievement>  $studentAchievements
+     */
+    private function withAchievementUnlocks(RedirectResponse $response, Collection $studentAchievements): RedirectResponse
+    {
+        if ($studentAchievements->isEmpty()) {
+            return $response;
+        }
+
+        return $response->with('achievement_unlocks', $studentAchievements
+            ->values()
+            ->map(fn (StudentAchievement $studentAchievement) => [
+                'code' => $studentAchievement->achievement?->code ?? '',
+                'title' => $studentAchievement->achievement?->name ?? 'Conquista',
+                'description' => $studentAchievement->achievement?->description ?? 'Nova conquista desbloqueada.',
+                'image_url' => $studentAchievement->achievement?->image_path
+                    ? asset($studentAchievement->achievement->image_path)
+                    : null,
+                'awarded_at' => optional($studentAchievement->awarded_at)?->toIso8601String(),
+            ])
+            ->all());
     }
 
     private function questionSolution(ActivityQuestion $question): array

@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Student;
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Classroom;
+use App\Models\StudentAchievement;
 use App\Models\StudentClassroomPerformance;
 use App\Models\User;
+use App\Support\StudentAchievementSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +26,11 @@ class DashboardController extends Controller
         $classroom = $student->classrooms->first();
         $point = $student->pointOfSchools->first();
         $score = $this->scoreSummary($student, $classroom);
+        $activityFilters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'state' => ['nullable', 'string', 'in:all,respondida,vence_hoje,vence_semana,atrasada,pendente'],
+            'sort' => ['nullable', 'string', 'in:deadline_asc,deadline_desc,title_asc,title_desc,newest'],
+        ]);
         $classmates = $this->classroomRanking($classroom, $student);
 
         return Inertia::render('student/Classroom', [
@@ -35,7 +44,17 @@ class DashboardController extends Controller
                 'student_points' => $score['student_points'],
                 'classroom_rank' => $score['classroom_rank'],
             ],
-            'activities' => $this->classroomActivities($student, $classroom?->id),
+            'activities' => $this->classroomActivities(
+                student: $student,
+                classroomId: $classroom?->id,
+                filters: $activityFilters,
+            ),
+            'activity_filters' => [
+                'search' => $activityFilters['search'] ?? '',
+                'state' => $activityFilters['state'] ?? 'all',
+                'sort' => $activityFilters['sort'] ?? 'deadline_asc',
+            ],
+            'activity_summary' => $this->classroomActivitySummary($student, $classroom?->id),
             'classmates' => $classmates,
         ]);
     }
@@ -52,7 +71,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): RedirectResponse
+    public function updateProfile(Request $request, StudentAchievementSyncService $achievementSyncService): RedirectResponse
     {
         $student = $this->resolveStudent($request);
         $section = $request->validate([
@@ -67,8 +86,12 @@ class DashboardController extends Controller
             $student->update([
                 'bio' => $this->nullableString($data['bio'] ?? null),
             ]);
+            $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-            return back()->with('success', 'Bio atualizada com sucesso.');
+            return $this->withAchievementUnlocks(
+                back()->with('success', 'Bio atualizada com sucesso.'),
+                $newlyUnlockedAchievements,
+            );
         }
 
         if ($section === 'links') {
@@ -81,8 +104,12 @@ class DashboardController extends Controller
                 'github_url' => $this->nullableString($data['github_url'] ?? null),
                 'linkedin_url' => $this->nullableString($data['linkedin_url'] ?? null),
             ]);
+            $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-            return back()->with('success', 'Links atualizados com sucesso.');
+            return $this->withAchievementUnlocks(
+                back()->with('success', 'Links atualizados com sucesso.'),
+                $newlyUnlockedAchievements,
+            );
         }
 
         $data = $request->validate([
@@ -96,8 +123,12 @@ class DashboardController extends Controller
         $student->update([
             'photo' => $data['photo']->store('users/photos', 'public'),
         ]);
+        $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-        return back()->with('success', 'Foto atualizada com sucesso.');
+        return $this->withAchievementUnlocks(
+            back()->with('success', 'Foto atualizada com sucesso.'),
+            $newlyUnlockedAchievements,
+        );
     }
 
     public function show(Request $request, User $student): Response
@@ -195,6 +226,8 @@ class DashboardController extends Controller
             'classrooms.teacher:id,name',
             'classrooms.students:id,name,email,photo,school_id,role_id,status',
             'classrooms.students.role:id,name,label',
+            'studentAchievements:id,student_id,achievement_id,awarded_at',
+            'studentAchievements.achievement:id,code,name,description,image_path,sort_order,is_active',
         ]);
 
         return $student;
@@ -209,6 +242,8 @@ class DashboardController extends Controller
      *     bio: string,
      *     links: array{github: string|null, linkedin: string|null},
      *     status: array{completed_activities: int, ranking_position: int},
+     *     achievements: array<int, array{code: string, title: string, description: string, image_url: string, is_unlocked: bool, unlocked_at: string|null}>,
+     *     achievement_summary: array{earned_count: int, total_count: int},
      *     classroom: array{name: string, code: string, point_of_school: string, teacher: string}
      * }
      */
@@ -216,6 +251,7 @@ class DashboardController extends Controller
     {
         $point = $student->pointOfSchools->first();
         $score = $this->scoreSummary($student, $classroom);
+        $achievements = $this->achievementPayload($student);
 
         return [
             'name' => $student->name,
@@ -231,6 +267,11 @@ class DashboardController extends Controller
             'status' => [
                 'completed_activities' => $score['submitted_activities_count'],
                 'ranking_position' => $score['school_rank'],
+            ],
+            'achievements' => $achievements,
+            'achievement_summary' => [
+                'earned_count' => collect($achievements)->where('is_unlocked', true)->count(),
+                'total_count' => count($achievements),
             ],
             'classroom' => [
                 'name' => $classroom?->name ?? 'Sala em configuração',
@@ -263,23 +304,55 @@ class DashboardController extends Controller
         ];
     }
 
-    private function classroomActivities(User $student, ?int $classroomId): array
+    /**
+     * @param  array{search?: string|null, state?: string|null, sort?: string|null}  $filters
+     * @return array{
+     *     data: array<int, array{id: int, title: string, description: string, due_date: string|null, deadline_label: string, deadline_group: string, state: string, href: string, submitted_at: string|null, score: mixed, total_points: mixed}>,
+     *     links: array<int, array{url: string|null, label: string, active: bool}>,
+     *     current_page: int,
+     *     last_page: int,
+     *     from: int|null,
+     *     to: int|null,
+     *     total: int
+     * }
+     */
+    private function classroomActivities(User $student, ?int $classroomId, array $filters): array
     {
         if (! $classroomId) {
-            return [];
+            return [
+                'data' => [],
+                'links' => [],
+                'current_page' => 1,
+                'last_page' => 1,
+                'from' => null,
+                'to' => null,
+                'total' => 0,
+            ];
         }
 
-        return Activity::query()
+        $query = Activity::query()
             ->with([
                 'submissions' => fn ($query) => $query->where('student_id', $student->id),
             ])
             ->where('classroom_id', $classroomId)
-            ->where('status', 'published')
-            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('due_date')
-            ->latest('id')
-            ->get()
-            ->map(function (Activity $activity) {
+            ->where('status', 'published');
+
+        if (($filters['search'] ?? null) !== null && trim((string) $filters['search']) !== '') {
+            $term = trim((string) $filters['search']);
+            $query->where(function ($nested) use ($term): void {
+                $nested
+                    ->where('title', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            });
+        }
+
+        $this->applyActivityStateFilter($query, $student, $filters['state'] ?? 'all');
+        $this->applyActivitySort($query, $filters['sort'] ?? 'deadline_asc');
+
+        return $query
+            ->paginate(6)
+            ->withQueryString()
+            ->through(function (Activity $activity) {
                 $submission = $activity->submissions->first();
                 $state = $this->activityState($activity, $submission !== null);
 
@@ -297,8 +370,44 @@ class DashboardController extends Controller
                     'total_points' => $activity->total_points,
                 ];
             })
-            ->values()
-            ->all();
+            ->toArray();
+    }
+
+    /**
+     * @return array<int, array{label: string, count: int}>
+     */
+    private function classroomActivitySummary(User $student, ?int $classroomId): array
+    {
+        if (! $classroomId) {
+            return [];
+        }
+
+        $activities = Activity::query()
+            ->with([
+                'submissions' => fn ($query) => $query->where('student_id', $student->id),
+            ])
+            ->where('classroom_id', $classroomId)
+            ->where('status', 'published')
+            ->get();
+
+        return [
+            [
+                'label' => 'Hoje',
+                'count' => $activities->filter(fn (Activity $activity) => $this->activityDeadlineGroup($activity) === 'Hoje')->count(),
+            ],
+            [
+                'label' => 'Essa semana',
+                'count' => $activities->filter(fn (Activity $activity) => $this->activityDeadlineGroup($activity) === 'Essa semana')->count(),
+            ],
+            [
+                'label' => 'Proximas',
+                'count' => $activities->filter(fn (Activity $activity) => $this->activityDeadlineGroup($activity) === 'Proximas')->count(),
+            ],
+            [
+                'label' => 'Respondidas',
+                'count' => $activities->filter(fn (Activity $activity) => $activity->submissions->isNotEmpty())->count(),
+            ],
+        ];
     }
 
     private function classroomRanking(?Classroom $classroom, User $viewer): array
@@ -308,7 +417,7 @@ class DashboardController extends Controller
         }
 
         return StudentClassroomPerformance::query()
-            ->with('student:id,name,email')
+            ->with('student:id,name,email,photo')
             ->where('classroom_id', $classroom->id)
             ->orderBy('classroom_rank')
             ->get()
@@ -329,7 +438,7 @@ class DashboardController extends Controller
 
         return StudentClassroomPerformance::query()
             ->with([
-                'student:id,name,email',
+                'student:id,name,email,photo',
                 'classroom:id,name',
                 'pointOfSchool:id,name',
             ])
@@ -357,6 +466,7 @@ class DashboardController extends Controller
      *     id: int,
      *     name: string,
      *     email: string,
+     *     avatar: string|null,
      *     score: float,
      *     ranking_position: int,
      *     href: string,
@@ -373,6 +483,7 @@ class DashboardController extends Controller
             'id' => $student?->id ?? 0,
             'name' => $student?->name ?? 'Aluno não encontrado',
             'email' => $student?->email ?? '-',
+            'avatar' => $student?->photo ? asset('storage/'.$student->photo) : null,
             'score' => round((float) $performance->total_score, 2),
             'ranking_position' => $rankingPosition,
             'href' => $student ? route('student.classmates.show', $student, absolute: false) : '#',
@@ -453,6 +564,36 @@ class DashboardController extends Controller
         return $value === '' ? null : $value;
     }
 
+    /**
+     * @return array<int, array{code: string, title: string, description: string, image_url: string, is_unlocked: bool, unlocked_at: string|null}>
+     */
+    private function achievementPayload(User $student): array
+    {
+        $catalog = Achievement::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'code', 'name', 'description', 'image_path']);
+
+        $awarded = $student->studentAchievements
+            ->keyBy('achievement_id');
+
+        return $catalog
+            ->map(function (Achievement $achievement) use ($awarded) {
+                $studentAchievement = $awarded->get($achievement->id);
+
+                return [
+                    'code' => $achievement->code,
+                    'title' => $achievement->name,
+                    'description' => $achievement->description,
+                    'image_url' => asset($achievement->image_path),
+                    'is_unlocked' => $studentAchievement !== null,
+                    'unlocked_at' => optional($studentAchievement?->awarded_at)?->toIso8601String(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     private function activityState(Activity $activity, bool $submitted): string
     {
         if ($submitted) {
@@ -476,6 +617,58 @@ class DashboardController extends Controller
         }
 
         return 'pendente';
+    }
+
+    private function applyActivitySort(mixed $query, string $sort): void
+    {
+        match ($sort) {
+            'deadline_desc' => $query
+                ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
+                ->orderByDesc('due_date')
+                ->latest('id'),
+            'title_asc' => $query
+                ->orderBy('title')
+                ->latest('id'),
+            'title_desc' => $query
+                ->orderByDesc('title')
+                ->latest('id'),
+            'newest' => $query->latest('id'),
+            default => $query
+                ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('due_date')
+                ->latest('id'),
+        };
+    }
+
+    private function applyActivityStateFilter(mixed $query, User $student, string $state): void
+    {
+        $today = today()->toDateString();
+        $weekEnd = today()->copy()->addDays(6)->toDateString();
+
+        match ($state) {
+            'respondida' => $query->whereHas('submissions', fn ($nested) => $nested->where('student_id', $student->id)),
+            'vence_hoje' => $query
+                ->whereDoesntHave('submissions', fn ($nested) => $nested->where('student_id', $student->id))
+                ->whereDate('due_date', $today),
+            'vence_semana' => $query
+                ->whereDoesntHave('submissions', fn ($nested) => $nested->where('student_id', $student->id))
+                ->whereBetween('due_date', [
+                    today()->copy()->addDay()->toDateString(),
+                    $weekEnd,
+                ]),
+            'atrasada' => $query
+                ->whereDoesntHave('submissions', fn ($nested) => $nested->where('student_id', $student->id))
+                ->whereNotNull('due_date')
+                ->whereDate('due_date', '<', $today),
+            'pendente' => $query
+                ->whereDoesntHave('submissions', fn ($nested) => $nested->where('student_id', $student->id))
+                ->where(function ($nested) use ($weekEnd, $today): void {
+                    $nested
+                        ->whereNull('due_date')
+                        ->orWhereDate('due_date', '>', $weekEnd);
+                }),
+            default => null,
+        };
     }
 
     private function activityDeadlineLabel(Activity $activity, bool $submitted): string
@@ -518,5 +711,32 @@ class DashboardController extends Controller
         }
 
         return 'Proximas';
+    }
+
+    /**
+     * @param  Collection<int, StudentAchievement>  $studentAchievements
+     */
+    private function withAchievementUnlocks(RedirectResponse $response, Collection $studentAchievements): RedirectResponse
+    {
+        if ($studentAchievements->isEmpty()) {
+            return $response;
+        }
+
+        return $response->with('achievement_unlocks', $studentAchievements
+            ->sortBy(fn (StudentAchievement $studentAchievement) => [
+                $studentAchievement->awarded_at?->getTimestamp() ?? 0,
+                $studentAchievement->achievement?->sort_order ?? 0,
+            ])
+            ->values()
+            ->map(fn (StudentAchievement $studentAchievement) => [
+                'code' => $studentAchievement->achievement?->code ?? '',
+                'title' => $studentAchievement->achievement?->name ?? 'Conquista',
+                'description' => $studentAchievement->achievement?->description ?? 'Nova conquista desbloqueada.',
+                'image_url' => $studentAchievement->achievement?->image_path
+                    ? asset($studentAchievement->achievement->image_path)
+                    : null,
+                'awarded_at' => optional($studentAchievement->awarded_at)?->toIso8601String(),
+            ])
+            ->all());
     }
 }

@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\DB;
 
 class PerformanceMetricsRebuilder
 {
+    public function __construct(
+        private readonly StudentAchievementSyncService $achievementSyncService,
+    ) {}
+
     public function rebuildAll(): void
     {
         School::query()
@@ -61,6 +65,7 @@ class PerformanceMetricsRebuilder
             }
 
             $this->recalculateRanks($schoolId);
+            $this->achievementSyncService->syncSchool($schoolId);
 
             $teacherClassroomMetrics = $this->teacherClassroomMetricRows($schoolId, $classrooms, $activities);
             TeacherClassroomMetric::query()->where('school_id', $schoolId)->delete();

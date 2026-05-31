@@ -33,7 +33,14 @@ class StudentController extends Controller
         $pointIds = PointOfSchoolContext::selectedPointIds($request, $director);
 
         $studentsQuery = User::query()
-            ->with(['pointOfSchools:id,name', 'classrooms:id,name'])
+            ->with([
+                'pointOfSchools:id,name',
+                'classrooms:id,name',
+                'studentAchievements' => fn ($query) => $query
+                    ->with('achievement:id,code,name,image_path')
+                    ->latest('awarded_at'),
+            ])
+            ->withCount('studentAchievements')
             ->where('school_id', $director?->school_id)
             ->whereHas('role', fn ($query) => $query->where('name', RoleEnum::STUDENT->value))
             ->whereHas('pointOfSchools', fn ($query) => $query->whereIn('point_of_schools.id', $pointIds))
@@ -58,6 +65,31 @@ class StudentController extends Controller
                 'point_of_school_id' => $student->pointOfSchools->first()?->id,
                 'point_of_school' => $student->pointOfSchools->first()?->name,
                 'classroom' => $student->classrooms->first()?->name ?? '-',
+                'achievements_count' => (int) $student->student_achievements_count,
+                'latest_achievement_at' => optional($student->studentAchievements->first()?->awarded_at)?->format('d/m/Y H:i'),
+                'achievement_preview' => $student->studentAchievements
+                    ->take(3)
+                    ->map(fn ($studentAchievement) => [
+                        'code' => $studentAchievement->achievement?->code ?? '',
+                        'name' => $studentAchievement->achievement?->name ?? 'Conquista',
+                        'image_url' => $studentAchievement->achievement?->image_path
+                            ? asset($studentAchievement->achievement->image_path)
+                            : null,
+                    ])
+                    ->values()
+                    ->all(),
+                'achievements' => $student->studentAchievements
+                    ->map(fn ($studentAchievement) => [
+                        'code' => $studentAchievement->achievement?->code ?? '',
+                        'name' => $studentAchievement->achievement?->name ?? 'Conquista',
+                        'description' => $studentAchievement->achievement?->description ?? 'Sem descrição disponível.',
+                        'image_url' => $studentAchievement->achievement?->image_path
+                            ? asset($studentAchievement->achievement->image_path)
+                            : null,
+                        'awarded_at' => optional($studentAchievement->awarded_at)?->format('d/m/Y H:i'),
+                    ])
+                    ->values()
+                    ->all(),
                 'last_login_at' => optional($student->last_login_at)?->format('d/m/Y H:i') ?? 'Nunca acessou',
             ]);
 

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import AppReveal from '@/components/AppReveal.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useInitials } from '@/composables/useInitials';
 import StudentLayout from '@/layouts/StudentLayout.vue';
-import { useDebounceFn } from '@vueuse/core';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import { ChevronRight, Medal, School, Trophy } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
@@ -44,6 +46,7 @@ const props = defineProps<{
         id: number;
         name: string;
         email: string;
+        avatar: string | null;
         score: number;
         ranking_position: number;
         href: string;
@@ -52,6 +55,8 @@ const props = defineProps<{
         unit_name: string;
     }>;
 }>();
+
+const { getInitials } = useInitials();
 
 const filtersForm = useForm({
     search: props.filters.search ?? '',
@@ -139,14 +144,10 @@ watch(
                 </div>
 
                 <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    <div
-                        v-for="card in cards"
-                        :key="card.title"
-                        class="rounded-[1.35rem] border border-white/10 bg-white/5 px-4 py-3"
-                    >
+                    <div v-for="card in cards" :key="card.title" class="rounded-[1.35rem] border border-white/10 bg-white/5 px-4 py-3">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <p class="text-xs uppercase tracking-[0.16em] text-white/45">{{ card.title }}</p>
+                                <p class="text-xs tracking-[0.16em] text-white/45 uppercase">{{ card.title }}</p>
                                 <p class="mt-2 text-2xl font-semibold text-white">{{ card.value }}</p>
                                 <p class="mt-1 text-sm text-white/55">{{ card.description }}</p>
                             </div>
@@ -157,19 +158,27 @@ watch(
 
                 <div class="mt-8 grid gap-3 md:grid-cols-[minmax(0,1.3fr)_220px_220px_auto] md:items-end">
                     <div class="space-y-2">
-                        <label class="text-xs uppercase tracking-[0.18em] text-white/45">Buscar aluno</label>
-                        <Input v-model="filtersForm.search" placeholder="Nome ou e-mail" class="border-white/10 bg-white/6 text-white placeholder:text-white/35" />
+                        <label class="text-xs tracking-[0.18em] text-white/45 uppercase">Buscar aluno</label>
+                        <Input
+                            v-model="filtersForm.search"
+                            placeholder="Nome ou e-mail"
+                            class="border-white/10 bg-white/6 text-white placeholder:text-white/35"
+                        />
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-xs uppercase tracking-[0.18em] text-white/45">Sala</label>
+                        <label class="text-xs tracking-[0.18em] text-white/45 uppercase">Sala</label>
                         <Select v-model="filtersForm.classroom">
                             <SelectTrigger class="border-white/10 bg-white/6 text-white">
                                 <SelectValue placeholder="Todas as salas" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Todas as salas</SelectItem>
-                                <SelectItem v-for="classroomOption in filter_options.classrooms" :key="classroomOption.id" :value="String(classroomOption.id)">
+                                <SelectItem
+                                    v-for="classroomOption in filter_options.classrooms"
+                                    :key="classroomOption.id"
+                                    :value="String(classroomOption.id)"
+                                >
                                     {{ classroomOption.name }}
                                 </SelectItem>
                             </SelectContent>
@@ -177,7 +186,7 @@ watch(
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-xs uppercase tracking-[0.18em] text-white/45">Unidade</label>
+                        <label class="text-xs tracking-[0.18em] text-white/45 uppercase">Unidade</label>
                         <Select v-model="filtersForm.unit">
                             <SelectTrigger class="border-white/10 bg-white/6 text-white">
                                 <SelectValue placeholder="Todas as unidades" />
@@ -199,7 +208,9 @@ watch(
                 <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5">
                     <div class="overflow-x-auto">
                         <div class="min-w-[920px]">
-                            <div class="grid grid-cols-[64px_minmax(0,1.4fr)_minmax(140px,0.8fr)_minmax(140px,0.8fr)_120px_52px] gap-3 border-b border-white/10 px-5 py-4 text-xs uppercase tracking-[0.18em] text-white/45">
+                            <div
+                                class="grid grid-cols-[64px_minmax(0,1.4fr)_minmax(140px,0.8fr)_minmax(140px,0.8fr)_120px_52px] gap-3 border-b border-white/10 px-5 py-4 text-xs tracking-[0.18em] text-white/45 uppercase"
+                            >
                                 <span>#</span>
                                 <span>Aluno</span>
                                 <span>Sala</span>
@@ -214,20 +225,32 @@ watch(
                                 :href="student.href"
                                 class="grid grid-cols-[64px_minmax(0,1.4fr)_minmax(140px,0.8fr)_minmax(140px,0.8fr)_120px_52px] items-center gap-3 border-b border-white/8 px-5 py-4 transition last:border-b-0 hover:bg-white/8"
                             >
-                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#8f7bff]/15 text-sm font-semibold text-[#d8d1ff]">
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-full bg-[#8f7bff]/15 text-sm font-semibold text-[#d8d1ff]"
+                                >
                                     {{ student.ranking_position }}
                                 </div>
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-3">
-                                        <p class="truncate text-base font-semibold text-white">{{ student.name }}</p>
-                                        <span
-                                            v-if="student.is_current_user"
-                                            class="rounded-full border border-[#8f7bff]/25 bg-[#8f7bff]/12 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#d8d1ff]"
-                                        >
-                                            Você
-                                        </span>
+                                        <Avatar class="h-11 w-11 shrink-0 overflow-hidden border border-white/10">
+                                            <AvatarImage v-if="student.avatar" :src="student.avatar" :alt="student.name" class="object-cover" />
+                                            <AvatarFallback class="bg-[#8f7bff]/20 text-sm font-semibold text-[#efeaff]">
+                                                {{ getInitials(student.name) }}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-3">
+                                                <p class="truncate text-base font-semibold text-white">{{ student.name }}</p>
+                                                <span
+                                                    v-if="student.is_current_user"
+                                                    class="rounded-full border border-[#8f7bff]/25 bg-[#8f7bff]/12 px-2 py-1 text-[10px] tracking-[0.18em] text-[#d8d1ff] uppercase"
+                                                >
+                                                    Você
+                                                </span>
+                                            </div>
+                                            <p class="truncate text-sm text-white/50">{{ student.email }}</p>
+                                        </div>
                                     </div>
-                                    <p class="truncate text-sm text-white/50">{{ student.email }}</p>
                                 </div>
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-medium text-white/80">{{ student.classroom_name }}</p>

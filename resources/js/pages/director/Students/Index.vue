@@ -19,7 +19,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useDebounceFn } from '@vueuse/core';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CheckCircle2, Download, Mail, Pencil, Plus, Trash2, Upload, XCircle } from 'lucide-vue-next';
+import { CheckCircle2, Download, Mail, Medal, Pencil, Plus, Trash2, Upload, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 type PointOption = { id: number; name: string };
@@ -34,6 +34,20 @@ type StudentRow = {
     point_of_school_id: number | null;
     point_of_school: string | null;
     classroom: string;
+    achievements_count: number;
+    latest_achievement_at: string | null;
+    achievement_preview: {
+        code: string;
+        name: string;
+        image_url: string | null;
+    }[];
+    achievements: {
+        code: string;
+        name: string;
+        description: string;
+        image_url: string | null;
+        awarded_at: string | null;
+    }[];
     last_login_at: string;
 };
 
@@ -66,6 +80,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const dialogOpen = ref(false);
 const importDialogOpen = ref(false);
 const deleteDialogOpen = ref(false);
+const achievementsDialogOpen = ref(false);
 const selectedStudent = ref<StudentRow | null>(null);
 const accessUpdatingId = ref<number | null>(null);
 const resendingInvitationId = ref<number | null>(null);
@@ -180,8 +195,18 @@ const openDeleteDialog = (student: StudentRow) => {
     deleteDialogOpen.value = true;
 };
 
+const openAchievementsDialog = (student: StudentRow) => {
+    selectedStudent.value = student;
+    achievementsDialogOpen.value = true;
+};
+
 const closeDeleteDialog = () => {
     deleteDialogOpen.value = false;
+    selectedStudent.value = null;
+};
+
+const closeAchievementsDialog = () => {
+    achievementsDialogOpen.value = false;
     selectedStudent.value = null;
 };
 
@@ -322,12 +347,34 @@ watch(
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
-                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Último acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
+                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">Conquistas</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Último acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
                             <tr v-for="student in props.students.data" :key="student.id">
                                 <td class="py-4"><p class="font-semibold text-white">{{ student.name }}</p><p class="text-white/55">{{ student.email }}</p></td>
                                 <td class="py-4">{{ student.point_of_school ?? '-' }}</td>
                                 <td class="py-4">{{ student.classroom }}</td>
+                                <td class="py-4">
+                                    <button
+                                        type="button"
+                                        class="space-y-2 rounded-2xl border border-white/10 bg-black/10 p-3 text-left transition cursor-pointer hover:border-white/20 hover:bg-black/20"
+                                        @click="openAchievementsDialog(student)"
+                                    >
+                                        <p class="font-semibold text-white">{{ student.achievements_count }} conquista(s)</p>
+                                        <div v-if="student.achievement_preview.length" class="flex items-center gap-2">
+                                            <img
+                                                v-for="achievement in student.achievement_preview"
+                                                :key="achievement.code"
+                                                :src="achievement.image_url ?? undefined"
+                                                :alt="achievement.name"
+                                                :title="achievement.name"
+                                                class="h-9 w-9 rounded-xl border border-white/10 bg-black/20 object-contain p-1.5"
+                                            />
+                                        </div>
+                                        <p class="text-xs text-white/50">
+                                            {{ student.latest_achievement_at ? `Última: ${student.latest_achievement_at}` : 'Nenhuma conquista ainda' }}
+                                        </p>
+                                    </button>
+                                </td>
                                 <td class="py-4">
                                     <span
                                         class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
@@ -431,6 +478,45 @@ watch(
         <DialogContent class="border-border bg-card text-white sm:max-w-xl">
             <DialogHeader><DialogTitle>Confirmar exclusao</DialogTitle><DialogDescription class="text-white/60">Esta operação não pode ser desfeita e removerá o aluno <span class="font-semibold text-white">{{ selectedStudent?.name }}</span>.</DialogDescription></DialogHeader>
             <DialogFooter class="gap-2"><DialogClose as-child><Button type="button" variant="outline" class="!border-destructive !bg-destructive !text-white hover:!border-[var(--destructive-hover)] hover:!bg-[var(--destructive-hover)]" @click="closeDeleteDialog">Cancelar</Button></DialogClose><Button type="button" variant="destructive" :disabled="deleteForm.processing" @click="submitDelete">Excluir aluno</Button></DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="achievementsDialogOpen" @update:open="(value) => !value ? closeAchievementsDialog() : (achievementsDialogOpen = value)">
+        <DialogContent class="border-border bg-card text-white sm:max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Conquistas do aluno</DialogTitle>
+                <DialogDescription class="text-white/60">
+                    {{ selectedStudent?.name }} possui {{ selectedStudent?.achievements_count ?? 0 }} conquista(s) registradas.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div v-if="selectedStudent?.achievements?.length" class="grid gap-3 sm:grid-cols-2">
+                <div
+                    v-for="achievement in selectedStudent.achievements"
+                    :key="achievement.code"
+                    class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
+                    >
+                    <img
+                        v-if="achievement.image_url"
+                        :src="achievement.image_url"
+                        :alt="achievement.name"
+                        class="h-14 w-14 rounded-xl border border-white/10 bg-black/20 object-contain p-1.5"
+                    />
+                    <div v-else class="flex h-14 w-14 items-center justify-center rounded-xl border border-white/10 bg-black/20 text-[#cfc6ff]">
+                        <Medal class="size-5" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-semibold text-white">{{ achievement.name }}</p>
+                        <p class="mt-1 text-sm text-white/55">
+                            {{ achievement.awarded_at ? `Conquistada em ${achievement.awarded_at}` : 'Data não disponível' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="rounded-2xl border border-dashed border-white/10 bg-black/10 px-4 py-10 text-center text-sm text-white/55">
+                Este aluno ainda não possui conquistas registradas.
+            </div>
         </DialogContent>
     </Dialog>
 </template>
