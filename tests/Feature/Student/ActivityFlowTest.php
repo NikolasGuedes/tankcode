@@ -211,9 +211,9 @@ test('aluno ve apenas atividades publicadas da propria turma', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('student/Classroom')
-            ->has('activities', 1)
-            ->where('activities.0.title', 'Atividade publicada')
-            ->where('activities.0.href', route('student.activities.show', Activity::query()->where('title', 'Atividade publicada')->firstOrFail(), absolute: false))
+            ->has('activities.data', 1)
+            ->where('activities.data.0.title', 'Atividade publicada')
+            ->where('activities.data.0.href', route('student.activities.show', Activity::query()->where('title', 'Atividade publicada')->firstOrFail(), absolute: false))
         );
 });
 
@@ -225,6 +225,56 @@ test('aluno nao acessa atividade de outra turma', function () {
     $this->actingAs($student)
         ->get(route('student.activities.show', $activity))
         ->assertNotFound();
+});
+
+test('minha sala filtra e pagina atividades no backend', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom] = studentActivityScope();
+
+    createStudentActivity($classroom, $teacher, [
+        'title' => 'Projeto Zebra',
+        'description' => 'Entrega depois.',
+        'due_date' => now()->addDays(15)->toDateString(),
+    ]);
+    createStudentActivity($classroom, $teacher, [
+        'title' => 'Atividade Alpha',
+        'description' => 'Entrega depois.',
+        'due_date' => now()->addDays(20)->toDateString(),
+    ]);
+
+    foreach (range(1, 7) as $index) {
+        createStudentActivity($classroom, $teacher, [
+            'title' => "Lista {$index}",
+            'description' => 'Atividade extra para paginacao.',
+            'due_date' => now()->addDays(30 + $index)->toDateString(),
+        ]);
+    }
+
+    $this->actingAs($student)
+        ->get(route('student.classroom', [
+            'search' => 'Entrega',
+            'state' => 'pendente',
+            'sort' => 'title_asc',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('student/Classroom')
+            ->where('activity_filters.search', 'Entrega')
+            ->where('activity_filters.state', 'pendente')
+            ->where('activity_filters.sort', 'title_asc')
+            ->where('activities.total', 2)
+            ->where('activities.last_page', 1)
+            ->where('activities.data.0.title', 'Atividade Alpha')
+            ->where('activities.data.1.title', 'Projeto Zebra')
+        );
+
+    $this->actingAs($student)
+        ->get(route('student.classroom', ['page' => 2]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('student/Classroom')
+            ->where('activities.current_page', 2)
+            ->has('activities.data', 3)
+        );
 });
 
 test('aluno consegue enviar atividade com os tres tipos de questao', function () {

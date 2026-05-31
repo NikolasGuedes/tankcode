@@ -432,34 +432,40 @@ class SchoolDemoSeeder extends Seeder
     {
         $profiles = [
             'julia.martins@escola.local' => [
-                'bio' => 'Ama resolver desafios de lógica e criar interfaces coloridas.',
+                'bio' => 'Adoro resolver desafios de lógica e criar interfaces coloridas.',
                 'github_url' => 'https://github.com/juliamartins-demo',
                 'linkedin_url' => 'https://www.linkedin.com/in/juliamartins-demo/',
+                'avatar_url' => 'https://i.pravatar.cc/300?img=47',
             ],
             'lucas.ferreira@escola.local' => [
-                'bio' => 'Curioso por desenvolvimento web e automações simples.',
+                'bio' => 'Sou curioso por desenvolvimento web e gosto de criar automações simples.',
                 'github_url' => 'https://github.com/lucasferreira-demo',
                 'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=12',
             ],
             'marina.costa@escola.local' => [
-                'bio' => 'Gosta de aprender praticando e manter uma rotina consistente de estudos.',
+                'bio' => 'Gosto de aprender praticando e manter uma rotina consistente de estudos.',
                 'github_url' => 'https://github.com/marinacosta-demo',
                 'linkedin_url' => 'https://www.linkedin.com/in/marinacosta-demo/',
+                'avatar_url' => 'https://i.pravatar.cc/300?img=32',
             ],
             'pedro.henrique@escola.local' => [
-                'bio' => 'Focado em fundamentos de programação e projetos em equipe.',
+                'bio' => 'Estou focado em fortalecer meus fundamentos de programação e evoluir em projetos em equipe.',
                 'github_url' => null,
                 'linkedin_url' => 'https://www.linkedin.com/in/pedrohenrique-demo/',
+                'avatar_url' => 'https://i.pravatar.cc/300?img=57',
             ],
             'laura.alves@escola.local' => [
-                'bio' => 'Compete consigo mesma para subir no ranking e bater novas metas.',
+                'bio' => 'Gosto de competir comigo mesma para subir no ranking e bater novas metas.',
                 'github_url' => 'https://github.com/lauraalves-demo',
                 'linkedin_url' => 'https://www.linkedin.com/in/lauraalves-demo/',
+                'avatar_url' => 'https://i.pravatar.cc/300?img=20',
             ],
             'gustavo.rocha@escola.local' => [
-                'bio' => 'Explora programação por meio de quizzes e mini projetos.',
+                'bio' => 'Exploro programação por meio de quizzes e mini projetos para aprender na prática.',
                 'github_url' => 'https://github.com/gustavorocha-demo',
                 'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=68',
             ],
         ];
 
@@ -468,25 +474,26 @@ class SchoolDemoSeeder extends Seeder
                 'bio' => 'Perfil demo do aluno TankCode.',
                 'github_url' => null,
                 'linkedin_url' => null,
+                'avatar_url' => null,
             ];
 
             $student->forceFill([
                 'bio' => $profile['bio'],
                 'github_url' => $profile['github_url'],
                 'linkedin_url' => $profile['linkedin_url'],
-                'photo' => $this->ensureDemoAvatar($student),
+                'photo' => $this->ensureDemoAvatar($student, $profile['avatar_url']),
             ])->save();
         });
     }
 
-    private function ensureDemoAvatar(User $student): string
+    private function ensureDemoAvatar(User $student, ?string $avatarUrl = null): string
     {
-        $directory = 'users/photos/demo';
+        $directory = 'users/photos/demo-pravatar';
         $slug = Str::slug(Str::before($student->email, '@'));
         $basePath = "{$directory}/{$slug}";
         $disk = Storage::disk('public');
 
-        foreach (['png', 'svg'] as $extension) {
+        foreach (['png', 'jpg', 'webp', 'svg'] as $extension) {
             $existingPath = "{$basePath}.{$extension}";
 
             if ($disk->exists($existingPath)) {
@@ -494,7 +501,7 @@ class SchoolDemoSeeder extends Seeder
             }
         }
 
-        $downloaded = $this->downloadRemoteAvatar($student);
+        $downloaded = $this->downloadRemoteAvatar($avatarUrl);
 
         if ($downloaded !== null) {
             $path = "{$basePath}.{$downloaded['extension']}";
@@ -512,23 +519,30 @@ class SchoolDemoSeeder extends Seeder
     /**
      * @return array{contents: string, extension: string}|null
      */
-    private function downloadRemoteAvatar(User $student): ?array
+    private function downloadRemoteAvatar(?string $avatarUrl): ?array
     {
-        $seed = urlencode($student->email);
-        $url = "https://api.dicebear.com/9.x/lorelei/png?seed={$seed}&size=256";
+        if (! $avatarUrl) {
+            return null;
+        }
 
         try {
             $response = Http::timeout(15)
                 ->retry(2, 400)
-                ->get($url);
+                ->get($avatarUrl);
 
             if (! $response->successful() || ! str_starts_with((string) $response->header('Content-Type'), 'image/')) {
                 return null;
             }
 
+            $extension = match ($response->header('Content-Type')) {
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+                default => 'jpg',
+            };
+
             return [
                 'contents' => $response->body(),
-                'extension' => 'png',
+                'extension' => $extension,
             ];
         } catch (\Throwable) {
             return null;

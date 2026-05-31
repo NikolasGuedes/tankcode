@@ -78,6 +78,18 @@ class StudentController extends Controller
                     ])
                     ->values()
                     ->all(),
+                'achievements' => $student->studentAchievements
+                    ->map(fn ($studentAchievement) => [
+                        'code' => $studentAchievement->achievement?->code ?? '',
+                        'name' => $studentAchievement->achievement?->name ?? 'Conquista',
+                        'description' => $studentAchievement->achievement?->description ?? 'Sem descrição disponível.',
+                        'image_url' => $studentAchievement->achievement?->image_path
+                            ? asset($studentAchievement->achievement->image_path)
+                            : null,
+                        'awarded_at' => optional($studentAchievement->awarded_at)?->format('d/m/Y H:i'),
+                    ])
+                    ->values()
+                    ->all(),
                 'last_login_at' => optional($student->last_login_at)?->format('d/m/Y H:i') ?? 'Nunca acessou',
             ]);
 

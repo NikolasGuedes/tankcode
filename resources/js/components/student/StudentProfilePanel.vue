@@ -70,6 +70,8 @@ const socialEntries = computed(() => [
 const photoDialogOpen = ref(false);
 const bioDialogOpen = ref(false);
 const linksDialogOpen = ref(false);
+const achievementDialogOpen = ref(false);
+const selectedAchievement = ref<StudentProfile['achievements'][number] | null>(null);
 
 const photoForm = useForm({
     section: 'photo',
@@ -138,6 +140,27 @@ const submitLinks = () => {
             linksDialogOpen.value = false;
         },
     });
+};
+
+const openAchievementDialog = (achievement: StudentProfile['achievements'][number]) => {
+    selectedAchievement.value = achievement;
+    achievementDialogOpen.value = true;
+};
+
+const formatAchievementDate = (value: string | null) => {
+    if (!value) return null;
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+        timeZone: 'America/Sao_Paulo',
+    }).format(date);
 };
 </script>
 
@@ -363,15 +386,17 @@ const submitLinks = () => {
                         <Sparkles class="size-5 text-[#c3b9ff]" />
                     </div>
                     <div class="mt-6 grid grid-cols-4 gap-4">
-                        <div
+                        <button
                             v-for="achievement in profile.achievements"
                             :key="achievement.code"
-                            class="group relative overflow-hidden rounded-[1.5rem] border p-3 transition"
+                            type="button"
+                            class="group relative overflow-hidden rounded-[1.5rem] border p-3 text-left transition cursor-pointer hover:-translate-y-0.5"
                             :class="
                                 achievement.is_unlocked
                                     ? 'border-[#8f7bff]/50 bg-[radial-gradient(circle_at_top,#3d2b8f_0%,#24195f_100%)] shadow-[0_18px_40px_rgba(143,123,255,0.25)]'
                                     : 'border-dashed border-white/15 bg-white/5'
                             "
+                            @click="openAchievementDialog(achievement)"
                         >
                             <div class="relative aspect-square overflow-hidden rounded-[1.2rem]">
                                 <img
@@ -390,7 +415,7 @@ const submitLinks = () => {
                             <p class="mt-3 text-center text-xs font-semibold leading-5" :class="achievement.is_unlocked ? 'text-white' : 'text-white/50'">
                                 {{ achievement.title }}
                             </p>
-                        </div>
+                        </button>
                     </div>
                 </AppReveal>
             </div>
@@ -419,4 +444,37 @@ const submitLinks = () => {
             </AppReveal>
         </div>
     </section>
+
+    <Dialog v-model:open="achievementDialogOpen">
+        <DialogContent class="border-white/10 bg-[#120d31] text-white sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle>{{ selectedAchievement?.title ?? 'Conquista' }}</DialogTitle>
+                <DialogDescription class="text-white/60">
+                    {{ selectedAchievement?.is_unlocked ? 'Veja quando esse emblema foi conquistado e como ele foi desbloqueado.' : 'Veja como desbloquear este emblema.' }}
+                </DialogDescription>
+            </DialogHeader>
+
+            <div v-if="selectedAchievement" class="space-y-4">
+                <div class="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <img
+                        :src="selectedAchievement.image_url"
+                        :alt="selectedAchievement.title"
+                        class="h-18 w-18 rounded-2xl object-contain p-2"
+                        :class="selectedAchievement.is_unlocked ? '' : 'grayscale opacity-40'"
+                    />
+                    <div>
+                        <p class="font-semibold text-white">{{ selectedAchievement.title }}</p>
+                        <p class="mt-1 text-sm text-white/65">
+                            {{ selectedAchievement.is_unlocked && selectedAchievement.unlocked_at ? `Conquistada em ${formatAchievementDate(selectedAchievement.unlocked_at)}` : 'Ainda não conquistada.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70">
+                    <p class="font-semibold text-white">{{ selectedAchievement.is_unlocked ? 'Como foi conquistada' : 'Como conquistar' }}</p>
+                    <p class="mt-2 leading-6">{{ selectedAchievement.description }}</p>
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>
