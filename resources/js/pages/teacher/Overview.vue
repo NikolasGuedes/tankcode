@@ -3,7 +3,7 @@ import AppReveal from '@/components/AppReveal.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { BarChart3, BookOpen, ClipboardList, GraduationCap, LayoutDashboard, Sparkles, Users } from 'lucide-vue-next';
+import { BarChart3, BookOpen, ClipboardList, LayoutDashboard, Sparkles } from 'lucide-vue-next';
 
 defineProps<{
     stats: {
@@ -78,7 +78,7 @@ const modules = [
                 </div>
             </AppReveal>
 
-            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-5 md:grid-cols-2">
                 <AppReveal
                     v-for="module in modules"
                     :key="module.title"
@@ -94,21 +94,6 @@ const modules = [
                             Acessar
                         </p>
                     </a>
-                </AppReveal>
-
-                <AppReveal class-name="rounded-[2rem] border border-border bg-card p-8 shadow-[0_20px_45px_rgba(0,0,0,0.25)]" :delay="0.1">
-                    <GraduationCap class="h-12 w-12 rounded-2xl bg-primary/15 p-3 text-secondary" />
-                    <h2 class="mt-8 text-2xl font-semibold text-white">Turmas e alunos</h2>
-                    <p class="mt-3 text-sm leading-6 text-white/70">
-                        A vinculacao de turmas e alunos e gerenciada pela diretoria. Assim que novas turmas forem atribuidas, elas aparecerao nas suas
-                        metricas.
-                    </p>
-                    <div
-                        class="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/60"
-                    >
-                        <Users class="size-4" />
-                        Gerenciado pela diretoria
-                    </div>
                 </AppReveal>
             </div>
         </section>

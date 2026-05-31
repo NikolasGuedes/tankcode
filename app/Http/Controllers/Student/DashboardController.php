@@ -308,7 +308,7 @@ class DashboardController extends Controller
         }
 
         return StudentClassroomPerformance::query()
-            ->with('student:id,name,email')
+            ->with('student:id,name,email,photo')
             ->where('classroom_id', $classroom->id)
             ->orderBy('classroom_rank')
             ->get()
@@ -329,7 +329,7 @@ class DashboardController extends Controller
 
         return StudentClassroomPerformance::query()
             ->with([
-                'student:id,name,email',
+                'student:id,name,email,photo',
                 'classroom:id,name',
                 'pointOfSchool:id,name',
             ])
@@ -357,6 +357,7 @@ class DashboardController extends Controller
      *     id: int,
      *     name: string,
      *     email: string,
+     *     avatar: string|null,
      *     score: float,
      *     ranking_position: int,
      *     href: string,
@@ -373,6 +374,7 @@ class DashboardController extends Controller
             'id' => $student?->id ?? 0,
             'name' => $student?->name ?? 'Aluno não encontrado',
             'email' => $student?->email ?? '-',
+            'avatar' => $student?->photo ? asset('storage/'.$student->photo) : null,
             'score' => round((float) $performance->total_score, 2),
             'ranking_position' => $rankingPosition,
             'href' => $student ? route('student.classmates.show', $student, absolute: false) : '#',

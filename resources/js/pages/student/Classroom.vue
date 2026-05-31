@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AppReveal from '@/components/AppReveal.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useInitials } from '@/composables/useInitials';
 import StudentLayout from '@/layouts/StudentLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowUpRight, CalendarClock, ChevronRight, Medal, Users } from 'lucide-vue-next';
@@ -34,12 +36,15 @@ const props = defineProps<{
         id: number;
         name: string;
         email: string;
+        avatar: string | null;
         score: number;
         ranking_position: number;
         href: string;
         is_current_user: boolean;
     }>;
 }>();
+
+const { getInitials } = useInitials();
 
 const activityFilters = computed(() => {
     const groups = ['Hoje', 'Essa semana', 'Proximas'];
@@ -51,7 +56,8 @@ const activityFilters = computed(() => {
 });
 
 const deadlineClass = (state: string) => {
-    if (state === 'atrasada' || state === 'vence_hoje') return 'border-rose-200/70 bg-rose-500/35 text-white shadow-[0_0_0_1px_rgba(251,191,191,0.12)]';
+    if (state === 'atrasada' || state === 'vence_hoje')
+        return 'border-rose-200/70 bg-rose-500/35 text-white shadow-[0_0_0_1px_rgba(251,191,191,0.12)]';
     if (state === 'vence_semana') return 'border-amber-200/70 bg-amber-400/35 text-white shadow-[0_0_0_1px_rgba(253,230,138,0.12)]';
     if (state === 'respondida') return 'border-emerald-200/70 bg-emerald-500/35 text-white shadow-[0_0_0_1px_rgba(167,243,208,0.12)]';
 
@@ -138,7 +144,10 @@ const formatPoints = (value: string | number | null) =>
                     </article>
                 </div>
 
-                <div v-if="!activities.length" class="mt-6 rounded-[1.5rem] border border-dashed border-white/12 bg-white/4 px-5 py-10 text-center text-sm text-white/60">
+                <div
+                    v-if="!activities.length"
+                    class="mt-6 rounded-[1.5rem] border border-dashed border-white/12 bg-white/4 px-5 py-10 text-center text-sm text-white/60"
+                >
                     Nenhuma atividade publicada foi encontrada para esta turma no momento.
                 </div>
             </AppReveal>
@@ -150,13 +159,17 @@ const formatPoints = (value: string | number | null) =>
                     <div>
                         <p class="inline-flex rounded-full bg-[#8f7bff] px-4 py-1 text-sm text-white">Colegas da sala</p>
                         <h2 class="mt-4 text-3xl font-semibold text-white">Ranking da turma</h2>
-                        <p class="mt-2 max-w-2xl text-white/60">Seu score atual é {{ score.student_points }} pts. Hoje ele coloca você na posição #{{ score.classroom_rank }} da turma.</p>
+                        <p class="mt-2 max-w-2xl text-white/60">
+                            Seu score atual é {{ score.student_points }} pts. Hoje ele coloca você na posição #{{ score.classroom_rank }} da turma.
+                        </p>
                     </div>
                     <Users class="size-6 text-[#8f7bff]" />
                 </div>
 
                 <div class="mt-8 overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5">
-                    <div class="grid grid-cols-[64px_minmax(0,1fr)_120px_52px] gap-3 border-b border-white/10 px-5 py-4 text-xs uppercase tracking-[0.18em] text-white/45">
+                    <div
+                        class="grid grid-cols-[64px_minmax(0,1fr)_120px_52px] gap-3 border-b border-white/10 px-5 py-4 text-xs tracking-[0.18em] text-white/45 uppercase"
+                    >
                         <span>#</span>
                         <span>Aluno</span>
                         <span>Score</span>
@@ -174,15 +187,25 @@ const formatPoints = (value: string | number | null) =>
                         </div>
                         <div class="min-w-0">
                             <div class="flex items-center gap-3">
-                                <p class="truncate text-base font-semibold text-white">{{ classmate.name }}</p>
-                                <span
-                                    v-if="classmate.is_current_user"
-                                    class="rounded-full border border-[#8f7bff]/25 bg-[#8f7bff]/12 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#d8d1ff]"
-                                >
-                                    Voce
-                                </span>
+                                <Avatar class="h-11 w-11 shrink-0 overflow-hidden border border-white/10">
+                                    <AvatarImage v-if="classmate.avatar" :src="classmate.avatar" :alt="classmate.name" class="object-cover" />
+                                    <AvatarFallback class="bg-[#8f7bff]/20 text-sm font-semibold text-[#efeaff]">
+                                        {{ getInitials(classmate.name) }}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-3">
+                                        <p class="truncate text-base font-semibold text-white">{{ classmate.name }}</p>
+                                        <span
+                                            v-if="classmate.is_current_user"
+                                            class="rounded-full border border-[#8f7bff]/25 bg-[#8f7bff]/12 px-2 py-1 text-[10px] tracking-[0.18em] text-[#d8d1ff] uppercase"
+                                        >
+                                            Voce
+                                        </span>
+                                    </div>
+                                    <p class="truncate text-sm text-white/50">{{ classmate.email }}</p>
+                                </div>
                             </div>
-                            <p class="truncate text-sm text-white/50">{{ classmate.email }}</p>
                         </div>
                         <div class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#201657]">
                             <Medal class="size-4 text-[#2f1ef4]" />
