@@ -7,11 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Classroom;
+use App\Models\StudentAchievement;
 use App\Models\StudentClassroomPerformance;
 use App\Models\User;
 use App\Support\StudentAchievementSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -84,9 +86,12 @@ class DashboardController extends Controller
             $student->update([
                 'bio' => $this->nullableString($data['bio'] ?? null),
             ]);
-            $achievementSyncService->syncStudent($student->fresh());
+            $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-            return back()->with('success', 'Bio atualizada com sucesso.');
+            return $this->withAchievementUnlocks(
+                back()->with('success', 'Bio atualizada com sucesso.'),
+                $newlyUnlockedAchievements,
+            );
         }
 
         if ($section === 'links') {
@@ -99,9 +104,12 @@ class DashboardController extends Controller
                 'github_url' => $this->nullableString($data['github_url'] ?? null),
                 'linkedin_url' => $this->nullableString($data['linkedin_url'] ?? null),
             ]);
-            $achievementSyncService->syncStudent($student->fresh());
+            $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-            return back()->with('success', 'Links atualizados com sucesso.');
+            return $this->withAchievementUnlocks(
+                back()->with('success', 'Links atualizados com sucesso.'),
+                $newlyUnlockedAchievements,
+            );
         }
 
         $data = $request->validate([
@@ -115,9 +123,12 @@ class DashboardController extends Controller
         $student->update([
             'photo' => $data['photo']->store('users/photos', 'public'),
         ]);
-        $achievementSyncService->syncStudent($student->fresh());
+        $newlyUnlockedAchievements = $achievementSyncService->syncStudent($student->fresh());
 
-        return back()->with('success', 'Foto atualizada com sucesso.');
+        return $this->withAchievementUnlocks(
+            back()->with('success', 'Foto atualizada com sucesso.'),
+            $newlyUnlockedAchievements,
+        );
     }
 
     public function show(Request $request, User $student): Response
@@ -700,5 +711,32 @@ class DashboardController extends Controller
         }
 
         return 'Proximas';
+    }
+
+    /**
+     * @param  Collection<int, StudentAchievement>  $studentAchievements
+     */
+    private function withAchievementUnlocks(RedirectResponse $response, Collection $studentAchievements): RedirectResponse
+    {
+        if ($studentAchievements->isEmpty()) {
+            return $response;
+        }
+
+        return $response->with('achievement_unlocks', $studentAchievements
+            ->sortBy(fn (StudentAchievement $studentAchievement) => [
+                $studentAchievement->awarded_at?->getTimestamp() ?? 0,
+                $studentAchievement->achievement?->sort_order ?? 0,
+            ])
+            ->values()
+            ->map(fn (StudentAchievement $studentAchievement) => [
+                'code' => $studentAchievement->achievement?->code ?? '',
+                'title' => $studentAchievement->achievement?->name ?? 'Conquista',
+                'description' => $studentAchievement->achievement?->description ?? 'Nova conquista desbloqueada.',
+                'image_url' => $studentAchievement->achievement?->image_path
+                    ? asset($studentAchievement->achievement->image_path)
+                    : null,
+                'awarded_at' => optional($studentAchievement->awarded_at)?->toIso8601String(),
+            ])
+            ->all());
     }
 }

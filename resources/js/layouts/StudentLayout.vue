@@ -4,19 +4,37 @@ import AppShell from '@/components/AppShell.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getInitials } from '@/composables/useInitials';
-import type { NavItem } from '@/types';
+import type { AppPageProps, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronDown } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { ChevronDown, Sparkles } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
-const page = usePage();
+type AchievementUnlock = {
+    code: string;
+    title: string;
+    description: string;
+    image_url: string | null;
+    awarded_at: string | null;
+};
+
+const page = usePage<AppPageProps<{
+    flash?: {
+        achievement_unlocks?: AchievementUnlock[] | null;
+    };
+}>>();
 const navigation = computed<NavItem[]>(() => page.props.auth.navigation ?? []);
 const currentUser = computed(() => page.props.auth.user);
 const currentPath = computed(() => page.url.split('?')[0]);
+const achievementUnlockDialogOpen = ref(false);
+const achievementUnlocks = ref<AchievementUnlock[]>([]);
+const activeAchievementUnlockIndex = ref(0);
 
 const normalizedCurrentPath = computed(() => (currentPath.value === '/student' ? '/student/minha-sala' : currentPath.value));
+const activeAchievementUnlock = computed(() => achievementUnlocks.value[activeAchievementUnlockIndex.value] ?? null);
+const hasMoreAchievementUnlocks = computed(() => activeAchievementUnlockIndex.value < achievementUnlocks.value.length - 1);
 
 const isActive = (href: string) => {
     if (href === '/student/minha-sala' && normalizedCurrentPath.value.startsWith('/student/atividades/')) {
@@ -25,6 +43,52 @@ const isActive = (href: string) => {
 
     return href === normalizedCurrentPath.value || href.startsWith(`${normalizedCurrentPath.value}#`);
 };
+
+const formatAchievementDate = (value: string | null) => {
+    if (!value) return null;
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'full',
+        timeStyle: 'short',
+        timeZone: 'America/Sao_Paulo',
+    }).format(date);
+};
+
+const closeAchievementUnlockDialog = () => {
+    achievementUnlockDialogOpen.value = false;
+    achievementUnlocks.value = [];
+    activeAchievementUnlockIndex.value = 0;
+};
+
+const advanceAchievementUnlockDialog = () => {
+    if (hasMoreAchievementUnlocks.value) {
+        activeAchievementUnlockIndex.value += 1;
+
+        return;
+    }
+
+    closeAchievementUnlockDialog();
+};
+
+watch(
+    () => page.props.flash?.achievement_unlocks,
+    (unlockPayload) => {
+        if (!unlockPayload?.length) {
+            return;
+        }
+
+        achievementUnlocks.value = unlockPayload;
+        activeAchievementUnlockIndex.value = 0;
+        achievementUnlockDialogOpen.value = true;
+    },
+    { deep: true, immediate: true },
+);
 </script>
 
 <template>
@@ -77,6 +141,52 @@ const isActive = (href: string) => {
             <AppContent variant="header" class="w-full max-w-7xl px-4 py-8 md:px-6 md:py-10">
                 <slot />
             </AppContent>
+
+            <Dialog :open="achievementUnlockDialogOpen" @update:open="(value) => !value ? closeAchievementUnlockDialog() : (achievementUnlockDialogOpen = value)">
+                <DialogContent class="border-white/10 bg-[#120d31] text-white sm:max-w-xl">
+                    <DialogHeader>
+                        <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#8f7bff]/18 text-[#d9d2ff]">
+                            <Sparkles class="size-6" />
+                        </div>
+                        <DialogTitle class="text-2xl">Parabéns pela nova conquista!</DialogTitle>
+                        <DialogDescription class="text-white/65">
+                            {{ hasMoreAchievementUnlocks ? `Você desbloqueou mais de um emblema. Confira o ${activeAchievementUnlockIndex + 1}º agora.` : 'Seu novo emblema acabou de entrar para o seu perfil.' }}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div v-if="activeAchievementUnlock" class="space-y-4">
+                        <div class="rounded-[1.75rem] border border-[#8f7bff]/35 bg-[radial-gradient(circle_at_top,#322074_0%,#171038_100%)] p-6 text-center shadow-[0_24px_60px_rgba(143,123,255,0.2)]">
+                            <div class="mx-auto flex h-36 w-36 items-center justify-center rounded-[1.75rem] border border-white/10 bg-white/6 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.25)]">
+                                <img
+                                    v-if="activeAchievementUnlock.image_url"
+                                    :src="activeAchievementUnlock.image_url"
+                                    :alt="activeAchievementUnlock.title"
+                                    class="h-full w-full object-contain"
+                                />
+                                <div v-else class="text-lg font-semibold text-white/75">
+                                    Emblema
+                                </div>
+                            </div>
+
+                            <p class="mt-5 text-3xl font-semibold text-white">{{ activeAchievementUnlock.title }}</p>
+                            <p class="mt-3 text-sm leading-6 text-white/72">{{ activeAchievementUnlock.description }}</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/72">
+                            <p class="font-semibold text-white">Conquista validada</p>
+                            <p class="mt-2 leading-6">
+                                {{ activeAchievementUnlock.awarded_at ? `Registrada em ${formatAchievementDate(activeAchievementUnlock.awarded_at)}.` : 'Seu progresso foi validado com sucesso.' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button class="w-full bg-[#8f7bff] text-white hover:bg-[#a593ff]" @click="advanceAchievementUnlockDialog">
+                            {{ hasMoreAchievementUnlocks ? 'Ver próxima conquista' : 'Continuar' }}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     </AppShell>
 </template>

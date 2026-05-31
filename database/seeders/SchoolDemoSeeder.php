@@ -10,6 +10,7 @@ use App\Models\Classroom;
 use App\Models\PointOfSchool;
 use App\Models\Role;
 use App\Models\School;
+use App\Models\StudentAchievement;
 use App\Models\User;
 use App\Support\PerformanceMetricsRebuilder;
 use Illuminate\Database\Seeder;
@@ -203,6 +204,9 @@ class SchoolDemoSeeder extends Seeder
         $this->seedStudentProfiles($students);
         $classrooms->each(fn (Classroom $classroom) => $classroom->touch());
         $this->seedActivities($classrooms, $students);
+        StudentAchievement::query()
+            ->whereIn('student_id', $students->pluck('id'))
+            ->delete();
 
         app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
     }
@@ -433,37 +437,37 @@ class SchoolDemoSeeder extends Seeder
         $profiles = [
             'julia.martins@escola.local' => [
                 'bio' => 'Adoro resolver desafios de lógica e criar interfaces coloridas.',
-                'github_url' => 'https://github.com/juliamartins-demo',
-                'linkedin_url' => 'https://www.linkedin.com/in/juliamartins-demo/',
+                'github_url' => null,
+                'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=47',
             ],
             'lucas.ferreira@escola.local' => [
                 'bio' => 'Sou curioso por desenvolvimento web e gosto de criar automações simples.',
-                'github_url' => 'https://github.com/lucasferreira-demo',
+                'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=12',
             ],
             'marina.costa@escola.local' => [
                 'bio' => 'Gosto de aprender praticando e manter uma rotina consistente de estudos.',
-                'github_url' => 'https://github.com/marinacosta-demo',
-                'linkedin_url' => 'https://www.linkedin.com/in/marinacosta-demo/',
+                'github_url' => null,
+                'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=32',
             ],
             'pedro.henrique@escola.local' => [
                 'bio' => 'Estou focado em fortalecer meus fundamentos de programação e evoluir em projetos em equipe.',
                 'github_url' => null,
-                'linkedin_url' => 'https://www.linkedin.com/in/pedrohenrique-demo/',
+                'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=57',
             ],
             'laura.alves@escola.local' => [
                 'bio' => 'Gosto de competir comigo mesma para subir no ranking e bater novas metas.',
-                'github_url' => 'https://github.com/lauraalves-demo',
-                'linkedin_url' => 'https://www.linkedin.com/in/lauraalves-demo/',
+                'github_url' => null,
+                'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=20',
             ],
             'gustavo.rocha@escola.local' => [
                 'bio' => 'Exploro programação por meio de quizzes e mini projetos para aprender na prática.',
-                'github_url' => 'https://github.com/gustavorocha-demo',
+                'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=68',
             ],
@@ -594,7 +598,7 @@ SVG;
                 'activity_prefix' => 'Sprint Alfa',
                 'activity_count' => 4,
                 'points_per_question' => 5.0,
-                'submissions_count' => 2,
+                'submissions_count' => 0,
                 'perfect_until' => 1,
                 'streak_days' => 0,
             ],
@@ -634,7 +638,7 @@ SVG;
                 'activity_prefix' => 'Desafios Gama',
                 'activity_count' => 8,
                 'points_per_question' => 4.0,
-                'submissions_count' => 3,
+                'submissions_count' => 0,
                 'perfect_until' => 1,
                 'streak_days' => 0,
             ],

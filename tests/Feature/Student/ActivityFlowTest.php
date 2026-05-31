@@ -337,7 +337,7 @@ test('correcao calcula score e pontos por questao corretamente', function () {
         studentMatchingQuestion(),
     ]);
 
-    $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
+    $response = $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
         'answers' => [
             [
                 'question_id' => $activity->questions[0]->id,
@@ -359,6 +359,8 @@ test('correcao calcula score e pontos por questao corretamente', function () {
             ],
         ],
     ]);
+
+    $response->assertSessionHas('achievement_unlocks', fn (array $unlocks) => collect($unlocks)->pluck('code')->contains('emblem_01'));
 
     $submission = ActivitySubmission::query()->where('activity_id', $activity->id)->where('student_id', $student->id)->firstOrFail();
     $answers = ActivitySubmissionAnswer::query()->where('activity_submission_id', $submission->id)->orderBy('activity_question_id')->get();
@@ -476,7 +478,7 @@ test('perfil e score global usam agregados reais do aluno', function () {
 
     app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
 
-    $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
+    $response = $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
         'answers' => [
             [
                 'question_id' => $activity->questions[0]->id,
@@ -484,6 +486,8 @@ test('perfil e score global usam agregados reais do aluno', function () {
             ],
         ],
     ]);
+
+    $response->assertSessionHas('achievement_unlocks', fn (array $unlocks) => collect($unlocks)->pluck('code')->sort()->values()->all() === ['emblem_01', 'emblem_05']);
 
     $this->actingAs($student)
         ->get(route('student.profile'))
@@ -632,11 +636,13 @@ test('perfil completo concede conquista e payload do perfil expoe badges bloquea
         'linkedin_url' => '',
     ]);
 
-    $this->actingAs($student)->post(route('student.profile.update'), [
+    $response = $this->actingAs($student)->post(route('student.profile.update'), [
         '_method' => 'patch',
         'section' => 'photo',
         'photo' => UploadedFile::fake()->image('avatar.png'),
     ]);
+
+    $response->assertSessionHas('achievement_unlocks', fn (array $unlocks) => collect($unlocks)->pluck('code')->contains('emblem_07'));
 
     expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_07');
 

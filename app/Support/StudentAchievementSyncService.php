@@ -24,20 +24,24 @@ class StudentAchievementSyncService
         $this->syncStudents($students);
     }
 
-    public function syncStudent(User $student): void
+    /**
+     * @return Collection<int, StudentAchievement>
+     */
+    public function syncStudent(User $student): Collection
     {
         $student->loadMissing($this->studentRelations());
 
-        $this->syncStudents(collect([$student]));
+        return $this->syncStudents(collect([$student]));
     }
 
     /**
      * @param  Collection<int, User>  $students
+     * @return Collection<int, StudentAchievement>
      */
-    public function syncStudents(Collection $students): void
+    public function syncStudents(Collection $students): Collection
     {
         if ($students->isEmpty()) {
-            return;
+            return collect();
         }
 
         $achievements = Achievement::query()
@@ -47,17 +51,19 @@ class StudentAchievementSyncService
             ->get();
 
         if ($achievements->isEmpty()) {
-            return;
+            return collect();
         }
 
-        $students->each(function (User $student) use ($achievements): void {
+        $newlyAwardedAchievements = collect();
+
+        $students->each(function (User $student) use ($achievements, $newlyAwardedAchievements): void {
             $existingAchievementIds = $student->studentAchievements->pluck('achievement_id')->all();
             $submissions = $student->activitySubmissions
                 ->filter(fn (ActivitySubmission $submission) => $submission->submitted_at !== null)
                 ->sortBy(fn (ActivitySubmission $submission) => $submission->submitted_at?->getTimestamp())
                 ->values();
 
-            $achievements->each(function (Achievement $achievement) use ($student, $submissions, &$existingAchievementIds): void {
+            $achievements->each(function (Achievement $achievement) use ($student, $submissions, &$existingAchievementIds, $newlyAwardedAchievements): void {
                 if (in_array($achievement->id, $existingAchievementIds, true)) {
                     return;
                 }
@@ -68,16 +74,20 @@ class StudentAchievementSyncService
                     return;
                 }
 
-                StudentAchievement::query()->create([
+                $studentAchievement = StudentAchievement::query()->create([
                     'student_id' => $student->id,
                     'achievement_id' => $achievement->id,
                     'awarded_at' => $match['awarded_at'],
                     'criteria_snapshot' => $match['criteria_snapshot'],
                 ]);
 
+                $studentAchievement->setRelation('achievement', $achievement);
+                $newlyAwardedAchievements->push($studentAchievement);
                 $existingAchievementIds[] = $achievement->id;
             });
         });
+
+        return $newlyAwardedAchievements;
     }
 
     /**
