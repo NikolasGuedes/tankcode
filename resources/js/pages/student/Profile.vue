@@ -19,6 +19,18 @@ defineProps<{
             completed_activities: number;
             ranking_position: number;
         };
+        achievements: {
+            code: string;
+            title: string;
+            description: string;
+            image_url: string;
+            is_unlocked: boolean;
+            unlocked_at: string | null;
+        }[];
+        achievement_summary: {
+            earned_count: number;
+            total_count: number;
+        };
         classroom: {
             name: string;
             code: string;

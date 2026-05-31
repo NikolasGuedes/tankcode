@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\RoleEnum;
+use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\ActivitySubmission;
 use App\Models\ActivitySubmissionAnswer;
@@ -11,7 +12,15 @@ use App\Models\School;
 use App\Models\StudentClassroomPerformance;
 use App\Models\User;
 use App\Support\PerformanceMetricsRebuilder;
+use Database\Seeders\AchievementCatalogSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+
+beforeEach(function () {
+    app(AchievementCatalogSeeder::class)->run();
+});
 
 function studentActivityScope(): array
 {
@@ -174,11 +183,19 @@ function createSubmissionForStudent(Activity $activity, User $student, array $at
         'student_id' => $student->id,
         'classroom_id' => $activity->classroom_id,
         'status' => 'submitted',
-        'submitted_at' => now(),
+        'submitted_at' => $attributes['submitted_at'] ?? now(),
         'score' => $attributes['score'] ?? 1,
         'total_points' => $attributes['total_points'] ?? $activity->total_points,
         'correct_answers_count' => $attributes['correct_answers_count'] ?? 1,
     ]);
+}
+
+function achievementCodesForStudent(User $student): array
+{
+    return $student->achievements()
+        ->orderBy('achievements.sort_order')
+        ->pluck('code')
+        ->all();
 }
 
 test('aluno ve apenas atividades publicadas da propria turma', function () {
@@ -439,5 +456,229 @@ test('perfil e score global usam agregados reais do aluno', function () {
             ->where('score.school_rank', 1)
             ->where('students.0.name', $student->name)
             ->where('students.0.score', 1.0)
+        );
+});
+
+test('primeira conquista e concedida apos o primeiro envio', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom] = studentActivityScope();
+
+    $activity = createStudentActivity($classroom, $teacher, [], [
+        studentMultipleChoiceQuestion(),
+        studentMultipleChoiceQuestion([
+            'statement' => 'Qual alternativa representa um seletor CSS?',
+            'correct_option' => 'B',
+            'options' => [
+                'A' => 'print',
+                'B' => '.card',
+                'C' => 'return',
+                'D' => 'while',
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
+        'answers' => [
+            [
+                'question_id' => $activity->questions[0]->id,
+                'selected_option' => 'A',
+            ],
+            [
+                'question_id' => $activity->questions[1]->id,
+                'selected_option' => 'A',
+            ],
+        ],
+    ]);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_01')
+        ->not->toContain('emblem_05');
+});
+
+test('thresholds de atividades concedem conquistas sem duplicar registros', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom, 'school' => $school] = studentActivityScope();
+
+    foreach (range(1, 50) as $index) {
+        $activity = createStudentActivity($classroom, $teacher, ['title' => "Atividade {$index}"], [
+            studentMultipleChoiceQuestion(),
+            studentMultipleChoiceQuestion([
+                'statement' => "Questao extra {$index}",
+                'correct_option' => 'B',
+            ]),
+        ]);
+
+        createSubmissionForStudent($activity, $student, [
+            'score' => 0,
+            'correct_answers_count' => 0,
+        ]);
+    }
+
+    app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
+    app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
+
+    expect(achievementCodesForStudent($student->fresh()))->toBe([
+        'emblem_01',
+        'emblem_02',
+        'emblem_03',
+        'emblem_04',
+    ])
+        ->and($student->studentAchievements()->count())->toBe(4);
+});
+
+test('atividade perfeita concede a conquista correspondente', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom] = studentActivityScope();
+
+    $activity = createStudentActivity($classroom, $teacher);
+
+    $this->actingAs($student)->post(route('student.activities.submissions.store', $activity), [
+        'answers' => [
+            [
+                'question_id' => $activity->questions[0]->id,
+                'selected_option' => 'A',
+            ],
+        ],
+    ]);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_05');
+});
+
+test('sequencia de sete dias consecutivos concede a conquista de streak', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom, 'school' => $school] = studentActivityScope();
+
+    foreach (range(1, 7) as $index) {
+        $activity = createStudentActivity($classroom, $teacher, ['title' => "Streak {$index}"], [
+            studentMultipleChoiceQuestion([
+                'statement' => "Questao streak {$index}",
+            ]),
+            studentMultipleChoiceQuestion([
+                'statement' => "Questao streak extra {$index}",
+                'correct_option' => 'B',
+            ]),
+        ]);
+
+        createSubmissionForStudent($activity, $student, [
+            'score' => 0,
+            'correct_answers_count' => 0,
+            'submitted_at' => now()->startOfDay()->subDays(7 - $index)->addHours(9),
+        ]);
+    }
+
+    app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_06');
+});
+
+test('perfil completo concede conquista e payload do perfil expoe badges bloqueadas e desbloqueadas', function () {
+    Storage::fake('public');
+
+    ['student' => $student] = studentActivityScope();
+
+    $this->actingAs($student)->patch(route('student.profile.update'), [
+        'section' => 'bio',
+        'bio' => 'Aluno apaixonado por programacao.',
+    ]);
+
+    $this->actingAs($student)->patch(route('student.profile.update'), [
+        'section' => 'links',
+        'github_url' => 'https://github.com/aluno',
+        'linkedin_url' => '',
+    ]);
+
+    $this->actingAs($student)->post(route('student.profile.update'), [
+        '_method' => 'patch',
+        'section' => 'photo',
+        'photo' => UploadedFile::fake()->image('avatar.png'),
+    ]);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_07');
+
+    $this->actingAs($student)
+        ->get(route('student.profile'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('student/Profile')
+            ->where('profile.achievement_summary.earned_count', 1)
+            ->where('profile.achievement_summary.total_count', Achievement::query()->count())
+            ->has('profile.achievements', 8)
+            ->where('profile.achievements.6.code', 'emblem_07')
+            ->where('profile.achievements.6.is_unlocked', true)
+            ->where('profile.achievements.0.code', 'emblem_01')
+            ->where('profile.achievements.0.is_unlocked', false)
+        );
+});
+
+test('conquista de mil pontos e concedida pelo acumulado do aluno', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom, 'school' => $school] = studentActivityScope();
+
+    $activity = createStudentActivity($classroom, $teacher, [
+        'points_per_question' => 1000,
+        'total_points' => 1000,
+    ], [
+        studentMultipleChoiceQuestion(),
+        studentMultipleChoiceQuestion([
+            'statement' => 'Questao de apoio',
+            'correct_option' => 'B',
+        ]),
+    ]);
+
+    createSubmissionForStudent($activity, $student, [
+        'score' => 1000,
+        'correct_answers_count' => 0,
+    ]);
+
+    app(PerformanceMetricsRebuilder::class)->rebuildSchool($school->id);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_08');
+});
+
+test('comando de recalculo faz backfill das conquistas do aluno', function () {
+    ['teacher' => $teacher, 'student' => $student, 'classroom' => $classroom, 'school' => $school] = studentActivityScope();
+
+    $activity = createStudentActivity($classroom, $teacher);
+    createSubmissionForStudent($activity, $student, [
+        'score' => 0,
+        'correct_answers_count' => 0,
+    ]);
+
+    Artisan::call('metrics:recalculate', ['--school_id' => $school->id]);
+
+    expect(achievementCodesForStudent($student->fresh()))->toContain('emblem_01');
+});
+
+test('diretoria recebe resumo das conquistas na listagem de alunos', function () {
+    ['point' => $point, 'student' => $student, 'classmate' => $classmate, 'school' => $school] = studentActivityScope();
+
+    $classmate->pointOfSchools()->detach();
+    $classmate->classrooms()->detach();
+
+    $directorRole = Role::query()->firstOrCreate(
+        ['name' => RoleEnum::DIRECTOR->value],
+        ['label' => RoleEnum::DIRECTOR->label()],
+    );
+
+    $director = User::factory()->create([
+        'role_id' => $directorRole->id,
+        'school_id' => $school->id,
+    ]);
+
+    $director->pointOfSchools()->attach($point->id, [
+        'title' => RoleEnum::DIRECTOR->label(),
+        'is_primary' => true,
+        'status' => 'active',
+    ]);
+
+    $achievement = Achievement::query()->where('code', 'emblem_01')->firstOrFail();
+    $student->studentAchievements()->create([
+        'achievement_id' => $achievement->id,
+        'awarded_at' => now(),
+        'criteria_snapshot' => ['threshold' => 1],
+    ]);
+
+    $this->actingAs($director)
+        ->get(route('director.students.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('director/Students/Index')
+            ->where('students.data.0.achievements_count', 1)
+            ->has('students.data.0.achievement_preview', 1)
+            ->where('students.data.0.achievement_preview.0.code', 'emblem_01')
         );
 });

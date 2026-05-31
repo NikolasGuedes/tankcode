@@ -110,6 +110,18 @@ class User extends Authenticatable
         return $this->hasMany(StudentClassroomPerformance::class, 'student_id');
     }
 
+    public function studentAchievements(): HasMany
+    {
+        return $this->hasMany(StudentAchievement::class, 'student_id');
+    }
+
+    public function achievements(): BelongsToMany
+    {
+        return $this->belongsToMany(Achievement::class, 'student_achievements', 'student_id', 'achievement_id')
+            ->withPivot(['awarded_at', 'criteria_snapshot'])
+            ->withTimestamps();
+    }
+
     public function teacherClassroomMetrics(): HasMany
     {
         return $this->hasMany(TeacherClassroomMetric::class, 'teacher_id');

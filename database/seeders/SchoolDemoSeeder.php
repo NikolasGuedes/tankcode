@@ -13,8 +13,11 @@ use App\Models\School;
 use App\Models\User;
 use App\Support\PerformanceMetricsRebuilder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class SchoolDemoSeeder extends Seeder
@@ -197,6 +200,7 @@ class SchoolDemoSeeder extends Seeder
             'last_login_at' => now()->subMinutes(($index + 1) * 30),
         ])->save());
 
+        $this->seedStudentProfiles($students);
         $classrooms->each(fn (Classroom $classroom) => $classroom->touch());
         $this->seedActivities($classrooms, $students);
 
@@ -335,6 +339,7 @@ class SchoolDemoSeeder extends Seeder
         });
 
         $this->seedExampleSubmission($classrooms, $students);
+        $this->seedAchievementProgress($classrooms, $students);
     }
 
     private function upsertActivity(Classroom $classroom, array $activityData, array $questions): void
@@ -421,5 +426,326 @@ class SchoolDemoSeeder extends Seeder
                 'earned_points' => $activity->points_per_question,
             ],
         );
+    }
+
+    private function seedStudentProfiles(Collection $students): void
+    {
+        $profiles = [
+            'julia.martins@escola.local' => [
+                'bio' => 'Ama resolver desafios de lógica e criar interfaces coloridas.',
+                'github_url' => 'https://github.com/juliamartins-demo',
+                'linkedin_url' => 'https://www.linkedin.com/in/juliamartins-demo/',
+            ],
+            'lucas.ferreira@escola.local' => [
+                'bio' => 'Curioso por desenvolvimento web e automações simples.',
+                'github_url' => 'https://github.com/lucasferreira-demo',
+                'linkedin_url' => null,
+            ],
+            'marina.costa@escola.local' => [
+                'bio' => 'Gosta de aprender praticando e manter uma rotina consistente de estudos.',
+                'github_url' => 'https://github.com/marinacosta-demo',
+                'linkedin_url' => 'https://www.linkedin.com/in/marinacosta-demo/',
+            ],
+            'pedro.henrique@escola.local' => [
+                'bio' => 'Focado em fundamentos de programação e projetos em equipe.',
+                'github_url' => null,
+                'linkedin_url' => 'https://www.linkedin.com/in/pedrohenrique-demo/',
+            ],
+            'laura.alves@escola.local' => [
+                'bio' => 'Compete consigo mesma para subir no ranking e bater novas metas.',
+                'github_url' => 'https://github.com/lauraalves-demo',
+                'linkedin_url' => 'https://www.linkedin.com/in/lauraalves-demo/',
+            ],
+            'gustavo.rocha@escola.local' => [
+                'bio' => 'Explora programação por meio de quizzes e mini projetos.',
+                'github_url' => 'https://github.com/gustavorocha-demo',
+                'linkedin_url' => null,
+            ],
+        ];
+
+        $students->each(function (User $student) use ($profiles): void {
+            $profile = $profiles[$student->email] ?? [
+                'bio' => 'Perfil demo do aluno TankCode.',
+                'github_url' => null,
+                'linkedin_url' => null,
+            ];
+
+            $student->forceFill([
+                'bio' => $profile['bio'],
+                'github_url' => $profile['github_url'],
+                'linkedin_url' => $profile['linkedin_url'],
+                'photo' => $this->ensureDemoAvatar($student),
+            ])->save();
+        });
+    }
+
+    private function ensureDemoAvatar(User $student): string
+    {
+        $directory = 'users/photos/demo';
+        $slug = Str::slug(Str::before($student->email, '@'));
+        $basePath = "{$directory}/{$slug}";
+        $disk = Storage::disk('public');
+
+        foreach (['png', 'svg'] as $extension) {
+            $existingPath = "{$basePath}.{$extension}";
+
+            if ($disk->exists($existingPath)) {
+                return $existingPath;
+            }
+        }
+
+        $downloaded = $this->downloadRemoteAvatar($student);
+
+        if ($downloaded !== null) {
+            $path = "{$basePath}.{$downloaded['extension']}";
+            $disk->put($path, $downloaded['contents']);
+
+            return $path;
+        }
+
+        $svgPath = "{$basePath}.svg";
+        $disk->put($svgPath, $this->fallbackAvatarSvg($student));
+
+        return $svgPath;
+    }
+
+    /**
+     * @return array{contents: string, extension: string}|null
+     */
+    private function downloadRemoteAvatar(User $student): ?array
+    {
+        $seed = urlencode($student->email);
+        $url = "https://api.dicebear.com/9.x/lorelei/png?seed={$seed}&size=256";
+
+        try {
+            $response = Http::timeout(15)
+                ->retry(2, 400)
+                ->get($url);
+
+            if (! $response->successful() || ! str_starts_with((string) $response->header('Content-Type'), 'image/')) {
+                return null;
+            }
+
+            return [
+                'contents' => $response->body(),
+                'extension' => 'png',
+            ];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function fallbackAvatarSvg(User $student): string
+    {
+        $initials = Str::of($student->name)
+            ->explode(' ')
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => Str::upper(Str::substr($part, 0, 1)))
+            ->implode('');
+
+        $palette = [
+            ['background' => '#2D1B69', 'accent' => '#8F7BFF'],
+            ['background' => '#1F3A5F', 'accent' => '#4CC9F0'],
+            ['background' => '#4A1D3F', 'accent' => '#FF9BD2'],
+            ['background' => '#173B2F', 'accent' => '#63E6BE'],
+        ];
+        $colors = $palette[$student->id % count($palette)];
+
+        return <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" rx="72" fill="{$colors['background']}"/>
+  <circle cx="128" cy="128" r="90" fill="{$colors['accent']}" fill-opacity="0.18"/>
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="82" font-weight="700">{$initials}</text>
+</svg>
+SVG;
+    }
+
+    private function seedAchievementProgress(Collection $classrooms, Collection $students): void
+    {
+        $progressPlan = [
+            [
+                'classroom_code' => 'ALFA-01',
+                'student_email' => 'julia.martins@escola.local',
+                'activity_prefix' => 'Trilha Alfa',
+                'activity_count' => 10,
+                'points_per_question' => 10.0,
+                'submissions_count' => 10,
+                'perfect_until' => 10,
+                'streak_days' => 0,
+            ],
+            [
+                'classroom_code' => 'ALFA-01',
+                'student_email' => 'lucas.ferreira@escola.local',
+                'activity_prefix' => 'Sprint Alfa',
+                'activity_count' => 4,
+                'points_per_question' => 5.0,
+                'submissions_count' => 2,
+                'perfect_until' => 1,
+                'streak_days' => 0,
+            ],
+            [
+                'classroom_code' => 'BETA-01',
+                'student_email' => 'marina.costa@escola.local',
+                'activity_prefix' => 'Jornada Beta',
+                'activity_count' => 25,
+                'points_per_question' => 8.0,
+                'submissions_count' => 25,
+                'perfect_until' => 12,
+                'streak_days' => 7,
+            ],
+            [
+                'classroom_code' => 'BETA-01',
+                'student_email' => 'pedro.henrique@escola.local',
+                'activity_prefix' => 'Laboratorio Beta',
+                'activity_count' => 12,
+                'points_per_question' => 6.0,
+                'submissions_count' => 10,
+                'perfect_until' => 5,
+                'streak_days' => 0,
+            ],
+            [
+                'classroom_code' => 'GAMA-01',
+                'student_email' => 'laura.alves@escola.local',
+                'activity_prefix' => 'Maratona Gama',
+                'activity_count' => 50,
+                'points_per_question' => 20.0,
+                'submissions_count' => 50,
+                'perfect_until' => 50,
+                'streak_days' => 0,
+            ],
+            [
+                'classroom_code' => 'GAMA-01',
+                'student_email' => 'gustavo.rocha@escola.local',
+                'activity_prefix' => 'Desafios Gama',
+                'activity_count' => 8,
+                'points_per_question' => 4.0,
+                'submissions_count' => 3,
+                'perfect_until' => 1,
+                'streak_days' => 0,
+            ],
+        ];
+
+        collect($progressPlan)->each(function (array $plan) use ($classrooms, $students): void {
+            $classroom = $classrooms->firstWhere('code', $plan['classroom_code']);
+            $student = $students->firstWhere('email', $plan['student_email']);
+
+            if (! $classroom || ! $student) {
+                return;
+            }
+
+            $activities = $this->createSeriesActivities(
+                classroom: $classroom,
+                prefix: $plan['activity_prefix'],
+                count: $plan['activity_count'],
+                pointsPerQuestion: $plan['points_per_question'],
+            );
+
+            $this->createSeriesSubmissions(
+                activities: $activities,
+                student: $student,
+                submissionsCount: $plan['submissions_count'],
+                perfectUntil: $plan['perfect_until'],
+                streakDays: $plan['streak_days'],
+            );
+        });
+    }
+
+    private function createSeriesActivities(
+        Classroom $classroom,
+        string $prefix,
+        int $count,
+        float $pointsPerQuestion,
+    ): Collection {
+        return collect(range(1, $count))
+            ->map(function (int $index) use ($classroom, $prefix, $pointsPerQuestion) {
+                $title = "{$prefix} {$index}";
+
+                $this->upsertActivity($classroom, [
+                    'title' => $title,
+                    'description' => "Atividade {$index} da trilha {$prefix}.",
+                    'level' => $index % 3 === 0 ? 'dificil' : ($index % 2 === 0 ? 'media' : 'facil'),
+                    'questions_count' => 1,
+                    'points_per_question' => $pointsPerQuestion,
+                    'total_points' => $pointsPerQuestion,
+                    'due_date' => today()->addDays(max(1, $index)),
+                    'status' => 'published',
+                ], [
+                    [
+                        'type' => 'multiple_choice',
+                        'statement' => "Questão {$index} da trilha {$prefix}.",
+                        'correct_option' => 'A',
+                        'options' => [
+                            'A' => 'Resposta correta',
+                            'B' => 'Distrator 1',
+                            'C' => 'Distrator 2',
+                            'D' => 'Distrator 3',
+                        ],
+                    ],
+                ]);
+
+                return Activity::query()
+                    ->where('classroom_id', $classroom->id)
+                    ->where('title', $title)
+                    ->with('questions')
+                    ->firstOrFail();
+            })
+            ->values();
+    }
+
+    private function createSeriesSubmissions(
+        Collection $activities,
+        User $student,
+        int $submissionsCount,
+        int $perfectUntil,
+        int $streakDays,
+    ): void {
+        $activities->take($submissionsCount)->values()->each(function (Activity $activity, int $index) use ($student, $perfectUntil, $streakDays): void {
+            $isPerfect = $index < $perfectUntil;
+            $submittedAt = $this->submissionTimestampForIndex($index, $streakDays);
+            $question = $activity->questions->first();
+
+            $submission = ActivitySubmission::query()->updateOrCreate(
+                [
+                    'activity_id' => $activity->id,
+                    'student_id' => $student->id,
+                ],
+                [
+                    'classroom_id' => $activity->classroom_id,
+                    'status' => 'submitted',
+                    'submitted_at' => $submittedAt,
+                    'score' => $isPerfect ? $activity->total_points : 0,
+                    'total_points' => $activity->total_points,
+                    'correct_answers_count' => $isPerfect ? $activity->questions->count() : 0,
+                ],
+            );
+
+            if (! $question) {
+                return;
+            }
+
+            ActivitySubmissionAnswer::query()->updateOrCreate(
+                [
+                    'activity_submission_id' => $submission->id,
+                    'activity_question_id' => $question->id,
+                ],
+                [
+                    'answer_payload' => [
+                        'selected_option' => $isPerfect ? $question->correct_option : 'B',
+                    ],
+                    'is_correct' => $isPerfect,
+                    'earned_points' => $isPerfect ? $activity->points_per_question : 0,
+                ],
+            );
+        });
+    }
+
+    private function submissionTimestampForIndex(int $index, int $streakDays): \Carbon\CarbonInterface
+    {
+        if ($index < $streakDays) {
+            return now()->startOfDay()->subDays(($streakDays - 1) - $index)->addHours(9);
+        }
+
+        return now()->subDays($index + 10)->addHours(14);
     }
 }

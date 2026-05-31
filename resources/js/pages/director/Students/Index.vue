@@ -34,6 +34,13 @@ type StudentRow = {
     point_of_school_id: number | null;
     point_of_school: string | null;
     classroom: string;
+    achievements_count: number;
+    latest_achievement_at: string | null;
+    achievement_preview: {
+        code: string;
+        name: string;
+        image_url: string | null;
+    }[];
     last_login_at: string;
 };
 
@@ -322,12 +329,30 @@ watch(
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-border">
-                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Último acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
+                        <thead><tr class="text-left text-sm text-secondary"><th class="pb-4 font-medium">Aluno</th><th class="pb-4 font-medium">Ponto de Ensino</th><th class="pb-4 font-medium">Turma</th><th class="pb-4 font-medium">Conquistas</th><th class="pb-4 font-medium">E-mail validado</th><th class="pb-4 font-medium">Acesso a plataforma</th><th class="pb-4 font-medium">Último acesso</th><th class="pb-4 text-right font-medium">Ações</th></tr></thead>
                         <tbody class="divide-y divide-white/5 text-sm text-white/75">
                             <tr v-for="student in props.students.data" :key="student.id">
                                 <td class="py-4"><p class="font-semibold text-white">{{ student.name }}</p><p class="text-white/55">{{ student.email }}</p></td>
                                 <td class="py-4">{{ student.point_of_school ?? '-' }}</td>
                                 <td class="py-4">{{ student.classroom }}</td>
+                                <td class="py-4">
+                                    <div class="space-y-2">
+                                        <p class="font-semibold text-white">{{ student.achievements_count }} conquista(s)</p>
+                                        <div v-if="student.achievement_preview.length" class="flex items-center gap-2">
+                                            <img
+                                                v-for="achievement in student.achievement_preview"
+                                                :key="achievement.code"
+                                                :src="achievement.image_url ?? undefined"
+                                                :alt="achievement.name"
+                                                :title="achievement.name"
+                                                class="h-9 w-9 rounded-xl border border-white/10 bg-black/20 object-contain p-1.5"
+                                            />
+                                        </div>
+                                        <p class="text-xs text-white/50">
+                                            {{ student.latest_achievement_at ? `Última: ${student.latest_achievement_at}` : 'Nenhuma conquista ainda' }}
+                                        </p>
+                                    </div>
+                                </td>
                                 <td class="py-4">
                                     <span
                                         class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"

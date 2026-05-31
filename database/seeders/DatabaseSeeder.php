@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             TankAdminUserSeeder::class,
+            AchievementCatalogSeeder::class,
             SchoolDemoSeeder::class,
         ]);
     }

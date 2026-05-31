@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Student;
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Achievement;
 use App\Models\Activity;
 use App\Models\Classroom;
 use App\Models\StudentClassroomPerformance;
 use App\Models\User;
+use App\Support\StudentAchievementSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +54,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): RedirectResponse
+    public function updateProfile(Request $request, StudentAchievementSyncService $achievementSyncService): RedirectResponse
     {
         $student = $this->resolveStudent($request);
         $section = $request->validate([
@@ -67,6 +69,7 @@ class DashboardController extends Controller
             $student->update([
                 'bio' => $this->nullableString($data['bio'] ?? null),
             ]);
+            $achievementSyncService->syncStudent($student->fresh());
 
             return back()->with('success', 'Bio atualizada com sucesso.');
         }
@@ -81,6 +84,7 @@ class DashboardController extends Controller
                 'github_url' => $this->nullableString($data['github_url'] ?? null),
                 'linkedin_url' => $this->nullableString($data['linkedin_url'] ?? null),
             ]);
+            $achievementSyncService->syncStudent($student->fresh());
 
             return back()->with('success', 'Links atualizados com sucesso.');
         }
@@ -96,6 +100,7 @@ class DashboardController extends Controller
         $student->update([
             'photo' => $data['photo']->store('users/photos', 'public'),
         ]);
+        $achievementSyncService->syncStudent($student->fresh());
 
         return back()->with('success', 'Foto atualizada com sucesso.');
     }
@@ -195,6 +200,8 @@ class DashboardController extends Controller
             'classrooms.teacher:id,name',
             'classrooms.students:id,name,email,photo,school_id,role_id,status',
             'classrooms.students.role:id,name,label',
+            'studentAchievements:id,student_id,achievement_id,awarded_at',
+            'studentAchievements.achievement:id,code,name,description,image_path,sort_order,is_active',
         ]);
 
         return $student;
@@ -209,6 +216,8 @@ class DashboardController extends Controller
      *     bio: string,
      *     links: array{github: string|null, linkedin: string|null},
      *     status: array{completed_activities: int, ranking_position: int},
+     *     achievements: array<int, array{code: string, title: string, description: string, image_url: string, is_unlocked: bool, unlocked_at: string|null}>,
+     *     achievement_summary: array{earned_count: int, total_count: int},
      *     classroom: array{name: string, code: string, point_of_school: string, teacher: string}
      * }
      */
@@ -216,6 +225,7 @@ class DashboardController extends Controller
     {
         $point = $student->pointOfSchools->first();
         $score = $this->scoreSummary($student, $classroom);
+        $achievements = $this->achievementPayload($student);
 
         return [
             'name' => $student->name,
@@ -231,6 +241,11 @@ class DashboardController extends Controller
             'status' => [
                 'completed_activities' => $score['submitted_activities_count'],
                 'ranking_position' => $score['school_rank'],
+            ],
+            'achievements' => $achievements,
+            'achievement_summary' => [
+                'earned_count' => collect($achievements)->where('is_unlocked', true)->count(),
+                'total_count' => count($achievements),
             ],
             'classroom' => [
                 'name' => $classroom?->name ?? 'Sala em configuração',
@@ -453,6 +468,36 @@ class DashboardController extends Controller
         $value = $value !== null ? trim($value) : null;
 
         return $value === '' ? null : $value;
+    }
+
+    /**
+     * @return array<int, array{code: string, title: string, description: string, image_url: string, is_unlocked: bool, unlocked_at: string|null}>
+     */
+    private function achievementPayload(User $student): array
+    {
+        $catalog = Achievement::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'code', 'name', 'description', 'image_path']);
+
+        $awarded = $student->studentAchievements
+            ->keyBy('achievement_id');
+
+        return $catalog
+            ->map(function (Achievement $achievement) use ($awarded) {
+                $studentAchievement = $awarded->get($achievement->id);
+
+                return [
+                    'code' => $achievement->code,
+                    'title' => $achievement->name,
+                    'description' => $achievement->description,
+                    'image_url' => asset($achievement->image_path),
+                    'is_unlocked' => $studentAchievement !== null,
+                    'unlocked_at' => optional($studentAchievement?->awarded_at)?->toIso8601String(),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function activityState(Activity $activity, bool $submitted): string

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppReveal from '@/components/AppReveal.vue';
-import { ArrowLeft, Github, Linkedin, Pencil, Sparkles, UserRound } from 'lucide-vue-next';
+import { ArrowLeft, Github, Linkedin, LockKeyhole, Pencil, Sparkles, UserRound } from 'lucide-vue-next';
 import { Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -25,6 +25,18 @@ interface StudentProfile {
     status: {
         completed_activities: number;
         ranking_position: number;
+    };
+    achievements: {
+        code: string;
+        title: string;
+        description: string;
+        image_url: string;
+        is_unlocked: boolean;
+        unlocked_at: string | null;
+    }[];
+    achievement_summary: {
+        earned_count: number;
+        total_count: number;
     };
     classroom: {
         name: string;
@@ -350,15 +362,35 @@ const submitLinks = () => {
                         <span class="inline-flex rounded-full bg-[#8f7bff] px-4 py-1 text-sm text-white">Conquistas</span>
                         <Sparkles class="size-5 text-[#c3b9ff]" />
                     </div>
-                    <div class="mt-6 grid grid-cols-3 gap-4 sm:grid-cols-5">
+                    <div class="mt-6 grid grid-cols-4 gap-4">
                         <div
-                            v-for="slot in 5"
-                            :key="slot"
-                            class="aspect-square rounded-full border border-dashed border-white/20 bg-white/5"
-                        />
-                    </div>
-                    <div class="mt-8 rounded-[1.5rem] border border-dashed border-white/15 bg-[#271D67] px-5 py-8 text-center text-sm leading-6 text-white/55">
-                        Suas badges vão aparecer aqui quando a integração de conquistas estiver pronta.
+                            v-for="achievement in profile.achievements"
+                            :key="achievement.code"
+                            class="group relative overflow-hidden rounded-[1.5rem] border p-3 transition"
+                            :class="
+                                achievement.is_unlocked
+                                    ? 'border-[#8f7bff]/50 bg-[radial-gradient(circle_at_top,#3d2b8f_0%,#24195f_100%)] shadow-[0_18px_40px_rgba(143,123,255,0.25)]'
+                                    : 'border-dashed border-white/15 bg-white/5'
+                            "
+                        >
+                            <div class="relative aspect-square overflow-hidden rounded-[1.2rem]">
+                                <img
+                                    :src="achievement.image_url"
+                                    :alt="achievement.title"
+                                    class="h-full w-full object-contain transition"
+                                    :class="achievement.is_unlocked ? '' : 'grayscale opacity-30'"
+                                />
+                                <div
+                                    v-if="!achievement.is_unlocked"
+                                    class="absolute inset-0 flex items-center justify-center bg-[#120d31]/35 text-white/70"
+                                >
+                                    <LockKeyhole class="size-5" />
+                                </div>
+                            </div>
+                            <p class="mt-3 text-center text-xs font-semibold leading-5" :class="achievement.is_unlocked ? 'text-white' : 'text-white/50'">
+                                {{ achievement.title }}
+                            </p>
+                        </div>
                     </div>
                 </AppReveal>
             </div>
