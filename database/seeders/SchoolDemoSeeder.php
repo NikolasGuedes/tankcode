@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Support\PerformanceMetricsRebuilder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -40,7 +39,7 @@ class SchoolDemoSeeder extends Seeder
         $school = School::query()->updateOrCreate(
             ['cnpj' => $schoolCnpj],
             [
-                'name' => 'Escola Central TankCode',
+                'name' => 'USCS',
                 'cnpj' => $schoolCnpj,
                 'logo_path' => null,
                 'status' => 'active',
@@ -49,24 +48,24 @@ class SchoolDemoSeeder extends Seeder
 
         $points = collect([
             [
-                'name' => 'Unidade Centro',
+                'name' => 'CENTRO',
                 'cnpj' => '22.111.333/0001-40',
-                'zip_code' => '74000000',
-                'address_line' => 'Rua 10, 245, Centro',
+                'zip_code' => '09510000',
+                'address_line' => 'Rua Manoel Coelho, 600, Centro, São Caetano do Sul - SP',
                 'status' => 'active',
             ],
             [
-                'name' => 'Unidade Norte',
+                'name' => 'BARCELONA',
                 'cnpj' => '22.111.333/0002-21',
-                'zip_code' => '74450010',
-                'address_line' => 'Avenida Perimetral, 900, Setor Norte',
+                'zip_code' => '09560010',
+                'address_line' => 'Rua Alegre, 410, Barcelona, São Caetano do Sul - SP',
                 'status' => 'active',
             ],
             [
-                'name' => 'Unidade Sul',
+                'name' => 'CONCEIÇÃO',
                 'cnpj' => '22.111.333/0003-02',
-                'zip_code' => '74830020',
-                'address_line' => 'Rua das Palmeiras, 120, Setor Sul',
+                'zip_code' => '09580020',
+                'address_line' => 'Avenida Goiás, 1350, Conceição, São Caetano do Sul - SP',
                 'status' => 'active',
             ],
         ])->map(function (array $data) use ($school) {
@@ -84,13 +83,13 @@ class SchoolDemoSeeder extends Seeder
         $owner = $this->createUser(
             roleId: $roles[RoleEnum::OWNER->value]->id,
             schoolId: $school->id,
-            name: 'Owner Demo',
-            email: 'owner@escola.local',
+            name: 'Direcao USCS',
+            email: 'direcao@uscs.local',
         );
 
         $directors = collect([
-            ['name' => 'Director Demo', 'email' => 'director@escola.local'],
-            ['name' => 'Director Norte', 'email' => 'director.norte@escola.local'],
+            ['name' => 'Coordenacao Academica', 'email' => 'coordenacao@uscs.local'],
+            ['name' => 'Gestao Pedagogica', 'email' => 'gestao.pedagogica@uscs.local'],
         ])->map(fn (array $director) => $this->createUser(
             roleId: $roles[RoleEnum::DIRECTOR->value]->id,
             schoolId: $school->id,
@@ -99,9 +98,11 @@ class SchoolDemoSeeder extends Seeder
         ));
 
         $teachers = collect([
-            ['name' => 'Ana Souza', 'email' => 'ana.souza@escola.local'],
-            ['name' => 'Bruno Lima', 'email' => 'bruno.lima@escola.local'],
-            ['name' => 'Carla Mendes', 'email' => 'carla.mendes@escola.local'],
+            ['name' => 'Ana Paula Ribeiro', 'email' => 'ana.ribeiro@uscs.local'],
+            ['name' => 'Bruno Cardoso', 'email' => 'bruno.cardoso@uscs.local'],
+            ['name' => 'Carla Menezes', 'email' => 'carla.menezes@uscs.local'],
+            ['name' => 'Daniel Freitas', 'email' => 'daniel.freitas@uscs.local'],
+            ['name' => 'Elisa Barros', 'email' => 'elisa.barros@uscs.local'],
         ])->map(fn (array $teacher) => $this->createUser(
             roleId: $roles[RoleEnum::TEACHER->value]->id,
             schoolId: $school->id,
@@ -110,12 +111,48 @@ class SchoolDemoSeeder extends Seeder
         ));
 
         $students = collect([
-            ['name' => 'Julia Martins', 'email' => 'julia.martins@escola.local'],
-            ['name' => 'Lucas Ferreira', 'email' => 'lucas.ferreira@escola.local'],
-            ['name' => 'Marina Costa', 'email' => 'marina.costa@escola.local'],
-            ['name' => 'Pedro Henrique', 'email' => 'pedro.henrique@escola.local'],
-            ['name' => 'Laura Alves', 'email' => 'laura.alves@escola.local'],
-            ['name' => 'Gustavo Rocha', 'email' => 'gustavo.rocha@escola.local'],
+            ['name' => 'Julia Souza', 'email' => 'julia.souza@uscs.local'],
+            ['name' => 'Lucas Pires', 'email' => 'lucas.pires@uscs.local'],
+            ['name' => 'Marina Oliveira', 'email' => 'marina.oliveira@uscs.local'],
+            ['name' => 'Pedro Henrique', 'email' => 'pedro.henrique@uscs.local'],
+            ['name' => 'Laura Martins', 'email' => 'laura.martins@uscs.local'],
+            ['name' => 'Gustavo Alves', 'email' => 'gustavo.alves@uscs.local'],
+            ['name' => 'Beatriz Gomes', 'email' => 'beatriz.gomes@uscs.local'],
+            ['name' => 'Renato Silva', 'email' => 'renato.silva@uscs.local'],
+            ['name' => 'Sophia Costa', 'email' => 'sophia.costa@uscs.local'],
+            ['name' => 'Miguel Ferreira', 'email' => 'miguel.ferreira@uscs.local'],
+            ['name' => 'Isabela Nunes', 'email' => 'isabela.nunes@uscs.local'],
+            ['name' => 'Henrique Melo', 'email' => 'henrique.melo@uscs.local'],
+            ['name' => 'Helena Castro', 'email' => 'helena.castro@uscs.local'],
+            ['name' => 'Tiago Ramos', 'email' => 'tiago.ramos@uscs.local'],
+            ['name' => 'Camila Azevedo', 'email' => 'camila.azevedo@uscs.local'],
+            ['name' => 'Nicolas Pereira', 'email' => 'nicolas.pereira@uscs.local'],
+            ['name' => 'Aline Duarte', 'email' => 'aline.duarte@uscs.local'],
+            ['name' => 'Felipe Martins', 'email' => 'felipe.martins@uscs.local'],
+            ['name' => 'Raquel Lima', 'email' => 'raquel.lima@uscs.local'],
+            ['name' => 'Bruna Rocha', 'email' => 'bruna.rocha@uscs.local'],
+            ['name' => 'Caio Nogueira', 'email' => 'caio.nogueira@uscs.local'],
+            ['name' => 'Larissa Campos', 'email' => 'larissa.campos@uscs.local'],
+            ['name' => 'Otavio Mendes', 'email' => 'otavio.mendes@uscs.local'],
+            ['name' => 'Manuela Pires', 'email' => 'manuela.pires@uscs.local'],
+            ['name' => 'Davi Costa', 'email' => 'davi.costa@uscs.local'],
+            ['name' => 'Elisa Rocha', 'email' => 'elisa.rocha@uscs.local'],
+            ['name' => 'Joao Victor', 'email' => 'joao.victor@uscs.local'],
+            ['name' => 'Leticia Barros', 'email' => 'leticia.barros@uscs.local'],
+            ['name' => 'Arthur Lima', 'email' => 'arthur.lima@uscs.local'],
+            ['name' => 'Sofia Almeida', 'email' => 'sofia.almeida@uscs.local'],
+            ['name' => 'Bruno Santos', 'email' => 'bruno.santos@uscs.local'],
+            ['name' => 'Maria Clara', 'email' => 'maria.clara@uscs.local'],
+            ['name' => 'Yago Fernandes', 'email' => 'yago.fernandes@uscs.local'],
+            ['name' => 'Amanda Ribeiro', 'email' => 'amanda.ribeiro@uscs.local'],
+            ['name' => 'Igor Moreira', 'email' => 'igor.moreira@uscs.local'],
+            ['name' => 'Nina Carvalho', 'email' => 'nina.carvalho@uscs.local'],
+            ['name' => 'Pedro Lucas', 'email' => 'pedro.lucas@uscs.local'],
+            ['name' => 'Rafaela Dias', 'email' => 'rafaela.dias@uscs.local'],
+            ['name' => 'Kevin Souza', 'email' => 'kevin.souza@uscs.local'],
+            ['name' => 'Bianca Teixeira', 'email' => 'bianca.teixeira@uscs.local'],
+            ['name' => 'Enzo Martins', 'email' => 'enzo.martins@uscs.local'],
+            ['name' => 'Camila Nascimento', 'email' => 'camila.nascimento@uscs.local'],
         ])->map(fn (array $student) => $this->createUser(
             roleId: $roles[RoleEnum::STUDENT->value]->id,
             schoolId: $school->id,
@@ -123,52 +160,79 @@ class SchoolDemoSeeder extends Seeder
             email: $student['email'],
         ));
 
-        $ownerPointIds = [$points[0]->id, $points[1]->id];
-        $directorCentroPointIds = [$points[0]->id];
-        $directorNortePointIds = [$points[1]->id];
+        $this->syncPoints($owner, [$points[0]->id, $points[1]->id, $points[2]->id], RoleEnum::OWNER->label());
+        $this->syncPoints($directors[0], [$points[0]->id, $points[1]->id, $points[2]->id], RoleEnum::DIRECTOR->label());
+        $this->syncPoints($directors[1], [$points[1]->id, $points[2]->id], RoleEnum::DIRECTOR->label());
 
-        $this->syncPoints($owner, $ownerPointIds, RoleEnum::OWNER->label());
-        $this->syncPoints($directors[0], $directorCentroPointIds, RoleEnum::DIRECTOR->label());
-        $this->syncPoints($directors[1], $directorNortePointIds, RoleEnum::DIRECTOR->label());
-
-        $this->syncPoints($teachers[0], [$points[0]->id], RoleEnum::TEACHER->label());
-        $this->syncPoints($teachers[1], [$points[1]->id], RoleEnum::TEACHER->label());
-        $this->syncPoints($teachers[2], [$points[2]->id], RoleEnum::TEACHER->label());
-
-        $this->syncPoints($students[0], [$points[0]->id], RoleEnum::STUDENT->label());
-        $this->syncPoints($students[1], [$points[0]->id], RoleEnum::STUDENT->label());
-        $this->syncPoints($students[2], [$points[1]->id], RoleEnum::STUDENT->label());
-        $this->syncPoints($students[3], [$points[1]->id], RoleEnum::STUDENT->label());
-        $this->syncPoints($students[4], [$points[2]->id], RoleEnum::STUDENT->label());
-        $this->syncPoints($students[5], [$points[2]->id], RoleEnum::STUDENT->label());
+        $this->syncPoints($teachers[0], [$points[0]->id, $points[1]->id], RoleEnum::TEACHER->label());
+        $this->syncPoints($teachers[1], [$points[1]->id, $points[2]->id], RoleEnum::TEACHER->label());
+        $this->syncPoints($teachers[2], [$points[0]->id], RoleEnum::TEACHER->label());
+        $this->syncPoints($teachers[3], [$points[0]->id, $points[2]->id], RoleEnum::TEACHER->label());
+        $this->syncPoints($teachers[4], [$points[1]->id], RoleEnum::TEACHER->label());
 
         $classrooms = collect([
             [
                 'school_id' => $school->id,
                 'point_of_school_id' => $points[0]->id,
                 'teacher_id' => $teachers[0]->id,
-                'name' => 'Turma Alfa',
-                'code' => 'ALFA-01',
+                'name' => 'Fundamentos de Desenvolvimento',
+                'code' => 'FED-01',
                 'status' => 'active',
-                'student_ids' => [$students[0]->id, $students[1]->id],
+                'student_ids' => [$students[0]->id, $students[1]->id, $students[14]->id, $students[15]->id, $students[16]->id, $students[17]->id],
+            ],
+            [
+                'school_id' => $school->id,
+                'point_of_school_id' => $points[1]->id,
+                'teacher_id' => $teachers[0]->id,
+                'name' => 'Lógica e Algoritmos',
+                'code' => 'LOG-01',
+                'status' => 'active',
+                'student_ids' => [$students[2]->id, $students[3]->id, $students[18]->id, $students[19]->id, $students[20]->id, $students[21]->id],
+            ],
+            [
+                'school_id' => $school->id,
+                'point_of_school_id' => $points[2]->id,
+                'teacher_id' => $teachers[1]->id,
+                'name' => 'Banco de Dados',
+                'code' => 'DAD-01',
+                'status' => 'active',
+                'student_ids' => [$students[4]->id, $students[5]->id, $students[22]->id, $students[23]->id, $students[24]->id, $students[25]->id],
             ],
             [
                 'school_id' => $school->id,
                 'point_of_school_id' => $points[1]->id,
                 'teacher_id' => $teachers[1]->id,
-                'name' => 'Turma Beta',
-                'code' => 'BETA-01',
+                'name' => 'Interface e Experiência',
+                'code' => 'UIX-01',
                 'status' => 'active',
-                'student_ids' => [$students[2]->id, $students[3]->id],
+                'student_ids' => [$students[6]->id, $students[7]->id, $students[26]->id, $students[27]->id, $students[28]->id, $students[29]->id],
+            ],
+            [
+                'school_id' => $school->id,
+                'point_of_school_id' => $points[0]->id,
+                'teacher_id' => $teachers[2]->id,
+                'name' => 'Aplicativos Mobile',
+                'code' => 'APP-01',
+                'status' => 'active',
+                'student_ids' => [$students[8]->id, $students[9]->id, $students[30]->id, $students[31]->id, $students[32]->id, $students[33]->id],
             ],
             [
                 'school_id' => $school->id,
                 'point_of_school_id' => $points[2]->id,
-                'teacher_id' => $teachers[2]->id,
-                'name' => 'Turma Gama',
-                'code' => 'GAMA-01',
+                'teacher_id' => $teachers[3]->id,
+                'name' => 'Laboratório Integrador',
+                'code' => 'LAB-01',
                 'status' => 'active',
-                'student_ids' => [$students[4]->id, $students[5]->id],
+                'student_ids' => [$students[10]->id, $students[11]->id, $students[34]->id, $students[35]->id, $students[36]->id, $students[37]->id],
+            ],
+            [
+                'school_id' => $school->id,
+                'point_of_school_id' => $points[1]->id,
+                'teacher_id' => $teachers[4]->id,
+                'name' => 'Projeto Orientado',
+                'code' => 'ORI-01',
+                'status' => 'active',
+                'student_ids' => [$students[12]->id, $students[13]->id, $students[38]->id, $students[39]->id, $students[40]->id, $students[41]->id],
             ],
         ])->map(function (array $classroomData) {
             $studentIds = $classroomData['student_ids'];
@@ -179,12 +243,28 @@ class SchoolDemoSeeder extends Seeder
                 $classroomData,
             );
 
-            DB::table('classroom_student')
-                ->whereIn('user_id', $studentIds)
-                ->where('classroom_id', '!=', $classroom->id)
-                ->delete();
-
             $classroom->students()->sync($studentIds);
+
+            $studentPayload = collect($studentIds)
+                ->mapWithKeys(fn (int $studentId) => [
+                    $studentId => [
+                        'title' => RoleEnum::STUDENT->label(),
+                        'is_primary' => true,
+                        'status' => 'active',
+                    ],
+                ])
+                ->all();
+
+            User::query()
+                ->whereIn('id', $studentIds)
+                ->get()
+                ->each(fn (User $student) => $student->pointOfSchools()->sync([
+                    $classroomData['point_of_school_id'] => [
+                        'title' => RoleEnum::STUDENT->label(),
+                        'is_primary' => true,
+                        'status' => 'active',
+                    ],
+                ]));
 
             return $classroom;
         });
@@ -249,97 +329,246 @@ class SchoolDemoSeeder extends Seeder
 
     private function seedActivities($classrooms, $students): void
     {
-        $classrooms->each(function (Classroom $classroom): void {
-            if ($classroom->code === 'GAMA-01') {
-                $this->upsertActivity($classroom, [
-                    'title' => 'Desafio de logica',
-                    'description' => 'Resolva os exercicios introdutorios enviados para a Turma Gama.',
-                    'level' => 'facil',
-                    'questions_count' => 1,
-                    'points_per_question' => 1,
-                    'total_points' => 1,
-                    'due_date' => today(),
-                    'status' => 'published',
-                ], [
-                    [
-                        'type' => 'multiple_choice',
-                        'statement' => 'Qual estrutura guarda uma sequência de instruções?',
-                        'correct_option' => 'B',
-                        'options' => [
-                            'A' => 'Mouse',
-                            'B' => 'Algoritmo',
-                            'C' => 'Monitor',
-                            'D' => 'Teclado',
+        $activityBlueprints = [
+            'FED-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Boas-vindas USCS',
+                        'description' => 'Introducao ao ambiente academico e digital da USCS.',
+                        'level' => 'facil',
+                        'questions_count' => 1,
+                        'points_per_question' => 2,
+                        'total_points' => 2,
+                        'due_date' => today()->addDays(2),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'Qual atitude ajuda mais um aluno a começar bem o semestre?',
+                            'correct_option' => 'B',
+                            'options' => [
+                                'A' => 'Esperar a semana final para estudar',
+                                'B' => 'Organizar rotina e revisar os canais da turma',
+                                'C' => 'Ignorar os avisos da coordenação',
+                                'D' => 'Focar apenas nas provas',
+                            ],
                         ],
                     ],
-                ]);
+                ],
+                [
+                    'activity' => [
+                        'title' => 'Checklist do ambiente',
+                        'description' => 'Revisao dos recursos que sustentam o trabalho na plataforma.',
+                        'level' => 'media',
+                        'questions_count' => 1,
+                        'points_per_question' => 3,
+                        'total_points' => 3,
+                        'due_date' => today()->addDays(4),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'drag_drop',
+                            'statement' => 'Complete: o portal organiza [blank_1] e a turma acompanha [blank_2].',
+                            'keywords' => ['informacoes', 'atividades'],
+                            'blank_answers' => [
+                                'blank_1' => 0,
+                                'blank_2' => 1,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'LOG-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Lógica aplicada em cenários reais',
+                        'description' => 'Exercício de raciocínio usando exemplos do cotidiano da USCS.',
+                        'level' => 'media',
+                        'questions_count' => 1,
+                        'points_per_question' => 2,
+                        'total_points' => 2,
+                        'due_date' => today()->addDays(3),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'O que melhor representa um algoritmo?',
+                            'correct_option' => 'D',
+                            'options' => [
+                                'A' => 'Um tipo de monitor',
+                                'B' => 'Uma pasta do sistema',
+                                'C' => 'Um conjunto aleatorio de telas',
+                                'D' => 'Uma sequência de passos para resolver um problema',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'DAD-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Modelo relacional básico',
+                        'description' => 'Leitura de tabelas, chaves e relacionamento entre dados.',
+                        'level' => 'media',
+                        'questions_count' => 1,
+                        'points_per_question' => 3,
+                        'total_points' => 3,
+                        'due_date' => today()->addDays(5),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'matching',
+                            'statement' => 'Relacione o conceito ao uso correto.',
+                            'left_column' => ['PK', 'FK'],
+                            'right_column' => ['Identifica de forma única', 'Liga tabelas'],
+                            'pairs' => [
+                                '0' => '0',
+                                '1' => '1',
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'activity' => [
+                        'title' => 'Consulta SQL guiada',
+                        'description' => 'Prática inicial de consultas para a rotina acadêmica.',
+                        'level' => 'dificil',
+                        'questions_count' => 1,
+                        'points_per_question' => 4,
+                        'total_points' => 4,
+                        'due_date' => today()->addDays(8),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'Qual comando retorna registros de uma tabela?',
+                            'correct_option' => 'A',
+                            'options' => [
+                                'A' => 'SELECT',
+                                'B' => 'CREATE',
+                                'C' => 'DROP',
+                                'D' => 'ALTER',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'UIX-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Fluxo de interface',
+                        'description' => 'Observacao das telas e da jornada do usuario.',
+                        'level' => 'facil',
+                        'questions_count' => 1,
+                        'points_per_question' => 2,
+                        'total_points' => 2,
+                        'due_date' => today()->addDays(4),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'Qual elemento ajuda a orientar o usuario durante a navegação?',
+                            'correct_option' => 'C',
+                            'options' => [
+                                'A' => 'Texto aleatorio',
+                                'B' => 'Espaço vazio',
+                                'C' => 'Hierarquia visual clara',
+                                'D' => 'Cores sem contraste',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'APP-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Estrutura do aplicativo',
+                        'description' => 'Visao da organizacao interna de um app educacional.',
+                        'level' => 'media',
+                        'questions_count' => 1,
+                        'points_per_question' => 3,
+                        'total_points' => 3,
+                        'due_date' => today()->addDays(6),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'drag_drop',
+                            'statement' => 'Complete: a camada de [blank_1] conversa com os dados, enquanto a camada de [blank_2] exibe a interface.',
+                            'keywords' => ['dados', 'apresentacao'],
+                            'blank_answers' => [
+                                'blank_1' => 0,
+                                'blank_2' => 1,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'LAB-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Sprint integrador',
+                        'description' => 'Planejamento do trabalho em equipe para consolidar as entregas.',
+                        'level' => 'dificil',
+                        'questions_count' => 1,
+                        'points_per_question' => 4,
+                        'total_points' => 4,
+                        'due_date' => today()->addDays(9),
+                        'status' => 'published',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'matching',
+                            'statement' => 'Associe a prática ao benefício mais adequado.',
+                            'left_column' => ['Revisao', 'Dono da tarefa'],
+                            'right_column' => ['Reduz erros', 'Deixa a responsabilidade clara'],
+                            'pairs' => [
+                                '0' => '0',
+                                '1' => '1',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'ORI-01' => [
+                [
+                    'activity' => [
+                        'title' => 'Rascunho de projeto',
+                        'description' => 'Versao interna para alinhamento entre coordenação e docentes.',
+                        'level' => 'facil',
+                        'questions_count' => 1,
+                        'points_per_question' => 1,
+                        'total_points' => 1,
+                        'due_date' => today()->addDays(2),
+                        'status' => 'draft',
+                    ],
+                    'questions' => [
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'Questão de rascunho para validação interna.',
+                            'correct_option' => 'A',
+                            'options' => [
+                                'A' => 'Resposta correta',
+                                'B' => 'Distrator 1',
+                                'C' => 'Distrator 2',
+                                'D' => 'Distrator 3',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
 
-                $this->upsertActivity($classroom, [
-                    'title' => 'Quiz de programação',
-                    'description' => 'Responda ao quiz e revise os conceitos vistos nesta semana.',
-                    'level' => 'media',
-                    'questions_count' => 1,
-                    'points_per_question' => 2.5,
-                    'total_points' => 2.5,
-                    'due_date' => today()->addDays(4),
-                    'status' => 'published',
-                ], [
-                    [
-                        'type' => 'drag_drop',
-                        'statement' => 'Complete: HTML define a [blank_1] e CSS define o [blank_2].',
-                        'keywords' => ['estrutura', 'estilo'],
-                        'blank_answers' => [
-                            'blank_1' => 0,
-                            'blank_2' => 1,
-                        ],
-                    ],
-                ]);
-
-                $this->upsertActivity($classroom, [
-                    'title' => 'Mini projeto em dupla',
-                    'description' => 'Planeje a entrega do prototipo com sua dupla e registre a evolução.',
-                    'level' => 'dificil',
-                    'questions_count' => 1,
-                    'points_per_question' => 4,
-                    'total_points' => 4,
-                    'due_date' => today()->addDays(9),
-                    'status' => 'published',
-                ], [
-                    [
-                        'type' => 'matching',
-                        'statement' => 'Relacione os conceitos aos seus significados.',
-                        'left_column' => ['Variavel', 'Loop'],
-                        'right_column' => ['Repetição', 'Armazena um valor'],
-                        'pairs' => [
-                            '0' => '1',
-                            '1' => '0',
-                        ],
-                    ],
-                ]);
-
-                $this->upsertActivity($classroom, [
-                    'title' => 'Rascunho interno da turma',
-                    'description' => 'Esta atividade deve permanecer oculta para os alunos.',
-                    'level' => 'facil',
-                    'questions_count' => 1,
-                    'points_per_question' => 1,
-                    'total_points' => 1,
-                    'due_date' => today()->addDays(2),
-                    'status' => 'draft',
-                ], [
-                    [
-                        'type' => 'multiple_choice',
-                        'statement' => 'Questao em rascunho.',
-                        'correct_option' => 'A',
-                        'options' => [
-                            'A' => 'Resposta correta',
-                            'B' => 'Distrator 1',
-                            'C' => 'Distrator 2',
-                            'D' => 'Distrator 3',
-                        ],
-                    ],
-                ]);
-            }
+        $classrooms->each(function (Classroom $classroom) use ($activityBlueprints): void {
+            collect($activityBlueprints[$classroom->code] ?? [])->each(function (array $blueprint) use ($classroom): void {
+                $this->upsertActivity($classroom, $blueprint['activity'], $blueprint['questions']);
+            });
         });
 
         $this->seedExampleSubmission($classrooms, $students);
@@ -379,8 +608,8 @@ class SchoolDemoSeeder extends Seeder
 
     private function seedExampleSubmission($classrooms, $students): void
     {
-        $classroom = $classrooms->firstWhere('code', 'GAMA-01');
-        $student = $students->firstWhere('email', 'laura.alves@escola.local');
+        $classroom = $classrooms->firstWhere('code', 'FED-01');
+        $student = $students->firstWhere('email', 'julia.souza@uscs.local');
 
         if (! $classroom || ! $student) {
             return;
@@ -388,7 +617,7 @@ class SchoolDemoSeeder extends Seeder
 
         $activity = Activity::query()
             ->where('classroom_id', $classroom->id)
-            ->where('title', 'Desafio de logica')
+            ->where('title', 'Boas-vindas USCS')
             ->with('questions')
             ->first();
 
@@ -435,47 +664,149 @@ class SchoolDemoSeeder extends Seeder
     private function seedStudentProfiles(Collection $students): void
     {
         $profiles = [
-            'julia.martins@escola.local' => [
-                'bio' => 'Adoro resolver desafios de lógica e criar interfaces coloridas.',
+            'julia.souza@uscs.local' => [
+                'bio' => 'Gosto de começar organizado e explorar a plataforma com curiosidade.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=47',
             ],
-            'lucas.ferreira@escola.local' => [
-                'bio' => 'Sou curioso por desenvolvimento web e gosto de criar automações simples.',
+            'lucas.pires@uscs.local' => [
+                'bio' => 'Curioso por tecnologia, organização e rotinas de estudo consistentes.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=12',
             ],
-            'marina.costa@escola.local' => [
-                'bio' => 'Gosto de aprender praticando e manter uma rotina consistente de estudos.',
+            'marina.oliveira@uscs.local' => [
+                'bio' => 'Aprendo melhor em atividades práticas e projetos guiados.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=32',
             ],
-            'pedro.henrique@escola.local' => [
-                'bio' => 'Estou focado em fortalecer meus fundamentos de programação e evoluir em projetos em equipe.',
+            'pedro.henrique@uscs.local' => [
+                'bio' => 'Foco em fundamentos e trabalho em equipe para evoluir com segurança.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=57',
             ],
-            'laura.alves@escola.local' => [
-                'bio' => 'Gosto de competir comigo mesma para subir no ranking e bater novas metas.',
+            'laura.martins@uscs.local' => [
+                'bio' => 'Sou competitiva, mas gosto de colaborar para entregar melhor.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=20',
             ],
-            'gustavo.rocha@escola.local' => [
-                'bio' => 'Exploro programação por meio de quizzes e mini projetos para aprender na prática.',
+            'gustavo.alves@uscs.local' => [
+                'bio' => 'Gosto de aprender em desafios curtos e visualmente claros.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => 'https://i.pravatar.cc/300?img=68',
+            ],
+            'beatriz.gomes@uscs.local' => [
+                'bio' => 'Tenho interesse em design, usabilidade e soluções bem apresentadas.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=27',
+            ],
+            'renato.silva@uscs.local' => [
+                'bio' => 'Gosto de analisar o problema antes de partir para a solução.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=14',
+            ],
+            'sophia.costa@uscs.local' => [
+                'bio' => 'Prefiro atividades com etapas bem definidas e feedback rápido.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=33',
+            ],
+            'miguel.ferreira@uscs.local' => [
+                'bio' => 'Curto explorar tecnologia de forma objetiva e aplicada.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=52',
+            ],
+            'isabela.nunes@uscs.local' => [
+                'bio' => 'Gosto de unir comunicação clara com organização das tarefas.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=40',
+            ],
+            'henrique.melo@uscs.local' => [
+                'bio' => 'Tenho perfil analítico e gosto de entender o sistema como um todo.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=61',
+            ],
+            'helena.castro@uscs.local' => [
+                'bio' => 'Gosto de organizar ideias e transformar orientação em entregas claras.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=24',
+            ],
+            'tiago.ramos@uscs.local' => [
+                'bio' => 'Prefiro desafios objetivos e acompanhamento próximo do progresso.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=66',
+            ],
+            'camila.azevedo@uscs.local' => [
+                'bio' => 'Tenho perfil organizado e gosto de atividades com começo, meio e fim.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=23',
+            ],
+            'nicolas.pereira@uscs.local' => [
+                'bio' => 'Curto explorar soluções técnicas e aprender com exemplos práticos.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=64',
+            ],
+            'aline.duarte@uscs.local' => [
+                'bio' => 'Gosto de revisar detalhes e manter o ritmo de estudo constante.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=45',
+            ],
+            'felipe.martins@uscs.local' => [
+                'bio' => 'Prefiro desafios curtos e objetivos para manter o foco.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=54',
+            ],
+            'raquel.lima@uscs.local' => [
+                'bio' => 'Gosto de colaborar com a turma e acompanhar a evolução do grupo.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=19',
+            ],
+            'bruna.rocha@uscs.local' => [
+                'bio' => 'Tenho interesse em organização, interface e comunicação visual.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=31',
+            ],
+            'caio.nogueira@uscs.local' => [
+                'bio' => 'Costumo aprender bem quando consigo praticar com tarefas reais.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=59',
+            ],
+            'larissa.campos@uscs.local' => [
+                'bio' => 'Gosto de rotina, clareza e entregas com boa apresentação.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=18',
+            ],
+            'otavio.mendes@uscs.local' => [
+                'bio' => 'Prefiro aprender comparando exemplos e testando na prática.',
+                'github_url' => null,
+                'linkedin_url' => null,
+                'avatar_url' => 'https://i.pravatar.cc/300?img=36',
             ],
         ];
 
         $students->each(function (User $student) use ($profiles): void {
             $profile = $profiles[$student->email] ?? [
-                'bio' => 'Perfil demo do aluno TankCode.',
+                'bio' => 'Perfil demo do aluno USCS.',
                 'github_url' => null,
                 'linkedin_url' => null,
                 'avatar_url' => null,
@@ -583,63 +914,63 @@ SVG;
     {
         $progressPlan = [
             [
-                'classroom_code' => 'ALFA-01',
-                'student_email' => 'julia.martins@escola.local',
-                'activity_prefix' => 'Trilha Alfa',
-                'activity_count' => 10,
-                'points_per_question' => 10.0,
-                'submissions_count' => 10,
-                'perfect_until' => 10,
-                'streak_days' => 0,
-            ],
-            [
-                'classroom_code' => 'ALFA-01',
-                'student_email' => 'lucas.ferreira@escola.local',
-                'activity_prefix' => 'Sprint Alfa',
+                'classroom_code' => 'FED-01',
+                'student_email' => 'julia.souza@uscs.local',
+                'activity_prefix' => 'Caminho FED',
                 'activity_count' => 4,
+                'points_per_question' => 8.0,
+                'submissions_count' => 4,
+                'perfect_until' => 3,
+                'streak_days' => 5,
+            ],
+            [
+                'classroom_code' => 'LOG-01',
+                'student_email' => 'marina.oliveira@uscs.local',
+                'activity_prefix' => 'Rota LOG',
+                'activity_count' => 3,
                 'points_per_question' => 5.0,
-                'submissions_count' => 0,
-                'perfect_until' => 1,
+                'submissions_count' => 3,
+                'perfect_until' => 2,
                 'streak_days' => 0,
             ],
             [
-                'classroom_code' => 'BETA-01',
-                'student_email' => 'marina.costa@escola.local',
-                'activity_prefix' => 'Jornada Beta',
-                'activity_count' => 25,
-                'points_per_question' => 8.0,
-                'submissions_count' => 25,
-                'perfect_until' => 12,
+                'classroom_code' => 'DAD-01',
+                'student_email' => 'laura.martins@uscs.local',
+                'activity_prefix' => 'Labs DAD',
+                'activity_count' => 4,
+                'points_per_question' => 6.0,
+                'submissions_count' => 4,
+                'perfect_until' => 8,
                 'streak_days' => 7,
             ],
             [
-                'classroom_code' => 'BETA-01',
-                'student_email' => 'pedro.henrique@escola.local',
-                'activity_prefix' => 'Laboratorio Beta',
-                'activity_count' => 12,
-                'points_per_question' => 6.0,
-                'submissions_count' => 10,
+                'classroom_code' => 'UIX-01',
+                'student_email' => 'beatriz.gomes@uscs.local',
+                'activity_prefix' => 'Sprint UIX',
+                'activity_count' => 3,
+                'points_per_question' => 4.0,
+                'submissions_count' => 3,
                 'perfect_until' => 5,
                 'streak_days' => 0,
             ],
             [
-                'classroom_code' => 'GAMA-01',
-                'student_email' => 'laura.alves@escola.local',
-                'activity_prefix' => 'Maratona Gama',
-                'activity_count' => 50,
-                'points_per_question' => 20.0,
-                'submissions_count' => 50,
-                'perfect_until' => 50,
-                'streak_days' => 0,
+                'classroom_code' => 'APP-01',
+                'student_email' => 'sophia.costa@uscs.local',
+                'activity_prefix' => 'Mobile APP',
+                'activity_count' => 3,
+                'points_per_question' => 7.0,
+                'submissions_count' => 3,
+                'perfect_until' => 4,
+                'streak_days' => 3,
             ],
             [
-                'classroom_code' => 'GAMA-01',
-                'student_email' => 'gustavo.rocha@escola.local',
-                'activity_prefix' => 'Desafios Gama',
-                'activity_count' => 8,
-                'points_per_question' => 4.0,
-                'submissions_count' => 0,
-                'perfect_until' => 1,
+                'classroom_code' => 'ORI-01',
+                'student_email' => 'helena.castro@uscs.local',
+                'activity_prefix' => 'Projeto ORI',
+                'activity_count' => 2,
+                'points_per_question' => 9.0,
+                'submissions_count' => 2,
+                'perfect_until' => 2,
                 'streak_days' => 0,
             ],
         ];

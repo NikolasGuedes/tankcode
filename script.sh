@@ -4,6 +4,7 @@ set -euo pipefail
 
 ENV_FILE=".env"
 FRESH=false
+DB_FRESH=false
 BUILD=false
 INSTALL_FRONTEND=false
 RUN_SEED=true
@@ -14,6 +15,7 @@ Uso: ./script.sh [opções]
 
 Opções:
   --fresh             recria containers, remove volumes e roda migrate:fresh --seed
+  --db-fresh          apenas limpa o banco com migrate:fresh --seed
   --build             força rebuild da imagem PHP
   --frontend          roda npm install e npm run build
   --seed              roda php artisan db:seed após as migrations
@@ -23,6 +25,7 @@ Exemplos:
   ./script.sh
   ./script.sh --build
   ./script.sh --fresh
+  ./script.sh --db-fresh
   ./script.sh --frontend
 EOF
 }
@@ -33,6 +36,10 @@ while [ $# -gt 0 ]; do
       FRESH=true
       BUILD=true
       INSTALL_FRONTEND=true
+      RUN_SEED=true
+      ;;
+    --db-fresh)
+      DB_FRESH=true
       RUN_SEED=true
       ;;
     --build)
@@ -135,7 +142,7 @@ else
   echo "Link public/storage já existe. Pulando."
 fi
 
-if [ "$FRESH" = true ]; then
+if [ "$FRESH" = true ] || [ "$DB_FRESH" = true ]; then
   echo "Executando migrações do zero com seed..."
   docker compose exec php php artisan migrate:fresh --seed --force
 else
@@ -182,4 +189,5 @@ echo "Sugestões:"
 echo "- ./script.sh            -> sobe, roda migrations e seeders"
 echo "- ./script.sh --build    -> recompila a imagem PHP"
 echo "- ./script.sh --fresh    -> recria tudo do zero"
+echo "- ./script.sh --db-fresh -> limpa só o banco com migrate:fresh --seed"
 echo "- ./script.sh --frontend -> instala dependências JS e gera build"
