@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\RoleEnum;
 use App\Models\Activity;
+use App\Models\ActivityQuestion;
 use App\Models\ActivitySubmission;
 use App\Models\ActivitySubmissionAnswer;
 use App\Models\Classroom;
@@ -333,33 +334,43 @@ class SchoolDemoSeeder extends Seeder
             'FED-01' => [
                 [
                     'activity' => [
-                        'title' => 'Boas-vindas USCS',
-                        'description' => 'Introducao ao ambiente academico e digital da USCS.',
+                        'title' => 'Variáveis e tipos básicos',
+                        'description' => 'Revisão inicial sobre declaração de variáveis e tipos usados em programação.',
                         'level' => 'facil',
-                        'questions_count' => 1,
+                        'questions_count' => 2,
                         'points_per_question' => 2,
-                        'total_points' => 2,
+                        'total_points' => 4,
                         'due_date' => today()->addDays(2),
                         'status' => 'published',
                     ],
                     'questions' => [
                         [
                             'type' => 'multiple_choice',
-                            'statement' => 'Qual atitude ajuda mais um aluno a começar bem o semestre?',
-                            'correct_option' => 'B',
+                            'statement' => 'Em PHP, qual alternativa declara corretamente uma variável string com o nome do aluno?',
+                            'correct_option' => 'C',
                             'options' => [
-                                'A' => 'Esperar a semana final para estudar',
-                                'B' => 'Organizar rotina e revisar os canais da turma',
-                                'C' => 'Ignorar os avisos da coordenação',
-                                'D' => 'Focar apenas nas provas',
+                                'A' => 'string nome = "Ana";',
+                                'B' => 'let nome := "Ana";',
+                                'C' => '$nome = "Ana";',
+                                'D' => 'nome <- "Ana" em PHP puro',
+                            ],
+                        ],
+                        [
+                            'type' => 'matching',
+                            'statement' => 'Relacione o tipo de dado ao exemplo correspondente.',
+                            'left_column' => ['string', 'int'],
+                            'right_column' => ['"João"', '25'],
+                            'pairs' => [
+                                '0' => '0',
+                                '1' => '1',
                             ],
                         ],
                     ],
                 ],
                 [
                     'activity' => [
-                        'title' => 'Checklist do ambiente',
-                        'description' => 'Revisao dos recursos que sustentam o trabalho na plataforma.',
+                        'title' => 'Complete o código de decisão',
+                        'description' => 'Exercício de leitura de código com estrutura condicional simples.',
                         'level' => 'media',
                         'questions_count' => 1,
                         'points_per_question' => 3,
@@ -370,8 +381,8 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'drag_drop',
-                            'statement' => 'Complete: o portal organiza [blank_1] e a turma acompanha [blank_2].',
-                            'keywords' => ['informacoes', 'atividades'],
+                            'statement' => 'Complete o trecho: if ($idade >= 18) { echo "[blank_1]"; } else { echo "[blank_2]"; }',
+                            'keywords' => ['maior de idade', 'menor de idade'],
                             'blank_answers' => [
                                 'blank_1' => 0,
                                 'blank_2' => 1,
@@ -383,8 +394,8 @@ class SchoolDemoSeeder extends Seeder
             'LOG-01' => [
                 [
                     'activity' => [
-                        'title' => 'Lógica aplicada em cenários reais',
-                        'description' => 'Exercício de raciocínio usando exemplos do cotidiano da USCS.',
+                        'title' => 'Condições e operadores lógicos',
+                        'description' => 'Análise de expressões booleanas e tomada de decisão em algoritmos.',
                         'level' => 'media',
                         'questions_count' => 1,
                         'points_per_question' => 2,
@@ -395,13 +406,13 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'multiple_choice',
-                            'statement' => 'O que melhor representa um algoritmo?',
-                            'correct_option' => 'D',
+                            'statement' => 'Considere: if ($nota >= 7 && $frequencia >= 75). Em qual cenário o aluno será aprovado?',
+                            'correct_option' => 'B',
                             'options' => [
-                                'A' => 'Um tipo de monitor',
-                                'B' => 'Uma pasta do sistema',
-                                'C' => 'Um conjunto aleatorio de telas',
-                                'D' => 'Uma sequência de passos para resolver um problema',
+                                'A' => 'Nota 6.5 e frequência 80',
+                                'B' => 'Nota 8.0 e frequência 75',
+                                'C' => 'Nota 7.0 e frequência 70',
+                                'D' => 'Nota 5.0 e frequência 90',
                             ],
                         ],
                     ],
@@ -410,8 +421,8 @@ class SchoolDemoSeeder extends Seeder
             'DAD-01' => [
                 [
                     'activity' => [
-                        'title' => 'Modelo relacional básico',
-                        'description' => 'Leitura de tabelas, chaves e relacionamento entre dados.',
+                        'title' => 'Modelo relacional e chaves',
+                        'description' => 'Relacione conceitos de banco de dados com seu papel em tabelas reais.',
                         'level' => 'media',
                         'questions_count' => 1,
                         'points_per_question' => 3,
@@ -422,9 +433,9 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'matching',
-                            'statement' => 'Relacione o conceito ao uso correto.',
-                            'left_column' => ['PK', 'FK'],
-                            'right_column' => ['Identifica de forma única', 'Liga tabelas'],
+                            'statement' => 'Relacione o conceito ao uso correto no banco.',
+                            'left_column' => ['Primary Key', 'Foreign Key'],
+                            'right_column' => ['Identifica cada registro sem repetição', 'Cria relacionamento com outra tabela'],
                             'pairs' => [
                                 '0' => '0',
                                 '1' => '1',
@@ -434,25 +445,34 @@ class SchoolDemoSeeder extends Seeder
                 ],
                 [
                     'activity' => [
-                        'title' => 'Consulta SQL guiada',
-                        'description' => 'Prática inicial de consultas para a rotina acadêmica.',
+                        'title' => 'Consulta SQL com filtro',
+                        'description' => 'Seleção de dados usando SELECT, WHERE e ORDER BY.',
                         'level' => 'dificil',
-                        'questions_count' => 1,
+                        'questions_count' => 2,
                         'points_per_question' => 4,
-                        'total_points' => 4,
+                        'total_points' => 8,
                         'due_date' => today()->addDays(8),
                         'status' => 'published',
                     ],
                     'questions' => [
                         [
                             'type' => 'multiple_choice',
-                            'statement' => 'Qual comando retorna registros de uma tabela?',
-                            'correct_option' => 'A',
+                            'statement' => 'Qual SQL lista os alunos da tabela students com nota maior que 8, ordenando pela nota em ordem decrescente?',
+                            'correct_option' => 'D',
                             'options' => [
-                                'A' => 'SELECT',
-                                'B' => 'CREATE',
-                                'C' => 'DROP',
-                                'D' => 'ALTER',
+                                'A' => 'SELECT * FROM students ORDER BY nota > 8 DESC;',
+                                'B' => 'SELECT nota > 8 FROM students ORDER BY nota;',
+                                'C' => 'SELECT * FROM students WHERE nota > 8 GROUP BY nota DESC;',
+                                'D' => 'SELECT * FROM students WHERE nota > 8 ORDER BY nota DESC;',
+                            ],
+                        ],
+                        [
+                            'type' => 'drag_drop',
+                            'statement' => 'Complete a consulta: SELECT nome [blank_1] alunos WHERE turma_id = 3 [blank_2] nome ASC;',
+                            'keywords' => ['FROM', 'ORDER BY'],
+                            'blank_answers' => [
+                                'blank_1' => 0,
+                                'blank_2' => 1,
                             ],
                         ],
                     ],
@@ -461,8 +481,8 @@ class SchoolDemoSeeder extends Seeder
             'UIX-01' => [
                 [
                     'activity' => [
-                        'title' => 'Fluxo de interface',
-                        'description' => 'Observacao das telas e da jornada do usuario.',
+                        'title' => 'Estados de interface em formulários',
+                        'description' => 'Boas práticas de feedback visual em telas de cadastro e login.',
                         'level' => 'facil',
                         'questions_count' => 1,
                         'points_per_question' => 2,
@@ -473,13 +493,13 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'multiple_choice',
-                            'statement' => 'Qual elemento ajuda a orientar o usuario durante a navegação?',
-                            'correct_option' => 'C',
+                            'statement' => 'Ao validar um formulário de cadastro, qual abordagem oferece melhor experiência ao usuário?',
+                            'correct_option' => 'B',
                             'options' => [
-                                'A' => 'Texto aleatorio',
-                                'B' => 'Espaço vazio',
-                                'C' => 'Hierarquia visual clara',
-                                'D' => 'Cores sem contraste',
+                                'A' => 'Exibir erros apenas depois de recarregar a página inteira',
+                                'B' => 'Destacar o campo inválido e mostrar mensagem próxima ao erro',
+                                'C' => 'Apagar todos os campos quando houver um erro',
+                                'D' => 'Mostrar apenas uma mensagem genérica: "falha"',
                             ],
                         ],
                     ],
@@ -488,23 +508,34 @@ class SchoolDemoSeeder extends Seeder
             'APP-01' => [
                 [
                     'activity' => [
-                        'title' => 'Estrutura do aplicativo',
-                        'description' => 'Visao da organizacao interna de um app educacional.',
+                        'title' => 'Camadas de uma aplicação',
+                        'description' => 'Separação entre interface, regra de negócio e acesso a dados.',
                         'level' => 'media',
-                        'questions_count' => 1,
+                        'questions_count' => 2,
                         'points_per_question' => 3,
-                        'total_points' => 3,
+                        'total_points' => 6,
                         'due_date' => today()->addDays(6),
                         'status' => 'published',
                     ],
                     'questions' => [
                         [
                             'type' => 'drag_drop',
-                            'statement' => 'Complete: a camada de [blank_1] conversa com os dados, enquanto a camada de [blank_2] exibe a interface.',
-                            'keywords' => ['dados', 'apresentacao'],
+                            'statement' => 'Complete: em uma arquitetura MVC, o [blank_1] recebe a requisição e o [blank_2] representa os dados e regras da aplicação.',
+                            'keywords' => ['controller', 'model'],
                             'blank_answers' => [
                                 'blank_1' => 0,
                                 'blank_2' => 1,
+                            ],
+                        ],
+                        [
+                            'type' => 'multiple_choice',
+                            'statement' => 'Em um aplicativo mobile, qual camada normalmente faz a chamada para uma API e trata os dados recebidos?',
+                            'correct_option' => 'A',
+                            'options' => [
+                                'A' => 'Camada de serviço ou repositório',
+                                'B' => 'Apenas o componente visual da tela',
+                                'C' => 'Somente o arquivo de estilos',
+                                'D' => 'Exclusivamente o banco local, sem código intermediário',
                             ],
                         ],
                     ],
@@ -513,8 +544,8 @@ class SchoolDemoSeeder extends Seeder
             'LAB-01' => [
                 [
                     'activity' => [
-                        'title' => 'Sprint integrador',
-                        'description' => 'Planejamento do trabalho em equipe para consolidar as entregas.',
+                        'title' => 'Versionamento e revisão de código',
+                        'description' => 'Práticas de colaboração em equipe com Git e code review.',
                         'level' => 'dificil',
                         'questions_count' => 1,
                         'points_per_question' => 4,
@@ -525,9 +556,9 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'matching',
-                            'statement' => 'Associe a prática ao benefício mais adequado.',
-                            'left_column' => ['Revisao', 'Dono da tarefa'],
-                            'right_column' => ['Reduz erros', 'Deixa a responsabilidade clara'],
+                            'statement' => 'Associe a prática de engenharia ao principal benefício.',
+                            'left_column' => ['Code review', 'Branch por funcionalidade'],
+                            'right_column' => ['Reduz bugs antes do merge', 'Isola o desenvolvimento de cada entrega'],
                             'pairs' => [
                                 '0' => '0',
                                 '1' => '1',
@@ -539,8 +570,8 @@ class SchoolDemoSeeder extends Seeder
             'ORI-01' => [
                 [
                     'activity' => [
-                        'title' => 'Rascunho de projeto',
-                        'description' => 'Versao interna para alinhamento entre coordenação e docentes.',
+                        'title' => 'Escopo inicial do projeto',
+                        'description' => 'Atividade de rascunho para validar requisitos técnicos do projeto.',
                         'level' => 'facil',
                         'questions_count' => 1,
                         'points_per_question' => 1,
@@ -551,13 +582,13 @@ class SchoolDemoSeeder extends Seeder
                     'questions' => [
                         [
                             'type' => 'multiple_choice',
-                            'statement' => 'Questão de rascunho para validação interna.',
-                            'correct_option' => 'A',
+                            'statement' => 'Em um CRUD de tarefas, qual requisito representa uma regra de negócio e não apenas detalhe visual?',
+                            'correct_option' => 'B',
                             'options' => [
-                                'A' => 'Resposta correta',
-                                'B' => 'Distrator 1',
-                                'C' => 'Distrator 2',
-                                'D' => 'Distrator 3',
+                                'A' => 'Usar botao azul na tela principal',
+                                'B' => 'Impedir conclusao de tarefa sem titulo preenchido',
+                                'C' => 'Posicionar o menu no lado esquerdo',
+                                'D' => 'Aumentar o tamanho da fonte do header',
                             ],
                         ],
                     ],
@@ -617,7 +648,7 @@ class SchoolDemoSeeder extends Seeder
 
         $activity = Activity::query()
             ->where('classroom_id', $classroom->id)
-            ->where('title', 'Boas-vindas USCS')
+            ->where('title', 'Variáveis e tipos básicos')
             ->with('questions')
             ->first();
 
@@ -640,25 +671,23 @@ class SchoolDemoSeeder extends Seeder
             ],
         );
 
-        $question = $activity->questions->first();
-
-        if (! $question) {
+        if ($activity->questions->isEmpty()) {
             return;
         }
 
-        ActivitySubmissionAnswer::query()->updateOrCreate(
-            [
-                'activity_submission_id' => $submission->id,
-                'activity_question_id' => $question->id,
-            ],
-            [
-                'answer_payload' => [
-                    'selected_option' => $question->correct_option,
+        $activity->questions->each(function (ActivityQuestion $question) use ($submission, $activity): void {
+            ActivitySubmissionAnswer::query()->updateOrCreate(
+                [
+                    'activity_submission_id' => $submission->id,
+                    'activity_question_id' => $question->id,
                 ],
-                'is_correct' => true,
-                'earned_points' => $activity->points_per_question,
-            ],
-        );
+                [
+                    'answer_payload' => $this->buildAnswerPayload($question, true),
+                    'is_correct' => true,
+                    'earned_points' => $activity->points_per_question,
+                ],
+            );
+        });
     }
 
     private function seedStudentProfiles(Collection $students): void
@@ -1006,32 +1035,95 @@ SVG;
         int $count,
         float $pointsPerQuestion,
     ): Collection {
+        $questionBank = [
+            [
+                'type' => 'multiple_choice',
+                'statement' => "Na trilha {$prefix}, qual trecho usa comparação correta dentro de uma condição?",
+                'correct_option' => 'C',
+                'options' => [
+                    'A' => 'if ($media = 7) { ... }',
+                    'B' => 'if $media >= 7 { ... }',
+                    'C' => 'if ($media >= 7) { ... }',
+                    'D' => 'if ($media => 7) { ... }',
+                ],
+            ],
+            [
+                'type' => 'drag_drop',
+                'statement' => "Complete a consulta da trilha {$prefix}: [blank_1] nome, email [blank_2] users WHERE active = 1;",
+                'keywords' => ['SELECT', 'FROM'],
+                'blank_answers' => [
+                    'blank_1' => 0,
+                    'blank_2' => 1,
+                ],
+            ],
+            [
+                'type' => 'matching',
+                'statement' => "Relacione os conceitos da trilha {$prefix} aos seus objetivos.",
+                'left_column' => ['Commit', 'Pull request'],
+                'right_column' => ['Registrar alterações no histórico', 'Solicitar revisão antes do merge'],
+                'pairs' => [
+                    '0' => '0',
+                    '1' => '1',
+                ],
+            ],
+            [
+                'type' => 'multiple_choice',
+                'statement' => "Na trilha {$prefix}, qual estrutura percorre todos os itens de um array em PHP?",
+                'correct_option' => 'D',
+                'options' => [
+                    'A' => 'switch ($itens) { ... }',
+                    'B' => 'catch ($itens as $item) { ... }',
+                    'C' => 'if ($itens as $item) { ... }',
+                    'D' => 'foreach ($itens as $item) { ... }',
+                ],
+            ],
+            [
+                'type' => 'drag_drop',
+                'statement' => "Complete o fluxo MVC da trilha {$prefix}: o [blank_1] recebe a requisição e o [blank_2] concentra regras e dados.",
+                'keywords' => ['Controller', 'Model'],
+                'blank_answers' => [
+                    'blank_1' => 0,
+                    'blank_2' => 1,
+                ],
+            ],
+            [
+                'type' => 'matching',
+                'statement' => "Associe os elementos SQL da trilha {$prefix} às suas funções.",
+                'left_column' => ['WHERE', 'ORDER BY'],
+                'right_column' => ['Filtrar registros', 'Ordenar o resultado'],
+                'pairs' => [
+                    '0' => '0',
+                    '1' => '1',
+                ],
+            ],
+            [
+                'type' => 'multiple_choice',
+                'statement' => "Na trilha {$prefix}, qual alternativa descreve melhor a responsabilidade de uma API REST?",
+                'correct_option' => 'B',
+                'options' => [
+                    'A' => 'Renderizar diretamente o CSS do navegador',
+                    'B' => 'Expor dados e operações por meio de endpoints HTTP',
+                    'C' => 'Substituir o banco de dados relacional',
+                    'D' => 'Executar apenas tarefas agendadas do servidor',
+                ],
+            ],
+        ];
+
         return collect(range(1, $count))
-            ->map(function (int $index) use ($classroom, $prefix, $pointsPerQuestion) {
+            ->map(function (int $index) use ($classroom, $prefix, $pointsPerQuestion, $questionBank) {
                 $title = "{$prefix} {$index}";
+                $question = $questionBank[($index - 1) % count($questionBank)];
 
                 $this->upsertActivity($classroom, [
                     'title' => $title,
-                    'description' => "Atividade {$index} da trilha {$prefix}.",
+                    'description' => "Atividade {$index} da trilha {$prefix} com foco em fundamentos de programação.",
                     'level' => $index % 3 === 0 ? 'dificil' : ($index % 2 === 0 ? 'media' : 'facil'),
                     'questions_count' => 1,
                     'points_per_question' => $pointsPerQuestion,
                     'total_points' => $pointsPerQuestion,
                     'due_date' => today()->addDays(max(1, $index)),
                     'status' => 'published',
-                ], [
-                    [
-                        'type' => 'multiple_choice',
-                        'statement' => "Questão {$index} da trilha {$prefix}.",
-                        'correct_option' => 'A',
-                        'options' => [
-                            'A' => 'Resposta correta',
-                            'B' => 'Distrator 1',
-                            'C' => 'Distrator 2',
-                            'D' => 'Distrator 3',
-                        ],
-                    ],
-                ]);
+                ], [$question]);
 
                 return Activity::query()
                     ->where('classroom_id', $classroom->id)
@@ -1079,14 +1171,66 @@ SVG;
                     'activity_question_id' => $question->id,
                 ],
                 [
-                    'answer_payload' => [
-                        'selected_option' => $isPerfect ? $question->correct_option : 'B',
-                    ],
+                    'answer_payload' => $this->buildAnswerPayload($question, $isPerfect),
                     'is_correct' => $isPerfect,
                     'earned_points' => $isPerfect ? $activity->points_per_question : 0,
                 ],
             );
         });
+    }
+
+    private function buildAnswerPayload(ActivityQuestion $question, bool $isCorrect): array
+    {
+        if ($question->type === 'multiple_choice') {
+            $selectedOption = $question->correct_option;
+
+            if (! $isCorrect) {
+                $selectedOption = collect(['A', 'B', 'C', 'D'])
+                    ->first(fn (string $option) => $option !== $question->correct_option) ?? 'A';
+            }
+
+            return [
+                'selected_option' => $selectedOption,
+            ];
+        }
+
+        if ($question->type === 'drag_drop') {
+            $expectedBlanks = collect($question->blank_answers ?? [])
+                ->mapWithKeys(fn ($keywordIndex, $blankKey) => [
+                    (string) $blankKey => $question->keywords[(int) $keywordIndex] ?? '',
+                ])
+                ->all();
+
+            if ($isCorrect) {
+                return [
+                    'blanks' => $expectedBlanks,
+                ];
+            }
+
+            return [
+                'blanks' => collect($expectedBlanks)
+                    ->mapWithKeys(fn ($value, $key) => [(string) $key => 'resposta incorreta'])
+                    ->all(),
+            ];
+        }
+
+        $expectedPairs = collect($question->pairs ?? [])
+            ->mapWithKeys(fn ($value, $key) => [(string) $key => (string) $value])
+            ->all();
+
+        if ($isCorrect || count($expectedPairs) < 2) {
+            return [
+                'pairs' => $expectedPairs,
+            ];
+        }
+
+        $shiftedValues = array_values($expectedPairs);
+        $firstValue = array_shift($shiftedValues);
+        $shiftedValues[] = $firstValue;
+
+        return [
+            'pairs' => array_combine(array_keys($expectedPairs), $shiftedValues) ?: $expectedPairs,
+        ];
     }
 
     private function submissionTimestampForIndex(int $index, int $streakDays): \Carbon\CarbonInterface
